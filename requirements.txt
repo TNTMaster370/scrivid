@@ -1,0 +1,4 @@
+Pillow==9.3.0
+moviepy==1.0.3
+pytest~=6.2.5
+setuptools>=67.0.0
