@@ -3,7 +3,8 @@
 ![GitHub](https://img.shields.io/github/license/TNTMaster370/scrivid)
 ![GitHub release (release name instead of tag name)](https://img.shields.io/github/v/release/TNTMaster370/scrivid)
 
-*Scrivid* is a Python package that acts as a wrapper to writing instructions for an animation video.
+*Scrivid* is a Python package that acts as a wrapper to writing instructions for an animation video. 
+This project is in development, so it may not be feature complete at this time.
 
 ### Example
 
