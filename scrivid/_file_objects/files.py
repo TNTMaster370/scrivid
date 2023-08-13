@@ -11,6 +11,8 @@ class FileAccess(Protocol):
     of its __init__ method must have one positional-only argument: 'file'.
     """
     def __init__(self, file: Union[str, Path], /): ...
+    @property
+    def is_opened(self) -> bool: ...
     def open(self): ...
     def close(self): ...
 
@@ -35,6 +37,10 @@ class FileReference:
             + ("is_opened" if self.__file_handler is not None else "is_closed")
             + ")"
         )
+
+    @property
+    def is_opened(self):
+        return self.__file_handler is not None
 
     def open(self):
         self.__file_handler = self.__file.open()
