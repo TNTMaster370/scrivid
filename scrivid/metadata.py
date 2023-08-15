@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ._utils.sentinel_objects import sentinel
 
 from pathlib import Path
