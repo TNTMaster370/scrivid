@@ -1,10 +1,10 @@
-from scrivid import Metadata
+from scrivid import exceptions, Metadata
 
 import pytest
 
 
 def test_metadata_fps_confliction():
-    with pytest.raises(AttributeError):
+    with pytest.raises(exceptions.AttributeError):
         Metadata(fps=24, frame_rate=30)  # These two attributes are the same
         # attribute in the end, so both shouldn't be used in the first place,
         # but it's allowed if the value is identical for both.

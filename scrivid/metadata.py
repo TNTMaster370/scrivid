@@ -44,7 +44,8 @@ class Metadata:
             the video.
         """
         if _NOT_SPECIFIED not in (fps, frame_rate) and fps != frame_rate:
-            raise AttributeError("Conflicting attributes: \'fps\' and \'frame_rate\'")
+            from . import exceptions
+            raise exceptions.AttributeError("Conflicting attributes: \'fps\' and \'frame_rate\'")
         elif fps is _SPECIFIED:
             self.frame_rate = fps
         elif frame_rate is _SPECIFIED:
