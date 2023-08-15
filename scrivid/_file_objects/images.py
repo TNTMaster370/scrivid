@@ -3,10 +3,13 @@ from __future__ import annotations
 from .files import call_close, FileAccess
 
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING
 import weakref
 
 from PIL import Image
+
+if TYPE_CHECKING:
+    from typing import Union
 
 
 class ImageFileReference:
