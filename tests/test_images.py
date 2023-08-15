@@ -1,6 +1,8 @@
-from scrivid import image_reference, ImageReference
+from scrivid import exceptions, image_reference, ImageReference, Properties
 
 from pathlib import Path
+
+import pytest
 
 
 def get_current_directory():
@@ -43,6 +45,11 @@ def test_image_file_management_weakref():
     # reference count hits zero.
 
     assert file_handler.state == ["open", "close"]
+
+
+def test_image_function_multi_declare_properties():
+    with pytest.raises(exceptions.AttributeError):
+        image_reference("", Properties(0, 0, 0, 0), x=1, y=1)
 
 
 def test_image_open_no_errors():
