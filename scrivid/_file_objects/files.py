@@ -22,31 +22,31 @@ def call_close(file: FileAccess):
 
 
 class FileReference:
-    __slots__ = ("__file", "__file_handler")
+    __slots__ = ("_file", "_file_handler")
 
     def __init__(self, file: Union[str, Path], /):
         if not isinstance(file, Path):
             file = Path(file)
 
-        self.__file = file
-        self.__file_handler = None
+        self._file = file
+        self._file_handler = None
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}({self.__file!r}, "
-            + ("is_opened" if self.__file_handler is not None else "is_closed")
+            f"{self.__class__.__name__}({self._file!r}, "
+            + ("is_opened" if self._file_handler is not None else "is_closed")
             + ")"
         )
 
     @property
     def is_opened(self):
-        return self.__file_handler is not None
+        return self._file_handler is not None
 
     def open(self):
-        self.__file_handler = self.__file.open()
+        self._file_handler = self._file.open()
 
     def close(self):
-        if self.__file_handler is None:
+        if self._file_handler is None:
             return
-        self.__file_handler.close()
-        self.__file_handler = None
+        self._file_handler.close()
+        self._file_handler = None

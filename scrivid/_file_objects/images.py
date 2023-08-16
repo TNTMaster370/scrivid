@@ -19,80 +19,80 @@ _NS = sentinel("_NOT_SPECIFIED")
 
 
 class ImageFileReference:
-    __slots__ = ("__file", "__file_handler")
+    __slots__ = ("_file", "_file_handler")
 
     def __init__(self, file: Union[str, Path], /):
         if not isinstance(file, Path):
             file = Path(file)
 
-        self.__file = file
-        self.__file_handler = None
+        self._file = file
+        self._file_handler = None
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}({self.__file!r}, "
-            + ("is_opened" if self.__file_handler is not None else "is_closed")
+            f"{self.__class__.__name__}({self._file!r}, "
+            + ("is_opened" if self._file_handler is not None else "is_closed")
             + ")"
         )
 
     @property
     def is_opened(self):
-        return self.__file_handler is not None
+        return self._file_handler is not None
 
     def open(self):
-        self.__file_handler = Image.open(self.__file)
+        self._file_handler = Image.open(self._file)
 
     def close(self):
-        if self.__file_handler is None:
+        if self._file_handler is None:
             return
-        self.__file_handler.close()
-        self.__file_handler = None
+        self._file_handler.close()
+        self._file_handler = None
 
 
 class ImageReference:
-    __slots__ = ("__file", "__finalizer", "__properties", "__weakref__")
+    __slots__ = ("_file", "_finalizer", "_properties", "__weakref__")
 
     def __init__(self, file: FileAccess, properties: Properties = _NS, /):
-        self.__file = file
-        self.__finalizer = weakref.finalize(self, call_close, self.__file)
-        self.__properties = properties
+        self._file = file
+        self._finalizer = weakref.finalize(self, call_close, self._file)
+        self._properties = properties
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(file={self.__file!r}, properties={self.__properties!r})"
+        return f"{self.__class__.__name__}(file={self._file!r}, properties={self._properties!r})"
 
     @property
     def is_opened(self):
-        return self.__file.is_opened
+        return self._file.is_opened
 
     @property
     def layer(self):
-        return self.__properties.layer
+        return self._properties.layer
 
     @property
     def scale(self):
-        return self.__properties.scale
+        return self._properties.scale
 
     @property
     def x(self):
-        return self.__properties.x
+        return self._properties.x
 
     @property
     def y(self):
-        return self.__properties.y
+        return self._properties.y
 
     def open(self):
         # ImageReference is not responsible for opening/closing a file. It's
         # purpose is to hold the data for it. As such, it only calls the 'open'
         # method of its .__file attribute. If the interface is incompatible, it
         # is the responsibility of the FileReference_-like class to manage it.
-        self.__file.open()
+        self._file.open()
 
     def close(self):
         # This 'close' method is automatically called when the object is
         # deleted, but ImageReference is not responsible for what comes out of
         # .__file.close(). Make sure the FileReference_-like class returns
         # early if the file is closed, because this method will not catch it.
-        self.__file.close()
+        self._file.close()
 
 
 def image_reference(
@@ -104,6 +104,7 @@ def image_reference(
         x: Union[int, _NS] = _NS,
         y: Union[int, _NS] = _NS
 ) -> ImageReference:
+    # ...
     if isinstance(file, str):
         file = Path(file)
     if isinstance(file, Path):

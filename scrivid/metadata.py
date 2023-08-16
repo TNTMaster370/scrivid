@@ -14,9 +14,9 @@ _SPECIFIED = not _NOT_SPECIFIED
 
 
 class Metadata:
-    __slots__ = ("__window_size", "frame_rate", "save_location", "video_name")
+    __slots__ = ("_window_size", "frame_rate", "save_location", "video_name")
 
-    __window_size: Tuple[int, int]
+    _window_size: Tuple[int, int]
 
     def __init__(
         self, *, fps: Union[int, _NOT_SPECIFIED] = _NOT_SPECIFIED,
@@ -55,27 +55,27 @@ class Metadata:
             save_location = Path(save_location)
         self.save_location = save_location
 
-        self.__window_size = window_size
+        self._window_size = window_size
         self.video_name = video_name
 
     @property
     def window_height(self):
-        if self.__window_size is _NOT_SPECIFIED:
+        if self._window_size is _NOT_SPECIFIED:
             return None
         else:
-            return self.__window_size[1]
+            return self._window_size[1]
 
     @property
     def window_size(self):
-        return self.__window_size
+        return self._window_size
 
     @window_size.setter
     def window_size(self, new_value: Tuple[int, int]):
-        self.__window_size = new_value
+        self._window_size = new_value
 
     @property
     def window_width(self):
-        if self.__window_size is _NOT_SPECIFIED:
+        if self._window_size is _NOT_SPECIFIED:
             return None
         else:
-            return self.__window_size[0]
+            return self._window_size[0]
