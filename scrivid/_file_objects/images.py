@@ -83,15 +83,15 @@ class ImageReference:
     def open(self):
         # ImageReference is not responsible for opening/closing a file. It's
         # purpose is to hold the data for it. As such, it only calls the 'open'
-        # method of its .__file attribute. If the interface is incompatible, it
-        # is the responsibility of the FileReference_-like class to manage it.
+        # method of its ._file attribute. If the interface is incompatible, it
+        # is the responsibility of the FileAccess-like class to manage it.
         self._file.open()
 
     def close(self):
         # This 'close' method is automatically called when the object is
         # deleted, but ImageReference is not responsible for what comes out of
-        # .__file.close(). Make sure the FileReference_-like class returns
-        # early if the file is closed, because this method will not catch it.
+        # ._file.close(). Make sure the FileAccess-like class returns early if
+        # the file is closed, because this method will not catch it.
         self._file.close()
 
 
