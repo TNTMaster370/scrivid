@@ -5,10 +5,6 @@ from pathlib import Path
 import pytest
 
 
-def get_current_directory():
-    return Path(".").absolute()
-
-
 class FileSubstitute:
     def __init__(self, file):
         self.state = []
@@ -24,6 +20,10 @@ class FileSubstitute:
 
     def close(self):
         self.state.append("close")
+
+
+def get_current_directory():
+    return Path(".").absolute()
 
 
 def test_image_file_management():
