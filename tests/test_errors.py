@@ -1,4 +1,4 @@
-from scrivid import exceptions
+from scrivid import errors
 
 import inspect
 import sys
@@ -15,7 +15,7 @@ def loop_over_namespace(namespace):
 
 
 def test_exceptions_inheritance():
-    for name in loop_over_namespace(exceptions.__name__):
-        if name == exceptions.ScrividException.__name__:
+    for name in loop_over_namespace(errors.__name__):
+        if name == errors.ScrividException.__name__:
             continue
-        assert isinstance(name, exceptions.ScrividException)
+        assert isinstance(name, errors.ScrividException)

@@ -1,4 +1,4 @@
-from scrivid import exceptions, image_reference, ImageReference, Properties
+from scrivid import errors, image_reference, ImageReference, Properties
 
 from pathlib import Path
 
@@ -48,7 +48,7 @@ def test_image_file_management_weakref():
 
 
 def test_image_function_multi_declare_properties():
-    with pytest.raises(exceptions.AttributeError):
+    with pytest.raises(errors.AttributeError):
         image_reference("", Properties(0, 0, 0, 0), x=1, y=1)
 
 

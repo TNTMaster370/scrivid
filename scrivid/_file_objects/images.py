@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from .. import errors
 from .._utils.sentinel_objects import sentinel
-import scrivid.exceptions
 from .files import call_close, FileAccess
 from .properties import Properties
 
@@ -115,7 +115,6 @@ def image_reference(
     else:
         for name, attr in (("layer", layer), ("scale", scale), ("x", x), ("y", y)):
             if attr is not _NS:
-                raise scrivid.exceptions.AttributeError(f"Attribute \'{name}\' should not be specified if "
-                                                        "\'properties\' is.")
+                raise errors.AttributeError(f"Attribute \'{name}\' should not be specified if \'properties\' is.")
 
     return ImageReference(file, properties)
