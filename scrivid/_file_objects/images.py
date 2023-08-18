@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from . import adjustments
 from .. import errors
 from .._utils.sentinel_objects import sentinel
 from .files import call_close, FileAccess
 from .properties import Properties
+from ._operations import return_not_implemented, should_raise_operator_error
 from ._status import Status
 
 from pathlib import Path
@@ -67,6 +69,24 @@ class ImageReference:
             f"{self.__class__.__name__}(adjustments={self._adjustments!r}, file={self._file!r}, "
             f"properties={self._properties!r})"
         )
+
+    def __lshift__(self, other):
+        """ self << other """
+        if not isinstance(other, adjustments.RootAdjustment):
+            raise errors.TypeError(f"Expected types RootAdjustment, got type {other.__name__}")
+        self.add_adjustment(other)
+
+    """ self << other """
+    __rlshift__ = should_raise_operator_error(correct="<<", reverse=">>")
+
+    """ self >> other """
+    __rshift__ = return_not_implemented()
+
+    def __rrshift__(self, other):
+        """ self >> other """
+        if not isinstance(other, adjustments.RootAdjustment):
+            raise errors.TypeError(f"Expected types RootAdjustment, got type {other.__name__}")
+        self.add_adjustment(other)
 
     @property
     def adjustments(self):

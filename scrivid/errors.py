@@ -5,3 +5,11 @@ class ScrividException(Exception):
 
 class AttributeError(ScrividException):
     ...
+
+
+class OperatorError(ScrividException):
+    ...
+
+
+class TypeError(ScrividException):
+    ...
