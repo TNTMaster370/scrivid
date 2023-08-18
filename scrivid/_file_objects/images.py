@@ -4,6 +4,7 @@ from .. import errors
 from .._utils.sentinel_objects import sentinel
 from .files import call_close, FileAccess
 from .properties import Properties
+from ._status import Status
 
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -12,6 +13,8 @@ import weakref
 from PIL import Image
 
 if TYPE_CHECKING:
+    from .adjustments import RootAdjustment
+
     from typing import Union
 
 
@@ -50,15 +53,24 @@ class ImageFileReference:
 
 
 class ImageReference:
-    __slots__ = ("_file", "_finalizer", "_properties", "__weakref__")
+    __slots__ = ("_adjustments", "_file", "_finalizer", "_properties", "_status", "__weakref__")
 
     def __init__(self, file: FileAccess, properties: Properties = _NS, /):
+        self._adjustments = set()
         self._file = file
         self._finalizer = weakref.finalize(self, call_close, self._file)
         self._properties = properties
+        self._status = Status.UNKNOWN
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(file={self._file!r}, properties={self._properties!r})"
+        return (
+            f"{self.__class__.__name__}(adjustments={self._adjustments!r}, file={self._file!r}, "
+            f"properties={self._properties!r})"
+        )
+
+    @property
+    def adjustments(self):
+        return self._adjustments
 
     @property
     def is_opened(self):
@@ -79,6 +91,9 @@ class ImageReference:
     @property
     def y(self):
         return self._properties.y
+
+    def add_adjustment(self, new_adjustment: RootAdjustment):
+        self._adjustments.add(new_adjustment)
 
     def open(self):
         # ImageReference is not responsible for opening/closing a file. It's
