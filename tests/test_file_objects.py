@@ -1,14 +1,26 @@
-from scrivid import errors, image_reference, ImageReference, Properties
+from scrivid import errors, image_reference, ImageReference, Properties, RootAdjustment
 
 from pathlib import Path
+from typing import Any, List
 
 import pytest
+
+
+class AdjustmentSubstitute(RootAdjustment):
+    __slots__ = ("state",)
+
+    def __init__(self, activation_time: int):
+        super().__init__(activation_time)
+        self.state = []
+
+    def utilize(self, reference):
+        self.state.append("utilize")
 
 
 class FileSubstitute:
     def __init__(self, file):
         self.state = []
-        self.__file = file
+        self._file = file
 
     @property
     def is_opened(self):
@@ -24,6 +36,52 @@ class FileSubstitute:
 
 def get_current_directory():
     return Path(".").absolute()
+
+
+class PropertiesSubstitute(Properties):
+    __slots__ = ("state",)
+
+    def __init__(self, layer, scale, x, y):
+        self.state: List[Any] = ["INIT"]
+        # The type annotation is to prevent issues with type checkers.
+        super().__init__(layer, scale, x, y)
+        self.state.append("POST-INIT")
+
+    def __setattr__(self, key, value):
+        if hasattr(self, "state"):
+            self.state.append((key, value))
+        super().__setattr__(key, value)
+
+
+def test_image_adjustments():
+    adj1 = AdjustmentSubstitute(10)
+    adj2 = AdjustmentSubstitute(20)
+
+    img_ref = image_reference("")
+    img_ref.add_adjustment(adj1)
+    img_ref.add_adjustment(adj2)
+
+    assert img_ref.adjustments == {adj1, adj2}
+
+
+def test_image_adjustments_shift_operator():
+    adj1 = AdjustmentSubstitute(1)
+    adj2 = AdjustmentSubstitute(2)
+    adj3 = AdjustmentSubstitute(3)
+
+    img_ref = image_reference("")
+
+    adj1 >> img_ref  # Should raise no error.
+    assert img_ref.adjustments == {adj1}
+
+    img_ref << adj2  # Should raise no error.
+    assert img_ref.adjustments == {adj1, adj2}
+
+    with pytest.raises(errors.OperatorError):
+        adj3 << img_ref
+
+    with pytest.raises(errors.OperatorError):
+        img_ref >> adj3
 
 
 def test_image_file_management():
@@ -70,3 +128,9 @@ def test_image_open_property():
 
     img_ref.close()
     assert img_ref.is_opened is False
+
+
+def test_image_property_attributes():
+    properties = PropertiesSubstitute(1, 2, 3, 4)
+    image_reference("", properties)
+    assert properties.state == ["INIT", ("layer", 1), ("scale", 2), ("x", 3), ("y", 4), "POST-INIT"]
