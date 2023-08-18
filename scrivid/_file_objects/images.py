@@ -17,7 +17,7 @@ from PIL import Image
 if TYPE_CHECKING:
     from .adjustments import RootAdjustment
 
-    from typing import Union
+    from typing import Union, Set
 
 
 _NS = sentinel("_NOT_SPECIFIED")
@@ -56,6 +56,12 @@ class ImageFileReference:
 
 class ImageReference:
     __slots__ = ("_adjustments", "_file", "_finalizer", "_properties", "_status", "__weakref__")
+
+    _adjustments: Set[RootAdjustment]
+    _file: FileAccess
+    _finalizer: weakref.finalize
+    _properties: Properties
+    _status: Status
 
     def __init__(self, file: FileAccess, properties: Properties = _NS, /):
         self._adjustments = set()
@@ -115,6 +121,9 @@ class ImageReference:
     @property
     def y(self):
         return self._properties.y
+
+    def _begin(self):
+        self._status = Status.HIDE
 
     def add_adjustment(self, new_adjustment: RootAdjustment):
         self._adjustments.add(new_adjustment)
