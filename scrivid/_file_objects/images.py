@@ -76,14 +76,18 @@ class ImageReference:
             raise errors.TypeError(f"Expected types RootAdjustment, got type {other.__name__}")
         self.add_adjustment(other)
 
-    """ self << other """
+    """ other << self """
     __rlshift__ = should_raise_operator_error(correct="<<", reverse=">>")
 
     """ self >> other """
-    __rshift__ = return_not_implemented()
+    __rshift__ = return_not_implemented()  # This function does not handle the
+    # error that should be raised for incorrect syntax, because doing so in the
+    # forward function would be too eager. If someone inherits from
+    # RootAdjustment and wants this syntax to work, we should give it a chance
+    # to invoke the reverse method.
 
     def __rrshift__(self, other):
-        """ self >> other """
+        """ other >> self """
         if not isinstance(other, adjustments.RootAdjustment):
             raise errors.TypeError(f"Expected types RootAdjustment, got type {other.__name__}")
         self.add_adjustment(other)

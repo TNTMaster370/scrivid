@@ -28,7 +28,7 @@ class RootAdjustment:
     # to invoke the reverse method.
 
     def __rlshift__(self, other):
-        """ self << other """
+        """ other << self """
         if not isinstance(other, images.ImageReference):
             raise errors.TypeError(f"Expected types ImageReference, got type {other.__name__}")
         other.add_adjustment(self)
@@ -39,7 +39,7 @@ class RootAdjustment:
             raise errors.TypeError(f"Expected types ImageReference, got type {other.__name__}")
         other.add_adjustment(self)
 
-    """ self >> other """
+    """ other >> self """
     __rrshift__ = should_raise_operator_error(correct=">>", reverse="<<")
 
     @property
