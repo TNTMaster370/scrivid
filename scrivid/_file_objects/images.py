@@ -13,11 +13,12 @@ from typing import TYPE_CHECKING
 import weakref
 
 from PIL import Image
+from sortedcontainers import SortedSet
 
 if TYPE_CHECKING:
     from .adjustments import RootAdjustment
 
-    from typing import Union, Set
+    from typing import Union
 
 
 _NS = sentinel("_NOT_SPECIFIED")
@@ -57,14 +58,14 @@ class ImageFileReference:
 class ImageReference:
     __slots__ = ("_adjustments", "_file", "_finalizer", "_properties", "_status", "__weakref__")
 
-    _adjustments: Set[RootAdjustment]
+    _adjustments: SortedSet[RootAdjustment]
     _file: FileAccess
     _finalizer: weakref.finalize
     _properties: Properties
     _status: Status
 
     def __init__(self, file: FileAccess, properties: Properties = _NS, /):
-        self._adjustments = set()
+        self._adjustments = SortedSet()
         self._file = file
         self._finalizer = weakref.finalize(self, call_close, self._file)
         self._properties = properties
