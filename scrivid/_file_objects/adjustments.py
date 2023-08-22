@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from . import images
 from .. import errors
-from ._operations import return_not_implemented, should_raise_operator_error
+from ._operations import comparison_function, return_not_implemented, should_raise_operator_error
 from ._status import Status
 
 from abc import abstractmethod
@@ -49,6 +49,25 @@ class RootAdjustment:
     @abstractmethod
     def utilize(self, reference):
         raise NotImplementedError
+
+
+""" self == other """
+RootAdjustment.__eq__ = comparison_function("_activation_time", "==", RootAdjustment)
+
+""" self >= other """
+RootAdjustment.__ge__ = comparison_function("_activation_time", ">=", RootAdjustment)
+
+""" self > other """
+RootAdjustment.__gt__ = comparison_function("_activation_time", ">", RootAdjustment)
+
+""" self <= other """
+RootAdjustment.__le__ = comparison_function("_activation_time", "<=", RootAdjustment)
+
+""" self < other """
+RootAdjustment.__lt__ = comparison_function("_activation_time", "<", RootAdjustment)
+
+""" self != other """
+RootAdjustment.__ne__ = comparison_function("_activation_time", "!=", RootAdjustment)
 
 
 class HideAdjustment(RootAdjustment):

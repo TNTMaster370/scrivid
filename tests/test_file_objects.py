@@ -84,6 +84,20 @@ def test_image_adjustments_shift_operator():
         img_ref >> adj3
 
 
+def test_image_adjustments_sorting():
+    adj_10 = AdjustmentSubstitute(10)
+    adj_20 = AdjustmentSubstitute(20)
+    adj_30 = AdjustmentSubstitute(30)
+
+    img_ref = image_reference("some/file")
+    img_ref.add_adjustment(adj_30)
+    img_ref.add_adjustment(adj_20)
+    img_ref.add_adjustment(adj_10)
+
+    assert img_ref.adjustments == {adj_10, adj_20, adj_30}
+    # Insertion order does not match sorted order.
+
+
 def test_image_file_management():
     file_handler = FileSubstitute("some/file")
     img_ref = ImageReference(file_handler)
