@@ -8,6 +8,7 @@ from .properties import Properties
 from ._operations import return_not_implemented, should_raise_operator_error
 from ._status import Status
 
+from copy import copy, deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 import weakref
@@ -18,7 +19,7 @@ from sortedcontainers import SortedSet
 if TYPE_CHECKING:
     from .adjustments import RootAdjustment
 
-    from typing import Union
+    from typing import Optional, Union
 
 
 _NS = sentinel("_NOT_SPECIFIED")
@@ -125,6 +126,14 @@ class ImageReference:
 
     def _begin(self):
         self._status = Status.HIDE
+
+    def copy(self):
+        return copy(self)
+
+    def deepcopy(self, memo: Optional[dict] = None):
+        if memo is None:
+            memo = {}
+        return deepcopy(self, memo)
 
     def add_adjustment(self, new_adjustment: RootAdjustment):
         self._adjustments.add(new_adjustment)
