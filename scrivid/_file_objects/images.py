@@ -47,6 +47,8 @@ class ImageFileReference:
         return self._file_handler is not None
 
     def open(self):
+        if self._file_handler is not None:
+            return
         self._file_handler = Image.open(self._file)
 
     def close(self):
@@ -141,8 +143,7 @@ class ImageReference:
     def open(self):
         # ImageReference is not responsible for opening/closing a file. It's
         # purpose is to hold the data for it. As such, it only calls the 'open'
-        # method of its ._file attribute. If the interface is incompatible, it
-        # is the responsibility of the FileAccess-like class to manage it.
+        # method of its ._file attribute.
         self._file.open()
 
     def close(self):
