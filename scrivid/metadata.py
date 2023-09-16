@@ -10,7 +10,10 @@ if TYPE_CHECKING:
 
 
 _NOT_SPECIFIED = sentinel("_NOT_SPECIFIED")
-_SPECIFIED = not _NOT_SPECIFIED
+
+
+def is_specified(obj):
+    return obj is not _NOT_SPECIFIED
 
 
 class Metadata:
@@ -46,9 +49,9 @@ class Metadata:
         if _NOT_SPECIFIED not in (fps, frame_rate) and fps != frame_rate:
             from . import errors
             raise errors.AttributeError("Conflicting attributes: \'fps\' and \'frame_rate\'")
-        elif fps is _SPECIFIED:
+        elif is_specified(fps):
             self.frame_rate = fps
-        elif frame_rate is _SPECIFIED:
+        elif is_specified(frame_rate):
             self.frame_rate = frame_rate
 
         if isinstance(save_location, str):
