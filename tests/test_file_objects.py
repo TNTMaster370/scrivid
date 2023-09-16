@@ -98,6 +98,18 @@ def test_image_adjustments_sorting():
     # Insertion order does not match sorted order.
 
 
+def test_image_copy():
+    img_ref = ImageReference(FileSubstitute(""))
+    copy_img_ref = img_ref.copy()
+    deepcopy_img_ref = img_ref.deepcopy()
+
+    # The point of these tests is to ensure that the .copy() and .deepcopy()
+    # functions are actually making copies of what they need to.
+    assert id(img_ref) != id(copy_img_ref)
+    assert id(img_ref) != id(deepcopy_img_ref)
+    assert id(img_ref.adjustments) != id(deepcopy_img_ref.adjustments)
+
+
 def test_image_file_management():
     file_handler = FileSubstitute("some/file")
     img_ref = ImageReference(file_handler)
