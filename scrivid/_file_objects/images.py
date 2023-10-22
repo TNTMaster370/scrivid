@@ -6,7 +6,6 @@ from .._utils.sentinel_objects import sentinel
 from .files import call_close, FileAccess
 from .properties import Properties
 from ._operations import return_not_implemented, should_raise_operator_error
-from ._status import Status
 
 from copy import copy, deepcopy
 from pathlib import Path
@@ -65,14 +64,12 @@ class ImageReference:
     _file: FileAccess
     _finalizer: weakref.finalize
     _properties: Properties
-    _status: Status
 
     def __init__(self, file: FileAccess, properties: Properties = _NS, /):
         self._adjustments = SortedSet()
         self._file = file
         self._finalizer = weakref.finalize(self, call_close, self._file)
         self._properties = properties
-        self._status = Status.UNKNOWN
 
     def __repr__(self):
         return (
@@ -125,9 +122,6 @@ class ImageReference:
     @property
     def y(self):
         return self._properties.y
-
-    def _begin(self):
-        self._status = Status.HIDE
 
     def copy(self):
         return copy(self)

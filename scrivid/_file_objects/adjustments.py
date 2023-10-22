@@ -3,9 +3,6 @@ from __future__ import annotations
 from . import images
 from .. import errors
 from ._operations import comparison_function, return_not_implemented, should_raise_operator_error
-from ._status import Status
-
-from abc import abstractmethod
 
 
 class RootAdjustment:
@@ -46,10 +43,6 @@ class RootAdjustment:
     def activation_time(self):
         return self._activation_time
 
-    @abstractmethod
-    def utilize(self, reference):
-        raise NotImplementedError
-
 
 """ self == other """
 RootAdjustment.__eq__ = comparison_function("_activation_time", "==", RootAdjustment)
@@ -71,10 +64,8 @@ RootAdjustment.__ne__ = comparison_function("_activation_time", "!=", RootAdjust
 
 
 class HideAdjustment(RootAdjustment):
-    def utilize(self, reference):
-        reference._status = Status.HIDE
+    ...
 
 
 class ShowAdjustment(RootAdjustment):
-    def utilize(self, reference):
-        reference._status = Status.SHOW
+    ...
