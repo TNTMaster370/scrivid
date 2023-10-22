@@ -39,9 +39,9 @@ def _determine_visibility_status(adjustments, frame_index):
         if time > frame_index:
             break
 
-        if status is not VisibilityStatus.HIDE and type(adj) == HideAdjustment:
+        if status is not VisibilityStatus.HIDE and type(adj) is HideAdjustment:
             status = VisibilityStatus.HIDE
-        elif status is not VisibilityStatus.SHOW and type(adj) == ShowAdjustment:
+        elif status is not VisibilityStatus.SHOW and type(adj) is ShowAdjustment:
             status = VisibilityStatus.SHOW
 
     return status
