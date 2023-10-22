@@ -3,7 +3,7 @@ from __future__ import annotations
 from ._file_objects import VisibilityStatus
 from ._file_objects.adjustments import HideAdjustment, ShowAdjustment
 from ._file_objects.images import ImageReference
-from ._motion_tree import Continue, End, HideImage, MotionTree, parse, ShowImage, Start
+from ._motion_tree import nodes, parse
 from ._utils import ticking
 
 import os
@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Tuple
 
+    MotionTree = nodes.MotionTree
     REFERENCES = ImageReference
 
 
@@ -133,16 +134,16 @@ def _generate_frame(motion_tree: MotionTree, references: Sequence[REFERENCES], m
 
     for node in motion_tree.body:
         type_ = type(node)
-        if type_ is Start:
+        if type_ is nodes.Start:
             frames.append(_Frame(0, metadata.window_size, save_directory, references))
-        elif type_ in (HideImage, ShowImage):
+        elif type_ in (nodes.HideImage, nodes.ShowImage):
             if index == frames[-1].index:
                 continue
             frames.append(_Frame(index, metadata.window_size, save_directory, references))
-        elif type_ is Continue:
+        elif type_ is nodes.Continue:
             frames[-1].occurrences += node.length
             index += node.length
-        elif type_ is End:
+        elif type_ is nodes.End:
             break
 
     return index, frames
