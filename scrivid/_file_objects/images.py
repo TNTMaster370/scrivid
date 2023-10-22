@@ -18,14 +18,14 @@ from sortedcontainers import SortedSet
 if TYPE_CHECKING:
     from .adjustments import RootAdjustment
 
-    from typing import Optional, Union
+    from typing import Optional, Tuple, Union
 
 
 _NS = sentinel("_NOT_SPECIFIED")
 
 
 class ImageFileReference:
-    __slots__ = ("_file", "_file_handler")
+    __slots__ = ("_file", "_file_handler", "_pixel_handler")
 
     def __init__(self, file: Union[str, Path], /):
         if not isinstance(file, Path):
@@ -33,6 +33,7 @@ class ImageFileReference:
 
         self._file = file
         self._file_handler = None
+        self._pixel_handler = None
 
     def __repr__(self):
         return (
@@ -45,20 +46,40 @@ class ImageFileReference:
     def is_opened(self):
         return self._file_handler is not None
 
+    def get_image_height(self):
+        if not self.is_opened:
+            return None
+        else:
+            return self._file_handler.height
+
+    def get_image_width(self):
+        if not self.is_opened:
+            return None
+        else:
+            return self._file_handler.width
+
+    def get_pixel_value(self, coordinates: Tuple[int, int]):
+        if not self.is_opened:
+            return None
+        else:
+            return self._pixel_handler.__getitem__(coordinates)
+
     def open(self):
         if self._file_handler is not None:
             return
         self._file_handler = Image.open(self._file)
+        self._pixel_handler = self._file_handler.load()
 
     def close(self):
         if self._file_handler is None:
             return
         self._file_handler.close()
         self._file_handler = None
+        self._pixel_handler = None
 
 
 class ImageReference:
-    __slots__ = ("_adjustments", "_file", "_finalizer", "_properties", "_status", "__weakref__")
+    __slots__ = ("_adjustments", "_file", "_finalizer", "_properties", "__weakref__")
 
     _adjustments: SortedSet[RootAdjustment]
     _file: FileAccess
@@ -133,6 +154,15 @@ class ImageReference:
 
     def add_adjustment(self, new_adjustment: RootAdjustment):
         self._adjustments.add(new_adjustment)
+
+    def get_image_height(self):
+        return self._file.get_image_height()
+
+    def get_image_width(self):
+        return self._file.get_image_width()
+
+    def get_pixel_value(self, coordinates: Tuple[int, int]):
+        return self._file.get_pixel_value(coordinates)
 
     def open(self):
         # ImageReference is not responsible for opening/closing a file. It's
