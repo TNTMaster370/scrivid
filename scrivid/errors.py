@@ -7,6 +7,14 @@ class AttributeError(ScrividException):
     ...
 
 
+class InvalidAttributesError(AttributeError):
+    ...
+
+
+class UndefinedAttributesError(AttributeError):
+    ...
+
+
 class OperatorError(ScrividException):
     ...
 
