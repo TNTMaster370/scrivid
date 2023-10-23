@@ -1,10 +1,15 @@
 from scrivid import dump, HideAdjustment, image_reference, motion_nodes, parse, ShowAdjustment, walk
 
+from pytest import mark
+
 
 # Global variables for characters, for use for long string for testing the
 # 'dump' function.
 nl = "\n"
 sp = " "
+
+# Alternative name for module to reduce typing
+pytest_parametrize = mark.parametrize
 
 
 def create_references():
@@ -13,6 +18,13 @@ def create_references():
         image_reference("2"),
         image_reference("3")
     ]
+
+
+def has_method(cls, method):
+    if (n := getattr(cls, method, None)) and callable(n):
+        return True
+    else:
+        return False
 
 
 def parse_references():
@@ -74,6 +86,60 @@ def test_dump_indent_filled_adjustments():
                f"{16*sp}End()])"
     string = dump(parse_references_with_adjustments(), indent=8)
     assert string == expected
+
+
+@pytest_parametrize("node_cls,attr", [
+    (motion_nodes.Continue, "length"),
+    (motion_nodes.HideImage, "index"),
+    (motion_nodes.MotionTree, "body"),
+    (motion_nodes.ShowImage, "index")
+])
+def test_nodes_has_attributes(node_cls, attr):
+    assert hasattr(node_cls, attr)
+
+
+@pytest_parametrize("node_cls,method", [
+    (motion_nodes.HideImage, "__eq__"),
+    (motion_nodes.HideImage, "__ge__"),
+    (motion_nodes.HideImage, "__gt__"),
+    (motion_nodes.HideImage, "__le__"),
+    (motion_nodes.HideImage, "__lt__"),
+    (motion_nodes.HideImage, "__ne__"),
+    (motion_nodes.MotionTree, "convert_to_string"),
+    (motion_nodes.ShowImage, "__eq__"),
+    (motion_nodes.ShowImage, "__ge__"),
+    (motion_nodes.ShowImage, "__gt__"),
+    (motion_nodes.ShowImage, "__le__"),
+    (motion_nodes.ShowImage, "__lt__"),
+    (motion_nodes.ShowImage, "__ne__"),
+])
+def test_nodes_has_methods_additional(node_cls, method):
+    # This test function accounts for motion_node classes that are not
+    # accounted for regarding the matrix strategy in
+    # `test_nodes_has_methods_required`.
+    assert has_method(node_cls, method)
+
+
+@pytest_parametrize("node_cls", [
+    motion_nodes.Continue, motion_nodes.End, motion_nodes.HideImage, motion_nodes.MotionTree, motion_nodes.ShowImage,
+    motion_nodes.Start
+])
+@pytest_parametrize("method", ["__init__", "__repr__", "__setattr__", "__delattr__", "__getstate__", "__setstate__"])
+def test_nodes_has_methods_required(node_cls, method):
+    assert has_method(node_cls, method)
+
+
+@pytest_parametrize("node_cls,args", [
+    (motion_nodes.Continue, (0,)),
+    (motion_nodes.End, ()),
+    (motion_nodes.HideImage, (0,)),
+    (motion_nodes.MotionTree, ()),
+    (motion_nodes.ShowImage, (0,)),
+    (motion_nodes.Start, ())
+])
+def test_nodes_inheritance(node_cls, args):
+    node = node_cls(*args)
+    assert isinstance(node, motion_nodes.RootMotionTree)
 
 
 def test_parse_empty():
