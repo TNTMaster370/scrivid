@@ -1,15 +1,10 @@
 from scrivid import dump, HideAdjustment, image_reference, motion_nodes, parse, ShowAdjustment, walk
 
-from pytest import mark
+import pytest
 
-
-# Global variables for characters, for use for long string for testing the
-# 'dump' function.
-nl = "\n"
-sp = " "
 
 # Alternative name for module to reduce typing
-pytest_parametrize = mark.parametrize
+pytest_parametrize = pytest.mark.parametrize
 
 
 def create_references():
@@ -27,6 +22,10 @@ def has_method(cls, method):
         return False
 
 
+def parse_empty():
+    return parse([])
+
+
 def parse_references():
     return parse(create_references())
 
@@ -39,53 +38,25 @@ def parse_references_with_adjustments():
     return parse(references)
 
 
-def test_dump_empty():
-    expected = "MotionTree(body=[Start(), End()])"
-    string = dump(parse([]))
-    assert string == expected
-
-
-def test_dump_filled():
-    expected = "MotionTree(body=[Start(), End()])"
-    string = dump(parse_references())  # This set of references does not
-    # automatically fill out the motion tree, since there's no adjustments
-    # relating to it.
-    assert string == expected
-
-
-def test_dump_filled_adjustments():
-    expected = "MotionTree(body=[Start(), Continue(length=2), ShowImage(index=2), Continue(length=2), HideImage(index" \
-               "=4), ShowImage(index=4), Continue(length=2), ShowImage(index=6), Continue(length=2), HideImage(index=" \
-               "8), Continue(length=4), HideImage(index=12), End()])"
-    string = dump(parse_references_with_adjustments())
-    assert string == expected
-
-
-def test_dump_indent_empty():
-    expected = f"MotionTree({nl}{4*sp}body=[{nl}{8*sp}Start(), {nl}{8*sp}End()])"
-    string = dump(parse([]), indent=4)
-    assert string == expected
-
-    expected = f"MotionTree({nl}{8*sp}body=[{nl}{16*sp}Start(), {nl}{16*sp}End()])"
-    string = dump(parse([]), indent=8)
-    assert string == expected
-
-
-def test_dump_indent_filled_adjustments():
-    expected = f"MotionTree({nl}{4*sp}body=[{nl}{8*sp}Start(), {nl}{8*sp}Continue(length=2), {nl}{8*sp}ShowImage(inde" \
-               f"x=2), {nl}{8*sp}Continue(length=2), {nl}{8*sp}HideImage(index=4), {nl}{8*sp}ShowImage(index=4), {nl}" \
-               f"{8*sp}Continue(length=2), {nl}{8*sp}ShowImage(index=6), {nl}{8*sp}Continue(length=2), {nl}{8*sp}Hide" \
-               f"Image(index=8), {nl}{8*sp}Continue(length=4), {nl}{8*sp}HideImage(index=12), {nl}{8*sp}End()])"
-    string = dump(parse_references_with_adjustments(), indent=4)
-    assert string == expected
-
-    expected = f"MotionTree({nl}{8*sp}body=[{nl}{16*sp}Start(), {nl}{16*sp}Continue(length=2), {nl}{16*sp}ShowImage(i" \
-               f"ndex=2), {nl}{16*sp}Continue(length=2), {nl}{16*sp}HideImage(index=4), {nl}{16*sp}ShowImage(index=4)" \
-               f", {nl}{16*sp}Continue(length=2), {nl}{16*sp}ShowImage(index=6), {nl}{16*sp}Continue(length=2), {nl}" \
-               f"{16*sp}HideImage(index=8), {nl}{16*sp}Continue(length=4), {nl}{16*sp}HideImage(index=12), {nl}" \
-               f"{16*sp}End()])"
-    string = dump(parse_references_with_adjustments(), indent=8)
-    assert string == expected
+@pytest_parametrize("indent", [0, 2, 4, 8])
+@pytest_parametrize("reference_callable,expected_string_raw", [
+    (parse_empty, "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}End()])"),
+    (parse_references, "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}End()])"),
+    (parse_references_with_adjustments,
+     "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}ShowImage(in"
+     "dex=2), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}HideImage(index=4), {\\n}{\\i}{\\i}ShowImage(index=4), "
+     "{\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}ShowImage(index=6), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\"
+     "i}{\\i}HideImage(index=8), {\\n}{\\i}{\\i}Continue(length=4), {\\n}{\\i}{\\i}HideImage(index=12), {\\n}{\\i}{\\i}"
+     "End()])")
+])
+def test_dump(indent, reference_callable, expected_string_raw):
+    expected = (
+        expected_string_raw
+        .replace("{\\i}", " " * indent)
+        .replace("{\\n}", "\n" if indent else "")
+    )
+    actual = dump(reference_callable(), indent=indent)
+    assert actual == expected
 
 
 @pytest_parametrize("node_cls,attr", [
@@ -142,36 +113,21 @@ def test_nodes_inheritance(node_cls, args):
     assert isinstance(node, motion_nodes.RootMotionTree)
 
 
-def test_parse_empty():
-    _ = parse([])  # Should raise no exception.
+@pytest_parametrize("parsing_callable", [parse_empty, parse_references, parse_references_with_adjustments])
+def test_parse(parsing_callable):
+    parsing_callable()  # This should not raise an exception.
 
 
-def test_parse_filled():
-    _ = parse_references()  # Should raise no exception.
-
-
-# `test_parse_filled_adjustments` would be the exact same to `test_parse_filled`, so it is excluded.
-
-
-def test_walk_empty():
-    expected_node_order = [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.End]
-    motion_tree = parse_references()
-    for actual, expected_node in zip(walk(motion_tree), expected_node_order):
-        actual_node = type(actual)
-        assert actual_node is expected_node
-
-
-# `test_walk_filled` would be the exact same to `test_walk_empty`, so it is excluded.
-
-
-def test_walk_filled_adjustments():
-    expected_node_order = [
-        motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.Continue, motion_nodes.ShowImage,
-        motion_nodes.Continue, motion_nodes.HideImage, motion_nodes.ShowImage, motion_nodes.Continue,
-        motion_nodes.ShowImage, motion_nodes.Continue, motion_nodes.HideImage, motion_nodes.Continue,
-        motion_nodes.HideImage, motion_nodes.End
-    ]
-    motion_tree = parse_references_with_adjustments()
+@pytest_parametrize("parsing_callable,expected_node_order", [
+    (parse_empty, [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.End]),
+    (parse_references, [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.End]),
+    (parse_references_with_adjustments,
+     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.Continue, motion_nodes.ShowImage, motion_nodes.Continue,
+      motion_nodes.HideImage, motion_nodes.ShowImage, motion_nodes.Continue, motion_nodes.ShowImage,
+      motion_nodes.Continue, motion_nodes.HideImage, motion_nodes.Continue, motion_nodes.HideImage, motion_nodes.End])
+])
+def test_walk(parsing_callable, expected_node_order):
+    motion_tree = parsing_callable()
     for actual, expected_node in zip(walk(motion_tree), expected_node_order):
         actual_node = type(actual)
         assert actual_node is expected_node
