@@ -43,11 +43,11 @@ def parse_references_with_adjustments():
     (parse_empty, "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}End()])"),
     (parse_references, "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}End()])"),
     (parse_references_with_adjustments,
-     "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}ShowImage(in"
-     "dex=2), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}HideImage(index=4), {\\n}{\\i}{\\i}ShowImage(index=4), "
-     "{\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}ShowImage(index=6), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\"
-     "i}{\\i}HideImage(index=8), {\\n}{\\i}{\\i}Continue(length=4), {\\n}{\\i}{\\i}HideImage(index=12), {\\n}{\\i}{\\i}"
-     "End()])")
+     "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}ShowImage(id"
+     "=1, time=2), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}HideImage(id=1, time=4), {\\n}{\\i}{\\i}ShowImage("
+     "id=2, time=4), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}ShowImage(id=3, time=6), {\\n}{\\i}{\\i}Continue"
+     "(length=2), {\\n}{\\i}{\\i}HideImage(id=2, time=8), {\\n}{\\i}{\\i}Continue(length=4), {\\n}{\\i}{\\i}HideImage(i"
+     "d=3, time=12), {\\n}{\\i}{\\i}End()])")
 ])
 def test_dump(indent, reference_callable, expected_string_raw):
     expected = (
@@ -61,9 +61,11 @@ def test_dump(indent, reference_callable, expected_string_raw):
 
 @pytest_parametrize("node_cls,attr", [
     (motion_nodes.Continue, "length"),
-    (motion_nodes.HideImage, "index"),
+    (motion_nodes.HideImage, "id"),
+    (motion_nodes.HideImage, "time"),
     (motion_nodes.MotionTree, "body"),
-    (motion_nodes.ShowImage, "index")
+    (motion_nodes.ShowImage, "id"),
+    (motion_nodes.ShowImage, "time")
 ])
 def test_nodes_has_attributes(node_cls, attr):
     assert hasattr(node_cls, attr)
@@ -103,9 +105,9 @@ def test_nodes_has_methods_required(node_cls, method):
 @pytest_parametrize("node_cls,args", [
     (motion_nodes.Continue, (0,)),
     (motion_nodes.End, ()),
-    (motion_nodes.HideImage, (0,)),
+    (motion_nodes.HideImage, (0, 0)),
     (motion_nodes.MotionTree, ()),
-    (motion_nodes.ShowImage, (0,)),
+    (motion_nodes.ShowImage, (0, 0)),
     (motion_nodes.Start, ())
 ])
 def test_nodes_inheritance(node_cls, args):

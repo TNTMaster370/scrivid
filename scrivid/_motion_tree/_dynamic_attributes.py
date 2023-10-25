@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .. import errors
 
+from collections.abc import Hashable
 import enum
 
 from attrs import define, field
@@ -9,14 +10,18 @@ from attrs import define, field
 
 class Attribute(enum.Enum):
     BODY = enum.auto()
+    ID = enum.auto()
     INDEX = enum.auto()
     LENGTH = enum.auto()
+    TIME = enum.auto()
 
 
 _attributes = {
     Attribute.BODY: ("body", list, field(factory=list, init=False)),
+    Attribute.ID: ("id", Hashable, field()),
     Attribute.INDEX: ("index", int, field()),
-    Attribute.LENGTH: ("length", int, field())
+    Attribute.LENGTH: ("length", int, field()),
+    Attribute.TIME: ("time", int, field())
 }
 
 

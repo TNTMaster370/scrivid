@@ -27,16 +27,16 @@ def dump(motion_tree: MotionTree, *, indent: int = 0) -> str:
         return repr(motion_tree)
 
 
-def _create_command_node(adjustment: RootAdjustment) -> Union[HideImage, ShowImage, None]:
+def _create_command_node(reference_id, adjustment: RootAdjustment) -> Union[HideImage, ShowImage, None]:
     # INITIALIZE
     adjustment_type = type(adjustment)
     adjustment_time = adjustment.activation_time
 
     # OPERATION/TEARDOWN
     if adjustment_type == HideAdjustment:
-        return HideImage(adjustment_time)
+        return HideImage(reference_id, adjustment_time)
     elif adjustment_type == ShowAdjustment:
-        return ShowImage(adjustment_time)
+        return ShowImage(reference_id, adjustment_time)
     else:
         return None
 
@@ -49,7 +49,7 @@ def _create_command_node_list(references: Sequence[REFERENCES]) -> SortedList[Hi
     for reference in references:
         adjustments = reference.adjustments
         for adjustment in adjustments:
-            command_node = _create_command_node(adjustment)
+            command_node = _create_command_node(reference.id, adjustment)
             if command_node is None:
                 raise TypeError
             command_node_list.add(command_node)
@@ -69,8 +69,8 @@ def _fill_motion_tree(motion_tree: MotionTree, command_node_list: SortedList[Hid
         if current_node is UNFILLED:
             current_node = command_node_list.pop(0)
 
-        if current_node.index > index:
-            difference = current_node.index - index
+        if current_node.time > index:
+            difference = current_node.time - index
             motion_tree.body.append(Continue(difference))
             index += difference
             continue

@@ -5,11 +5,11 @@ from ._dynamic_attributes import Attribute, dynamic_attributes
 import operator
 
 
-def _compare_index(op: operator):
+def _compare_attribute_time(op: operator):
     def function(a, b):
-        if not hasattr(b, "index"):
+        if not hasattr(b, "time"):
             return NotImplemented
-        return op(a.index, b.index)
+        return op(a.time, b.time)
 
     return function
 
@@ -30,15 +30,15 @@ class End(RootMotionTree):
 
 @dynamic_attributes
 class HideImage(RootMotionTree):
-    _attributes_ = (Attribute.INDEX,)
+    _attributes_ = (Attribute.ID, Attribute.TIME)
 
     # For compatibility with sortedcontainers.SortedList.
-    __eq__ = _compare_index(operator.eq)
-    __ge__ = _compare_index(operator.ge)
-    __gt__ = _compare_index(operator.gt)
-    __le__ = _compare_index(operator.le)
-    __lt__ = _compare_index(operator.lt)
-    __ne__ = _compare_index(operator.ne)
+    __eq__ = _compare_attribute_time(operator.eq)
+    __ge__ = _compare_attribute_time(operator.ge)
+    __gt__ = _compare_attribute_time(operator.gt)
+    __le__ = _compare_attribute_time(operator.le)
+    __lt__ = _compare_attribute_time(operator.lt)
+    __ne__ = _compare_attribute_time(operator.ne)
 
 
 @dynamic_attributes
@@ -67,15 +67,15 @@ class MotionTree(RootMotionTree):
 
 @dynamic_attributes
 class ShowImage(RootMotionTree):
-    _attributes_ = (Attribute.INDEX,)
+    _attributes_ = (Attribute.ID, Attribute.TIME)
 
     # For compatibility with sortedcontainers.SortedList.
-    __eq__ = _compare_index(operator.eq)
-    __ge__ = _compare_index(operator.ge)
-    __gt__ = _compare_index(operator.gt)
-    __le__ = _compare_index(operator.le)
-    __lt__ = _compare_index(operator.lt)
-    __ne__ = _compare_index(operator.ne)
+    __eq__ = _compare_attribute_time(operator.eq)
+    __ge__ = _compare_attribute_time(operator.ge)
+    __gt__ = _compare_attribute_time(operator.gt)
+    __le__ = _compare_attribute_time(operator.le)
+    __lt__ = _compare_attribute_time(operator.lt)
+    __ne__ = _compare_attribute_time(operator.ne)
 
 
 @dynamic_attributes
