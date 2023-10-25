@@ -9,8 +9,8 @@ import pytest
 class AdjustmentSubstitute(RootAdjustment):
     __slots__ = ("state",)
 
-    def __init__(self, activation_time: int):
-        super().__init__(activation_time)
+    def __init__(self, ID, activation_time: int):
+        super().__init__(ID, activation_time)
         self.state = []
 
     def utilize(self, reference):
@@ -54,8 +54,8 @@ class PropertiesSubstitute(Properties):
 
 
 def test_image_adjustments():
-    adj1 = AdjustmentSubstitute(10)
-    adj2 = AdjustmentSubstitute(20)
+    adj1 = AdjustmentSubstitute(0, 10)
+    adj2 = AdjustmentSubstitute(0, 20)
 
     img_ref = image_reference(0, "")
     img_ref.add_adjustment(adj1)
@@ -65,9 +65,9 @@ def test_image_adjustments():
 
 
 def test_image_adjustments_shift_operator():
-    adj1 = AdjustmentSubstitute(1)
-    adj2 = AdjustmentSubstitute(2)
-    adj3 = AdjustmentSubstitute(3)
+    adj1 = AdjustmentSubstitute(0, 1)
+    adj2 = AdjustmentSubstitute(0, 2)
+    adj3 = AdjustmentSubstitute(0, 3)
 
     img_ref = image_reference(0, "")
 
@@ -85,9 +85,9 @@ def test_image_adjustments_shift_operator():
 
 
 def test_image_adjustments_sorting():
-    adj_10 = AdjustmentSubstitute(10)
-    adj_20 = AdjustmentSubstitute(20)
-    adj_30 = AdjustmentSubstitute(30)
+    adj_10 = AdjustmentSubstitute(0, 10)
+    adj_20 = AdjustmentSubstitute(0, 20)
+    adj_30 = AdjustmentSubstitute(0, 30)
 
     img_ref = image_reference(0, "some/file")
     img_ref.add_adjustment(adj_30)

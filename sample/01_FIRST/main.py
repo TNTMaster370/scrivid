@@ -32,8 +32,8 @@ def create_image_references(image_directory):
         )
 
         show, hide = VisibilityIndex.access(index)
-        scrivid.ShowAdjustment(show) >> objects[-1]
-        scrivid.HideAdjustment(hide) >> objects[-1]
+        scrivid.ShowAdjustment(index, show) >> objects[-1]
+        scrivid.HideAdjustment(index, hide) >> objects[-1]
 
     return objects
 
@@ -47,7 +47,9 @@ def generate(save_location):
     )
 
     image_references = create_image_references(metadata.save_location / "images")
-    scrivid.compile_video(image_references, metadata)
+    # scrivid.compile_video(image_references, metadata)
+    mt = scrivid.parse(image_references)
+    print(scrivid.dump(mt, indent=4))
 
 
 def main():

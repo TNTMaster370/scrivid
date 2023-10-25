@@ -4,18 +4,24 @@ from . import images
 from .. import errors
 from ._operations import comparison_function, return_not_implemented, should_raise_operator_error
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Hashable
+
 
 class RootAdjustment:
-    __slots__ = ("_activation_time",)
+    __slots__ = ("_activation_time", "_ID")
 
-    def __init__(self, activation_time: int):
+    def __init__(self, ID: Hashable, activation_time: int):
         self._activation_time = activation_time
+        self._ID = ID
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(activation_time={self._activation_time!r})"
+        return f"{self.__class__.__name__}(id={self._ID!r}, activation_time={self._activation_time!r})"
 
     def __hash__(self):
-        return hash(self._activation_time)
+        return hash((self._ID, self._activation_time))
 
     """ self << other """
     __lshift__ = return_not_implemented()  # This function does not handle the
