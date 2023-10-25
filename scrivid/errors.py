@@ -15,6 +15,10 @@ class UndefinedAttributesError(AttributeError):
     ...
 
 
+class DuplicateIDError(ScrividException):
+    ...
+
+
 class OperatorError(ScrividException):
     ...
 

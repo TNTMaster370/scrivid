@@ -57,7 +57,7 @@ def test_image_adjustments():
     adj1 = AdjustmentSubstitute(10)
     adj2 = AdjustmentSubstitute(20)
 
-    img_ref = image_reference("")
+    img_ref = image_reference(0, "")
     img_ref.add_adjustment(adj1)
     img_ref.add_adjustment(adj2)
 
@@ -69,7 +69,7 @@ def test_image_adjustments_shift_operator():
     adj2 = AdjustmentSubstitute(2)
     adj3 = AdjustmentSubstitute(3)
 
-    img_ref = image_reference("")
+    img_ref = image_reference(0, "")
 
     adj1 >> img_ref  # Should raise no error.
     assert img_ref.adjustments == {adj1}
@@ -89,7 +89,7 @@ def test_image_adjustments_sorting():
     adj_20 = AdjustmentSubstitute(20)
     adj_30 = AdjustmentSubstitute(30)
 
-    img_ref = image_reference("some/file")
+    img_ref = image_reference(0, "some/file")
     img_ref.add_adjustment(adj_30)
     img_ref.add_adjustment(adj_20)
     img_ref.add_adjustment(adj_10)
@@ -99,9 +99,9 @@ def test_image_adjustments_sorting():
 
 
 def test_image_copy():
-    img_ref = ImageReference(FileSubstitute(""))
-    copy_img_ref = img_ref.copy()
-    deepcopy_img_ref = img_ref.deepcopy()
+    img_ref = ImageReference(0, FileSubstitute(""))
+    copy_img_ref = img_ref.copy(1)
+    deepcopy_img_ref = img_ref.deepcopy(2)
 
     # The point of these tests is to ensure that the .copy() and .deepcopy()
     # functions are actually making copies of what they need to.
@@ -112,7 +112,7 @@ def test_image_copy():
 
 def test_image_file_management():
     file_handler = FileSubstitute("some/file")
-    img_ref = ImageReference(file_handler)
+    img_ref = ImageReference(0, file_handler)
 
     img_ref.open()
     img_ref.close()
@@ -122,7 +122,7 @@ def test_image_file_management():
 
 def test_image_file_management_weakref():
     file_handler = FileSubstitute("some/file")
-    img_ref = ImageReference(file_handler)
+    img_ref = ImageReference(0, file_handler)
 
     img_ref.open()
     del img_ref  # The method to close should be called when `i`s
@@ -133,18 +133,18 @@ def test_image_file_management_weakref():
 
 def test_image_function_multi_declare_properties():
     with pytest.raises(errors.AttributeError):
-        image_reference("", Properties(0, 0, 0, 0), x=1, y=1)
+        image_reference(0, "", Properties(0, 0, 0, 0), x=1, y=1)
 
 
 def test_image_open_no_errors():
     image_directory = get_current_directory() / "tests/images/img1.png"
-    img_ref = image_reference(image_directory)
+    img_ref = image_reference(0, image_directory)
     img_ref.open()  # This call to .open() should not raise any exceptions.
 
 
 def test_image_open_property():
     image_directory = get_current_directory() / "tests/images/img1.png"
-    img_ref = image_reference(image_directory)
+    img_ref = image_reference(0, image_directory)
 
     assert img_ref.is_opened is False
 
@@ -158,5 +158,5 @@ def test_image_open_property():
 
 def test_image_property_attributes():
     properties = PropertiesSubstitute(1, 2, 3, 4)
-    image_reference("", properties)
+    image_reference(0, "", properties)
     assert properties.state == ["INIT", ("layer", 1), ("scale", 2), ("x", 3), ("y", 4), "POST-INIT"]

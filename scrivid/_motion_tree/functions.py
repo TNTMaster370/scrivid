@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .nodes import Continue, End, HideImage, MotionTree, ShowImage, Start
 from .._file_objects.adjustments import HideAdjustment, ShowAdjustment
+from .._id_check import check_reference_id
 from .._utils import sentinel
 
 from typing import TYPE_CHECKING
@@ -82,6 +83,9 @@ def _fill_motion_tree(motion_tree: MotionTree, command_node_list: SortedList[Hid
 
 
 def parse(references: Sequence[REFERENCES]) -> MotionTree:
+    # GATEKEEP
+    check_reference_id(references)
+
     # INITIALIZE
     motion_tree = MotionTree()
     motion_tree.body.append(Start())

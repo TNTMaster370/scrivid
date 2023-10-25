@@ -22,6 +22,7 @@ def create_image_references(image_directory):
     for index in range(6):
         objects.append(
             scrivid.image_reference(
+                index,
                 image_directory / f"img{index+1}.png",
                 layer=index+1,
                 scale=1,

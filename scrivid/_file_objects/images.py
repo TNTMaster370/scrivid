@@ -18,6 +18,7 @@ from sortedcontainers import SortedSet
 if TYPE_CHECKING:
     from .adjustments import RootAdjustment
 
+    from collections.abc import Hashable
     from typing import Optional, Tuple, Union
 
 
@@ -79,24 +80,29 @@ class ImageFileReference:
 
 
 class ImageReference:
-    __slots__ = ("_adjustments", "_file", "_finalizer", "_properties", "__weakref__")
+    __slots__ = ("_adjustments", "_file", "_finalizer", "_ID", "_properties", "__weakref__")
 
     _adjustments: SortedSet[RootAdjustment]
     _file: FileAccess
     _finalizer: weakref.finalize
+    _ID: Hashable
     _properties: Properties
 
-    def __init__(self, file: FileAccess, properties: Properties = _NS, /):
+    def __init__(self, ID: Hashable, file: FileAccess, properties: Properties = _NS, /):
         self._adjustments = SortedSet()
         self._file = file
         self._finalizer = weakref.finalize(self, call_close, self._file)
+        self._ID = ID
         self._properties = properties
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}(adjustments={self._adjustments!r}, file={self._file!r}, "
+            f"{self.__class__.__name__}(adjustments={self._adjustments!r}, file={self._file!r}, id={self._ID!r}, "
             f"properties={self._properties!r})"
         )
+
+    def __hash__(self):
+        return hash(self._ID)
 
     def __lshift__(self, other):
         """ self << other """
@@ -124,6 +130,16 @@ class ImageReference:
     def adjustments(self):
         return self._adjustments
 
+    # I'm allowing both lowercase and uppercase 'ID' access, since I'm
+    # primarily using the uppercase equivalent to prevent name shadowing.
+    @property
+    def id(self):
+        return self._ID
+
+    @property
+    def ID(self):
+        return self._ID
+
     @property
     def is_opened(self):
         return self._file.is_opened
@@ -144,13 +160,17 @@ class ImageReference:
     def y(self):
         return self._properties.y
 
-    def copy(self):
-        return copy(self)
+    def copy(self, new_ID: Hashable):
+        c = copy(self)
+        c._ID = new_ID
+        return c
 
-    def deepcopy(self, memo: Optional[dict] = None):
+    def deepcopy(self, new_ID: Hashable, memo: Optional[dict] = None):
         if memo is None:
             memo = {}
-        return deepcopy(self, memo)
+        dc = deepcopy(self, memo)
+        dc._ID = new_ID
+        return dc
 
     def add_adjustment(self, new_adjustment: RootAdjustment):
         self._adjustments.add(new_adjustment)
@@ -179,6 +199,7 @@ class ImageReference:
 
 
 def image_reference(
+        ID: Hashable,
         file: Union[str, Path, FileAccess],
         properties: Union[Properties, _NS] = _NS,
         /, *,
@@ -200,4 +221,4 @@ def image_reference(
             if attr is not _NS:
                 raise errors.AttributeError(f"Attribute \'{name}\' should not be specified if \'properties\' is.")
 
-    return ImageReference(file, properties)
+    return ImageReference(ID, file, properties)

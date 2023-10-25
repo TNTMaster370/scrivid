@@ -1,4 +1,4 @@
-from scrivid import dump, HideAdjustment, image_reference, motion_nodes, parse, ShowAdjustment, walk
+from scrivid import dump, errors, HideAdjustment, image_reference, motion_nodes, parse, ShowAdjustment, walk
 
 import pytest
 
@@ -9,9 +9,9 @@ pytest_parametrize = pytest.mark.parametrize
 
 def create_references():
     return [
-        image_reference("1"),
-        image_reference("2"),
-        image_reference("3")
+        image_reference(1, "1"),
+        image_reference(2, "2"),
+        image_reference(3, "3")
     ]
 
 
@@ -116,6 +116,15 @@ def test_nodes_inheritance(node_cls, args):
 @pytest_parametrize("parsing_callable", [parse_empty, parse_references, parse_references_with_adjustments])
 def test_parse(parsing_callable):
     parsing_callable()  # This should not raise an exception.
+
+
+def test_parse_duplicate_id():
+    references = (
+        image_reference(0, ""),
+        image_reference(0, "")
+    )  # These two reference objects have the same ID field.
+    with pytest.raises(errors.DuplicateIDError):
+        parse(references)
 
 
 @pytest_parametrize("parsing_callable,expected_node_order", [
