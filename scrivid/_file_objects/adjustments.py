@@ -49,6 +49,14 @@ class RootAdjustment:
     def activation_time(self):
         return self._activation_time
 
+    @property
+    def id(self):
+        return self._ID
+
+    @property
+    def ID(self):
+        return self._ID
+
 
 """ self == other """
 RootAdjustment.__eq__ = comparison_function("_activation_time", "==", RootAdjustment)
