@@ -16,7 +16,7 @@ def comparison_function(attribute: str, relates: str, root: type = object):
     def function(a, b):
         if not isinstance(b, root):
             raise TypeError(f"Expected type {a.__class__.__name__}, got type {b.__class__.__name__}")
-        ops[relates](getattr(a, attribute), getattr(b, attribute))
+        return ops[relates](getattr(a, attribute), getattr(b, attribute))
 
     return function
 
