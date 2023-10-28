@@ -176,12 +176,15 @@ class ImageReference:
         self._adjustments.add(new_adjustment)
 
     def get_image_height(self):
+        self._file: ImageFileReference
         return self._file.get_image_height()
 
     def get_image_width(self):
+        self._file: ImageFileReference
         return self._file.get_image_width()
 
     def get_pixel_value(self, coordinates: Tuple[int, int]):
+        self._file: ImageFileReference
         return self._file.get_pixel_value(coordinates)
 
     def open(self):
