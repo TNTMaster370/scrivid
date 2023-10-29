@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from . import images
 from .. import errors
-from ._operations import comparison_function, return_not_implemented, should_raise_operator_error
+from ._operations import comparison_function
 
 from typing import TYPE_CHECKING
 
@@ -22,28 +22,6 @@ class RootAdjustment:
 
     def __hash__(self):
         return hash((self._ID, self._activation_time))
-
-    """ self << other """
-    __lshift__ = return_not_implemented()  # This function does not handle the
-    # error that should be raised for incorrect syntax, because doing so in the
-    # forward function would be too eager. If someone inherits from
-    # ImageReference and wants this syntax to work, we should give it a chance
-    # to invoke the reverse method.
-
-    def __rlshift__(self, other):
-        """ other << self """
-        if not isinstance(other, images.ImageReference):
-            raise errors.TypeError(f"Expected types ImageReference, got type {other.__name__}")
-        other.add_adjustment(self)
-
-    def __rshift__(self, other):
-        """ self >> other """
-        if not isinstance(other, images.ImageReference):
-            raise errors.TypeError(f"Expected types ImageReference, got type {other.__name__}")
-        other.add_adjustment(self)
-
-    """ other >> self """
-    __rrshift__ = should_raise_operator_error(correct=">>", reverse="<<")
 
     @property
     def activation_time(self):

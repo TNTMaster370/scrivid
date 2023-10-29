@@ -64,25 +64,6 @@ def test_image_adjustments():
     assert img_ref.adjustments == {adj1, adj2}
 
 
-def test_image_adjustments_shift_operator():
-    adj1 = AdjustmentSubstitute(0, 1)
-    adj2 = AdjustmentSubstitute(0, 2)
-    adj3 = AdjustmentSubstitute(0, 3)
-
-    img_ref = image_reference(0, "")
-
-    adj1 >> img_ref  # Should raise no error.
-    assert img_ref.adjustments == {adj1}
-
-    img_ref << adj2  # Should raise no error.
-    assert img_ref.adjustments == {adj1, adj2}
-
-    with pytest.raises(errors.OperatorError):
-        adj3 << img_ref
-
-    with pytest.raises(errors.OperatorError):
-        img_ref >> adj3
-
 
 def test_image_adjustments_sorting():
     adj_10 = AdjustmentSubstitute(0, 10)
