@@ -64,7 +64,6 @@ def test_image_adjustments():
     assert img_ref.adjustments == {adj1, adj2}
 
 
-
 def test_image_adjustments_sorting():
     adj_10 = AdjustmentSubstitute(0, 10)
     adj_20 = AdjustmentSubstitute(0, 20)

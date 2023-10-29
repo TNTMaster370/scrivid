@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from . import adjustments
 from .. import errors
 from .._utils.sentinel_objects import sentinel
 from .files import call_close, FileAccess

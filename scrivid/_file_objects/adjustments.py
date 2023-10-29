@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from . import images
-from .. import errors
 from ._operations import comparison_function
 
 from typing import TYPE_CHECKING
