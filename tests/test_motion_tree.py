@@ -33,8 +33,8 @@ def parse_references():
 def parse_references_with_adjustments():
     references = create_references()
     for index, reference in enumerate(references):
-        ShowAdjustment(index+1, 2 * (index+1)) >> reference
-        HideAdjustment(index+1, 4 * (index+1)) >> reference
+        reference.add_adjustment(ShowAdjustment(index+1, 2 * (index+1)))
+        reference.add_adjustment(HideAdjustment(index+1, 4 * (index+1)))
     return parse(references)
 
 
