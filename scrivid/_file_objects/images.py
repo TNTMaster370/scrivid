@@ -3,7 +3,7 @@ from __future__ import annotations
 from .. import errors
 from .._utils.sentinel_objects import sentinel
 from .files import call_close, FileAccess
-from .properties import Properties
+from .properties import EXCLUDED, Properties
 
 from copy import copy, deepcopy
 from pathlib import Path
@@ -86,7 +86,7 @@ class ImageReference:
     _ID: Hashable
     _properties: Properties
 
-    def __init__(self, ID: Hashable, file: FileAccess, properties: Properties = _NS, /):
+    def __init__(self, ID: Hashable, file: FileAccess, properties: Properties, /):
         self._adjustments = SortedSet()
         self._file = file
         self._finalizer = weakref.finalize(self, call_close, self._file)
@@ -182,10 +182,10 @@ def image_reference(
         file: Union[str, Path, FileAccess],
         properties: Union[Properties, _NS] = _NS,
         /, *,
-        layer: Union[int, _NS] = _NS,
-        scale: Union[int, _NS] = _NS,
-        x: Union[int, _NS] = _NS,
-        y: Union[int, _NS] = _NS
+        layer: Union[int, EXCLUDED] = EXCLUDED,
+        scale: Union[int, EXCLUDED] = EXCLUDED,
+        x: Union[int, EXCLUDED] = EXCLUDED,
+        y: Union[int, EXCLUDED] = EXCLUDED
 ) -> ImageReference:
     # ...
     if isinstance(file, str):
@@ -194,10 +194,10 @@ def image_reference(
         file = ImageFileReference(file)
 
     if properties is _NS:
-        properties = Properties(layer, scale, x, y)
+        properties = Properties(layer=layer, scale=scale, x=x, y=y)
     else:
         for name, attr in (("layer", layer), ("scale", scale), ("x", x), ("y", y)):
-            if attr is not _NS:
+            if attr is not EXCLUDED:
                 raise errors.AttributeError(f"Attribute \'{name}\' should not be specified if \'properties\' is.")
 
     return ImageReference(ID, file, properties)
