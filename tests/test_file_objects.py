@@ -1,3 +1,4 @@
+import scrivid.errors
 from scrivid import errors, image_reference, ImageReference, Properties, RootAdjustment
 
 from pathlib import Path
@@ -140,3 +141,78 @@ def test_image_property_attributes():
     properties = PropertiesSubstitute(1, 2, 3, 4)
     image_reference(0, "", properties)
     assert properties.state == ["INIT", ("layer", 1), ("scale", 2), ("x", 3), ("y", 4), "POST-INIT"]
+
+
+def test_property_function_return():
+    _ = scrivid.properties(layer=1, scale=1, x=1, y=1)  # should raise no error
+
+
+def test_property_merge():
+    a = Properties(layer=1)
+    b = Properties(scale=1)
+
+    c = a.merge(b)
+
+    assert c.layer == 1
+    assert c.scale == 1
+
+
+def test_property_merge_confliction():
+    a = Properties(x=1)
+    b = Properties(x=2, y=2)
+
+    with pytest.raises(scrivid.errors.AttributeError):
+        a.merge(b)
+
+    with pytest.raises(scrivid.errors.AttributeError):
+        b.merge(a)
+
+
+def test_property_merge_confliction_not_strict():
+    a = Properties(x=1)
+    b = Properties(x=2, y=2)
+
+    # Note: when the merge function has the strict flag disabled, it will use
+    # the properties from the 'self' caller are favoured in the merging.
+    c = a.merge(b, strict=False)
+    assert c.x == 1
+
+    d = b.merge(a, strict=False)
+    assert d.x == 2
+
+
+def test_property_merge_invalid_type():
+    a = Properties(scale=1)
+    b = ImageReference(10, FileSubstitute(""), PropertiesSubstitute())
+
+    with pytest.raises(scrivid.errors.TypeError):
+        a.merge(b)
+
+
+def test_property_merge_ampersand_operator():
+    a = Properties(layer=1)
+    b = Properties(scale=1)
+
+    c = a & b
+
+    assert c.layer == 1
+    assert c.scale == 1
+
+
+def test_property_merge_ampersand_operator_confliction():
+    a = Properties(x=1)
+    b = Properties(x=2, y=2)
+
+    with pytest.raises(scrivid.errors.AttributeError):
+        a & b
+
+    with pytest.raises(scrivid.errors.AttributeError):
+        b & a
+
+
+def test_property_merge_ampersand_operator_invalid_type():
+    a = Properties(scale=1)
+    b = ImageReference(10, FileSubstitute(""), PropertiesSubstitute())
+
+    with pytest.raises(scrivid.errors.TypeError):
+        a & b
