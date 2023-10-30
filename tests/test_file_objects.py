@@ -41,10 +41,10 @@ def get_current_directory():
 class PropertiesSubstitute(Properties):
     __slots__ = ("state",)
 
-    def __init__(self, layer, scale, x, y):
+    def __init__(self, layer=None, scale=None, x=None, y=None):
         self.state: List[Any] = ["INIT"]
         # The type annotation is to prevent issues with type checkers.
-        super().__init__(layer, scale, x, y)
+        super().__init__(layer=layer, scale=scale, x=x, y=y)
         self.state.append("POST-INIT")
 
     def __setattr__(self, key, value):
@@ -79,7 +79,7 @@ def test_image_adjustments_sorting():
 
 
 def test_image_copy():
-    img_ref = ImageReference(0, FileSubstitute(""))
+    img_ref = ImageReference(0, FileSubstitute(""), PropertiesSubstitute())
     copy_img_ref = img_ref.copy(1)
     deepcopy_img_ref = img_ref.deepcopy(2)
 
@@ -92,7 +92,7 @@ def test_image_copy():
 
 def test_image_file_management():
     file_handler = FileSubstitute("some/file")
-    img_ref = ImageReference(0, file_handler)
+    img_ref = ImageReference(0, file_handler, PropertiesSubstitute())
 
     img_ref.open()
     img_ref.close()
@@ -102,7 +102,7 @@ def test_image_file_management():
 
 def test_image_file_management_weakref():
     file_handler = FileSubstitute("some/file")
-    img_ref = ImageReference(0, file_handler)
+    img_ref = ImageReference(0, file_handler, PropertiesSubstitute())
 
     img_ref.open()
     del img_ref  # The method to close should be called when `i`s
@@ -113,7 +113,7 @@ def test_image_file_management_weakref():
 
 def test_image_function_multi_declare_properties():
     with pytest.raises(errors.AttributeError):
-        image_reference(0, "", Properties(0, 0, 0, 0), x=1, y=1)
+        image_reference(0, "", Properties(layer=0, scale=0, x=0, y=0), x=1, y=1)
 
 
 def test_image_open_no_errors():
