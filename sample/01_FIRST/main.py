@@ -32,8 +32,8 @@ def create_image_references(image_directory):
         )
 
         show, hide = VisibilityIndex.access(index)
-        scrivid.ShowAdjustment(index, show) >> objects[-1]
-        scrivid.HideAdjustment(index, hide) >> objects[-1]
+        objects[-1].add_adjustment(scrivid.ShowAdjustment(index, show))
+        objects[-1].add_adjustment(scrivid.HideAdjustment(index, hide))
 
     return objects
 
