@@ -1,7 +1,7 @@
-import enum
+from enum import auto, Enum
 
 
-class VisibilityStatus:
-    HIDE = enum.auto()
-    SHOW = enum.auto()
-    UNKNOWN = enum.auto()
+class VisibilityStatus(Enum):
+    HIDE = auto()
+    SHOW = auto()
+    UNKNOWN = auto()
