@@ -26,6 +26,7 @@ def create_image_references(image_directory):
                 image_directory / f"img{index+1}.png",
                 layer=index+1,
                 scale=1,
+                visibility=scrivid.VisibilityStatus.HIDE,
                 x=0,
                 y=0
             )
@@ -47,13 +48,12 @@ def generate(save_location):
     )
 
     image_references = create_image_references(metadata.save_location / "images")
-    # scrivid.compile_video(image_references, metadata)
-    mt = scrivid.parse(image_references)
-    print(scrivid.dump(mt, indent=4))
+    scrivid.compile_video(image_references, metadata)
 
 
 def main():
-    generate(Path(".").absolute())
+    save_location = Path(__file__).absolute().parent
+    generate(save_location)
 
 
 if __name__ == "__main__":
