@@ -87,8 +87,8 @@ def properties(
         x: Union[int, EXCLUDED] = EXCLUDED,
         y: Union[int, EXCLUDED] = EXCLUDED
 ):
-    # Define default values for non-required variables. If it's intended to be 
-    # used specifically for merging, you may wish to instantiate it directly, 
+    # Define default values for non-required variables. If it's intended to be
+    # used specifically for merging, you may wish to instantiate it directly,
     # instead of using this factory function.
     if visibility is EXCLUDED:
         visibility = VisibilityStatus.SHOW

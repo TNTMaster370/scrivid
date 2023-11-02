@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from ._file_objects import VisibilityStatus
-from ._file_objects.adjustments import HideAdjustment, ShowAdjustment
 from ._file_objects.images import ImageReference
 from ._motion_tree import nodes, parse
 from ._utils import ticking
@@ -55,7 +54,7 @@ class _Frame:
         self._frame = _FrameCanvas(self._size)
 
         for obj in self._references_access:
-            # Doing just the latter expression is not enough to break the loop 
+            # Doing just the latter expression is not enough to break the loop
             # before the index would be out of range.
             while obj.adjustments and (adj := obj.adjustments[0]):
                 if adj.activation_time > self.index:
