@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 # is because I like to see *exactly* what code is being run. That said, I don't
 # *really* care about the implementation details for these Exception objects,
 # since these classes need simple value initializing (except for the message
-# attribute), and frozen attribute access. I import attrs since it has slots 
+# attribute), and frozen attribute access. I import attrs since it has slots
 # access, and I need something like it regarding the motion_tree nodes, but I
 # think it's safe to use here as well, since I only care about the attributes
 # and not anything like __repr__ or hidden variables.
