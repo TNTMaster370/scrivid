@@ -48,7 +48,12 @@ class Metadata:
         """
         if _NOT_SPECIFIED not in (fps, frame_rate) and fps != frame_rate:
             from . import errors
-            raise errors.AttributeError("Conflicting attributes: \'fps\' and \'frame_rate\'")
+            raise errors.ConflictingAttributesError(
+                first_name="fps",
+                first_value=fps,
+                second_name="frame_rate",
+                second_value=frame_rate
+            )
         elif is_specified(fps):
             self.frame_rate = fps
         elif is_specified(frame_rate):

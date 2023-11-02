@@ -65,7 +65,12 @@ class Properties:
             if (EXCLUDED in (a, b)) or (a == b):
                 continue
 
-            raise errors.AttributeError(f"Attribute confliction (\'{attr}\'): {a=}, {b=}")
+            raise errors.ConflictingAttributesError(
+                first_name=attr,
+                first_value=a,
+                second_name=attr,
+                second_value=b
+            )
 
     def merge(self, other: Properties, /, *, strict: bool = True):
         if strict:

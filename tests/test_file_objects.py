@@ -161,10 +161,10 @@ def test_property_merge_confliction():
     a = Properties(x=1)
     b = Properties(x=2, y=2)
 
-    with pytest.raises(scrivid.errors.AttributeError):
+    with pytest.raises(scrivid.errors.ConflictingAttributeError):
         a.merge(b)
 
-    with pytest.raises(scrivid.errors.AttributeError):
+    with pytest.raises(scrivid.errors.ConflictingAttributeError):
         b.merge(a)
 
 
@@ -203,10 +203,10 @@ def test_property_merge_ampersand_operator_confliction():
     a = Properties(x=1)
     b = Properties(x=2, y=2)
 
-    with pytest.raises(scrivid.errors.AttributeError):
+    with pytest.raises(scrivid.errors.ConflictingAttributeError):
         a & b
 
-    with pytest.raises(scrivid.errors.AttributeError):
+    with pytest.raises(scrivid.errors.ConflictingAttributeError):
         b & a
 
 
