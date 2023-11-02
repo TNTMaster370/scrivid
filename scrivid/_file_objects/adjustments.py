@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from ._operations import comparison_function
+from ._status import VisibilityStatus
+from .properties import Properties
 
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
 
 
-class RootAdjustment:
+class RootAdjustment(ABC):
     __slots__ = ("_activation_time", "_ID")
 
     def __init__(self, ID: Hashable, activation_time: int):
@@ -33,6 +36,10 @@ class RootAdjustment:
     def ID(self):
         return self._ID
 
+    @abstractmethod
+    def _enact(self) -> Properties:
+        ...
+
 
 """ self == other """
 RootAdjustment.__eq__ = comparison_function("_activation_time", "==", RootAdjustment)
@@ -54,8 +61,10 @@ RootAdjustment.__ne__ = comparison_function("_activation_time", "!=", RootAdjust
 
 
 class HideAdjustment(RootAdjustment):
-    ...
+    def _enact(self) -> Properties:
+        return Properties(visibility=VisibilityStatus.HIDE)
 
 
 class ShowAdjustment(RootAdjustment):
-    ...
+    def _enact(self) -> Properties:
+        return Properties(visibility=VisibilityStatus.SHOW)
