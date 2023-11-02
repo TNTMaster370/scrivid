@@ -14,7 +14,7 @@ class AdjustmentSubstitute(RootAdjustment):
         super().__init__(ID, activation_time)
         self.state = []
 
-    def utilize(self, reference):
+    def _enact(self):
         self.state.append("utilize")
 
 
@@ -42,10 +42,10 @@ def get_current_directory():
 class PropertiesSubstitute(Properties):
     __slots__ = ("state",)
 
-    def __init__(self, layer=None, scale=None, x=None, y=None):
+    def __init__(self, layer=None, scale=None, visibility=None, x=None, y=None):
         self.state: List[Any] = ["INIT"]
         # The type annotation is to prevent issues with type checkers.
-        super().__init__(layer=layer, scale=scale, x=x, y=y)
+        super().__init__(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
         self.state.append("POST-INIT")
 
     def __setattr__(self, key, value):
@@ -138,9 +138,9 @@ def test_image_open_property():
 
 
 def test_image_property_attributes():
-    properties = PropertiesSubstitute(1, 2, 3, 4)
+    properties = PropertiesSubstitute(1, 2, 3, 4, 5)
     image_reference(0, "", properties)
-    assert properties.state == ["INIT", ("layer", 1), ("scale", 2), ("x", 3), ("y", 4), "POST-INIT"]
+    assert properties.state == ["INIT", ("layer", 1), ("scale", 2), ("visibility", 3), ("x", 4), ("y", 5), "POST-INIT"]
 
 
 def test_property_function_return():
