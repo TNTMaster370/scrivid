@@ -26,28 +26,6 @@ if TYPE_CHECKING:
     REFERENCES = ImageReference
 
 
-def _determine_visibility_status(adjustments, frame_index):
-    if not adjustments:
-        return VisibilityStatus.SHOW
-
-    status = VisibilityStatus.HIDE
-
-    for adj in adjustments:
-        if type(adj) not in (HideAdjustment, ShowAdjustment):
-            continue
-
-        time = adj.activation_time
-        if time > frame_index:
-            break
-
-        if status is not VisibilityStatus.HIDE and type(adj) is HideAdjustment:
-            status = VisibilityStatus.HIDE
-        elif status is not VisibilityStatus.SHOW and type(adj) is ShowAdjustment:
-            status = VisibilityStatus.SHOW
-
-    return status
-
-
 class _Frame:
     __slots__ = ("_frame", "_references_access", "_save_location", "_size", "index", "occurrences")
 
@@ -77,7 +55,17 @@ class _Frame:
         self._frame = _FrameCanvas(self._size)
 
         for obj in self._references_access:
-            if _determine_visibility_status(obj.adjustments, self.index) is VisibilityStatus.HIDE:
+            # Doing just the latter expression is not enough to break the loop 
+            # before the index would be out of range.
+            while obj.adjustments and (adj := obj.adjustments[0]):
+                if adj.activation_time > self.index:
+                    break
+
+                change = adj._enact().merge(obj._properties, strict=False)
+                obj._properties = change
+                _ = obj.adjustments.pop(0)
+
+            if obj.visibility is VisibilityStatus.HIDE:
                 continue
 
             if not obj.is_opened:
