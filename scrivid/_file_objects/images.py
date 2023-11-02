@@ -3,7 +3,7 @@ from __future__ import annotations
 from .. import errors
 from .._utils.sentinel_objects import sentinel
 from .files import call_close, FileAccess
-from .properties import EXCLUDED, Properties
+from .properties import EXCLUDED, properties as property_factory
 
 from copy import copy, deepcopy
 from pathlib import Path
@@ -14,7 +14,9 @@ from PIL import Image
 from sortedcontainers import SortedSet
 
 if TYPE_CHECKING:
+    from ._status import VisibilityStatus
     from .adjustments import RootAdjustment
+    from .properties import Properties
 
     from collections.abc import Hashable
     from typing import Optional, Tuple, Union
@@ -129,6 +131,10 @@ class ImageReference:
         return self._properties.scale
 
     @property
+    def visibility(self):
+        return self._properties.visibility
+
+    @property
     def x(self):
         return self._properties.x
 
@@ -184,6 +190,7 @@ def image_reference(
         /, *,
         layer: Union[int, EXCLUDED] = EXCLUDED,
         scale: Union[int, EXCLUDED] = EXCLUDED,
+        visibility: Union[VisibilityStatus, EXCLUDED] = EXCLUDED,
         x: Union[int, EXCLUDED] = EXCLUDED,
         y: Union[int, EXCLUDED] = EXCLUDED
 ) -> ImageReference:
@@ -194,9 +201,9 @@ def image_reference(
         file = ImageFileReference(file)
 
     if properties is _NS:
-        properties = Properties(layer=layer, scale=scale, x=x, y=y)
+        properties = property_factory(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
     else:
-        for name, attr in (("layer", layer), ("scale", scale), ("x", x), ("y", y)):
+        for name, attr in (("layer", layer), ("scale", scale), ("visibility", visibility), ("x", x), ("y", y)):
             if attr is not EXCLUDED:
                 raise errors.AttributeError(f"Attribute \'{name}\' should not be specified if \'properties\' is.")
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ._status import VisibilityStatus
 from .. import errors
 from .._utils.sentinel_objects import sentinel
 
@@ -13,22 +14,31 @@ EXCLUDED = sentinel("EXCLUDED")
 
 
 class Properties:
-    __slots__ = ("layer", "scale", "x", "y")
+    __slots__ = ("layer", "scale", "visibility", "x", "y")
 
     def __init__(
             self, *,
             layer: Union[int, EXCLUDED] = EXCLUDED,
             scale: Union[float, int, EXCLUDED] = EXCLUDED,
+            visibility: Union[VisibilityStatus, EXCLUDED] = EXCLUDED,
             x: Union[int, EXCLUDED] = EXCLUDED,
             y: Union[int, EXCLUDED] = EXCLUDED
     ):
         self.layer = layer
         self.scale = scale
+        self.visibility = visibility
         self.x = x
         self.y = y
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(layer={self.layer}, scale={self.scale}, x={self.x}, y={self.y})"
+        layer = self.layer
+        scale = self.scale
+        visibility = self.visibility
+        x = self.x
+        y = self.y
+        return (
+            f"{self.__class__.__name__}({layer=}, {scale=}, {visibility=}, {x=}, {y=})"
+        )
 
     def __and__(self, other):
         return self.merge(other)
@@ -63,6 +73,7 @@ class Properties:
         return self.__class__(
             layer=self.layer if self.layer is not EXCLUDED else other.layer,
             scale=self.scale if self.scale is not EXCLUDED else other.scale,
+            visibility=self.visibility if self.visibility is not EXCLUDED else other.visibility,
             x=self.x if self.x is not EXCLUDED else other.x,
             y=self.y if self.y is not EXCLUDED else other.y
         )
@@ -72,7 +83,13 @@ def properties(
         *,
         layer: Union[int, EXCLUDED] = EXCLUDED,
         scale: Union[float, int, EXCLUDED] = EXCLUDED,
+        visibility: Union[VisibilityStatus, EXCLUDED] = EXCLUDED,
         x: Union[int, EXCLUDED] = EXCLUDED,
         y: Union[int, EXCLUDED] = EXCLUDED
 ):
-    return Properties(layer=layer, scale=scale, x=x, y=y)
+    # Define default values for non-required variables. If it's intended to be 
+    # used specifically for merging, you may wish to instantiate it directly, 
+    # instead of using this factory function.
+    if visibility is EXCLUDED:
+        visibility = VisibilityStatus.SHOW
+    return Properties(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
