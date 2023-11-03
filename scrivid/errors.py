@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from attrs import define, field
 
 if TYPE_CHECKING:
+    from inspect import FrameInfo
     from typing import Any
 
 
@@ -42,6 +43,10 @@ class AttributeError(ScrividException):
 
 @define(frozen=True)
 class ConflictingAttributesError(AttributeError):
+    """
+    An exception that is propagated when two attribute values conflict with 
+    each other.
+    """
     default_message = (
         "Conflicting attributes: \'{{first_name}}\' (set to {{first_value}}) and \'{{second_name}}\' (set to {{second_"
         "value}})."
@@ -62,8 +67,20 @@ class DuplicateIDError(ScrividException):
     ...
 
 
+@define(frozen=True)
 class InternalError(ScrividException):
-    ...
+    """
+    An exception that should only be propagated when something in the internals
+    of Scrivid functionality goes wrong. This should not be externally accessed
+    except for debugging functionality.
+    """
+    message: str = field(kw_only=True)
+    stack: FrameInfo = field(kw_only=True)
+
+    @stack.default
+    def _default_stack(self):
+        import inspect
+        return inspect.stack()
 
 
 class OperatorError(ScrividException):
