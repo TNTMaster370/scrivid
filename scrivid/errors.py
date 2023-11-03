@@ -7,7 +7,7 @@ from attrs import define, field
 
 if TYPE_CHECKING:
     from inspect import FrameInfo
-    from typing import Any
+    from typing import Any, Hashable
 
 
 # Normally I'd write classes myself, without using dataclasses or attrs. This
@@ -63,8 +63,17 @@ class ConflictingAttributesError(AttributeError):
         return _use_default_message_name(self)
 
 
+@define(frozen=True)
 class DuplicateIDError(ScrividException):
-    ...
+    """ An exception that is propagated when there is a duplicate ID field. """
+    default_message = "Duplicate ID field found between multiple identical objects: \'{{duplicate_id}}\'"
+
+    duplicate_id: Hashable = field(kw_only=True)
+    message: str = field(kw_only=True)
+
+    @message.default
+    def _default_message(self):
+        return _use_default_message_name(self)
 
 
 @define(frozen=True)

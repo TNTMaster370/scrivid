@@ -16,5 +16,5 @@ def check_reference_id(references: Sequence[REFERENCES]):
     seen = set()
     for reference in references:
         if reference.id in seen:
-            raise errors.DuplicateIDError(f"Duplicate ID field in several \'Reference\' objects: \'{reference.id}\'.")
+            raise errors.DuplicateIDError(duplicate_id=reference.id)
         seen.add(reference.id)
