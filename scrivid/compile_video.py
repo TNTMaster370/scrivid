@@ -5,9 +5,10 @@ from ._file_objects.images import ImageReference
 from ._motion_tree import nodes, parse
 from ._utils import ticking
 
+from copy import deepcopy
 import os
 import shutil
-from typing import TYPE_CHECKING
+from typing import NamedTuple, TYPE_CHECKING
 
 from PIL import Image
 
@@ -23,66 +24,6 @@ if TYPE_CHECKING:
 
     MotionTree = nodes.MotionTree
     REFERENCES = ImageReference
-
-
-class _Frame:
-    __slots__ = ("_frame", "_references_access", "_save_location", "_size", "index", "occurrences")
-
-    def __init__(
-            self,
-            index: int,
-            window_size: Tuple[int, int],
-            save_location: Path,
-            references_access: Sequence[REFERENCES]
-    ):
-        self._frame = None
-        self._references_access = references_access
-        self._save_location = save_location
-        self._size = window_size
-        self.index = index
-        self.occurrences = 0
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(index={self.index})"
-
-    def draw_frame(self):
-        if self._frame:
-            self.index += 1
-            self.save_frame()
-            return
-
-        self._frame = _FrameCanvas(self._size)
-
-        for obj in self._references_access:
-            # Doing just the latter expression is not enough to break the loop
-            # before the index would be out of range.
-            while obj.adjustments and (adj := obj.adjustments[0]):
-                if adj.activation_time > self.index:
-                    break
-
-                change = adj._enact().merge(obj._properties, strict=False)
-                obj._properties = change
-                _ = obj.adjustments.pop(0)
-
-            if obj.visibility is VisibilityStatus.HIDE:
-                continue
-
-            if not obj.is_opened:
-                obj.open()
-
-            obj_x = obj.x
-            obj_y = obj.y
-
-            for x, y in ticking(
-                    range(obj_x, obj_x + obj.get_image_width()),
-                    range(obj_y, obj_y + obj.get_image_height())
-            ):
-                self._frame.update_pixel((x, y), obj.get_pixel_value((x - obj_x, y - obj_y)))
-
-        self.save_frame()
-
-    def save_frame(self):
-        self._frame.save(self._save_location / f"{self.index}.png", "PNG")
 
 
 class _FrameCanvas:
@@ -102,6 +43,11 @@ class _FrameCanvas:
             pass
 
 
+class _FrameInformation(NamedTuple):
+    index: int
+    occurrences: int
+
+
 class _TemporaryDirectory:
     def __init__(self, folder_location: Path):
         self.dir = folder_location / ".scrivid-cache"
@@ -114,21 +60,62 @@ class _TemporaryDirectory:
         shutil.rmtree(self.dir)
 
 
-def _generate_frame(motion_tree: MotionTree, references: Sequence[REFERENCES], metadata: Metadata, save_directory):
-    # frame = _Frame(index, metadata.window_size, metadata.save_location, references)
+def _create_frame(
+        index: int, 
+        occurrences: int, 
+        references: Sequence[REFERENCES], 
+        window_size: Tuple[int, int], 
+        image_directory: Path
+):
+    frame = _FrameCanvas(window_size)
+    references_access = deepcopy(references)  # Avoid modifying the original
+    # objects.
+
+    for obj in references_access:
+        while obj.adjustments:
+            adj = obj.adjustments.pop(0)
+
+            if adj.activation_time > index:
+                break
+
+            change = adj._enact().merge(obj._properties, strict=False)
+            obj._properties = change
+
+        if obj.visibility is VisibilityStatus.HIDE:
+            continue
+
+        if not obj.is_opened:
+            obj.open()
+
+        obj_x = obj.x
+        obj_y = obj.y
+
+        for x, y in ticking(
+                range(obj_x, obj_x + obj.get_image_width()),
+                range(obj_y, obj_y + obj.get_image_height())
+        ):
+            frame.update_pixel((x, y), obj.get_pixel_value((x - obj_x, y - obj_y)))
+
+    for additional_index in range(occurrences):
+        frame.save(image_directory / f"{index + additional_index}.png", "PNG")
+
+
+def _generate_frames(motion_tree: MotionTree):
     frames = []
     index = 0
 
     for node in motion_tree.body:
         type_ = type(node)
         if type_ is nodes.Start:
-            frames.append(_Frame(0, metadata.window_size, save_directory, references))
-        elif type_ in (nodes.HideImage, nodes.ShowImage):
+            frames.append(_FrameInformation(0, 1))
+        elif type_ in (nodes.HideImage, nodes.ShowImage):  # nodes.Start
             if index == frames[-1].index:
                 continue
-            frames.append(_Frame(index, metadata.window_size, save_directory, references))
+            frames.append(_FrameInformation(index, 1))
         elif type_ is nodes.Continue:
-            frames[-1].occurrences += node.length
+            frame = frames[-1]
+            frames[-1] = _FrameInformation(frame.index, frame.occurrences + node.length)
+            del frame
             index += node.length
         elif type_ is nodes.End:
             break
@@ -156,10 +143,9 @@ def compile_video(references: Sequence[REFERENCES], metadata: Metadata):
     motion_tree = parse(references)
 
     with _TemporaryDirectory(metadata.save_location) as temp_dir:
-        video_length, frames = _generate_frame(motion_tree, references, metadata, temp_dir.dir)
+        video_length, frames = _generate_frames(motion_tree)
 
-        for frame in frames:
-            for _ in range(frame.occurrences):
-                frame.draw_frame()
+        for frame_information in frames:
+            _create_frame(*frame_information, references, metadata.window_size, temp_dir.dir)
 
         _stitch_video(temp_dir.dir, video_length, metadata)
