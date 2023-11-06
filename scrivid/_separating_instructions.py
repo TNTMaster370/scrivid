@@ -11,8 +11,9 @@ if TYPE_CHECKING:
     from ._file_objects.adjustments import RootAdjustment
 
     from collections.abc import Sequence
-    from typing import Dict, Hashable
+    from typing import Dict, Hashable, Union
 
+    INSTRUCTIONS = Union[ImageReference, RootAdjustment]
     REFERENCES = ImageReference
 
 
@@ -27,16 +28,32 @@ class SeparatedInstructions:
         self.references = {}
 
 
-def separate_instructions(references: Sequence[REFERENCES]) -> SeparatedInstructions:
+def _handle_adjustment(separated_instructions: SeparatedInstructions, adjustment: RootAdjustment):
+    if adjustment.ID not in separated_instructions.adjustments:
+        separated_instructions.adjustments[adjustment.ID] = SortedList()
+
+    if adjustment in separated_instructions.adjustments[adjustment.ID]:  
+        # Safety against multiple declaration of Adjustment via also being
+        # inside of the relevant ImageReference's .adjustment attribute.
+        return
+
+    separated_instructions.adjustments[adjustment.ID].add(adjustment)
+
+
+def _handle_reference(separated_instructions: SeparatedInstructions, reference: REFERENCES):
+    if reference.ID in separated_instructions.references:
+        raise errors.DuplicateIDError(duplicate_id=reference.ID)
+
+    separated_instructions.references[reference.ID] = reference
+
+    for adjustment in reference.adjustments:
+        _handle_adjustment(separated_instructions, adjustment)
+
+
+def separate_instructions(instructions: Sequence[INSTRUCTIONS]) -> SeparatedInstructions:
     separated_instructions = SeparatedInstructions()
 
-    for reference in references:
-        if reference.ID in separated_instructions.references:
-            raise errors.DuplicateIDError(duplicate_id=reference.ID)
-        separated_instructions.references[reference.ID] = reference
-        for adjustment in reference.adjustments:
-            if reference.ID not in separated_instructions.adjustments:
-                separated_instructions.adjustments[reference.ID] = SortedList()
-            separated_instructions.adjustments[reference.ID].add(adjustment)
+    for instruction in instructions:
+        _handle_reference(separated_instructions, instruction)
 
     return separated_instructions
