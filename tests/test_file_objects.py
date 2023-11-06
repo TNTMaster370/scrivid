@@ -1,5 +1,4 @@
-import scrivid.errors
-from scrivid import errors, image_reference, ImageReference, Properties, RootAdjustment
+from scrivid import errors, image_reference, ImageReference, properties, Properties, RootAdjustment
 
 from pathlib import Path
 from typing import Any, List
@@ -144,7 +143,7 @@ def test_image_property_attributes():
 
 
 def test_property_function_return():
-    _ = scrivid.properties(layer=1, scale=1, x=1, y=1)  # should raise no error
+    _ = properties(layer=1, scale=1, x=1, y=1)  # should raise no error
 
 
 def test_property_merge():
@@ -161,10 +160,10 @@ def test_property_merge_confliction():
     a = Properties(x=1)
     b = Properties(x=2, y=2)
 
-    with pytest.raises(scrivid.errors.ConflictingAttributesError):
+    with pytest.raises(errors.ConflictingAttributesError):
         a.merge(b)
 
-    with pytest.raises(scrivid.errors.ConflictingAttributesError):
+    with pytest.raises(errors.ConflictingAttributesError):
         b.merge(a)
 
 
@@ -185,7 +184,7 @@ def test_property_merge_invalid_type():
     a = Properties(scale=1)
     b = ImageReference(10, FileSubstitute(""), PropertiesSubstitute())
 
-    with pytest.raises(scrivid.errors.TypeError):
+    with pytest.raises(errors.TypeError):
         a.merge(b)
 
 
@@ -203,10 +202,10 @@ def test_property_merge_ampersand_operator_confliction():
     a = Properties(x=1)
     b = Properties(x=2, y=2)
 
-    with pytest.raises(scrivid.errors.ConflictingAttributesError):
+    with pytest.raises(errors.ConflictingAttributesError):
         a & b
 
-    with pytest.raises(scrivid.errors.ConflictingAttributesError):
+    with pytest.raises(errors.ConflictingAttributesError):
         b & a
 
 
@@ -214,5 +213,5 @@ def test_property_merge_ampersand_operator_invalid_type():
     a = Properties(scale=1)
     b = ImageReference(10, FileSubstitute(""), PropertiesSubstitute())
 
-    with pytest.raises(scrivid.errors.TypeError):
+    with pytest.raises(errors.TypeError):
         a & b
