@@ -16,16 +16,6 @@ if TYPE_CHECKING:
     REFERENCES = ImageReference
 
 
-def check_reference_id(references: Sequence[REFERENCES]):
-    seen = set()
-    for reference in references:
-        if not isinstance(reference, ImageReference):
-            continue
-        if reference.ID in seen:
-            raise errors.DuplicateIDError(duplicate_id=reference.ID)
-        seen.add(reference.ID)
-
-
 class SeparatedInstructions:
     __slots__ = ("adjustments", "references")
 
@@ -38,7 +28,6 @@ class SeparatedInstructions:
 
 
 def separate_instructions(references: Sequence[REFERENCES]) -> SeparatedInstructions:
-    check_reference_id(references)
     separated_instructions = SeparatedInstructions()
 
     for reference in references:

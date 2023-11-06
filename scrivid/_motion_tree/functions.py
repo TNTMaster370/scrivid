@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from .nodes import Continue, End, HideImage, MotionTree, ShowImage, Start
 from .._file_objects.adjustments import HideAdjustment, ShowAdjustment
-from .._separating_instructions import check_reference_id, separate_instructions, SeparatedInstructions
+from .._separating_instructions import separate_instructions, SeparatedInstructions
 
 from typing import TYPE_CHECKING
 
@@ -82,8 +82,6 @@ def _loop_over_adjustments(adjustments: Dict[RootAdjustment]) -> Iterator[MOTION
 def parse(instructions: Union[Sequence[REFERENCES], SeparatedInstructions]) -> MotionTree:
     if not isinstance(instructions, SeparatedInstructions):
         instructions = separate_instructions(instructions)
-
-    check_reference_id(instructions.references)
 
     return _create_motion_tree(instructions)
 
