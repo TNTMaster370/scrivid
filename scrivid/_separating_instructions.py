@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from . import errors
+from ._file_objects.adjustments import RootAdjustment
 from ._file_objects.images import ImageReference
 
 from typing import TYPE_CHECKING
@@ -8,8 +9,6 @@ from typing import TYPE_CHECKING
 from sortedcontainers import SortedList
 
 if TYPE_CHECKING:
-    from ._file_objects.adjustments import RootAdjustment
-
     from collections.abc import Sequence
     from typing import Dict, Hashable, Union
 
@@ -54,6 +53,9 @@ def separate_instructions(instructions: Sequence[INSTRUCTIONS]) -> SeparatedInst
     separated_instructions = SeparatedInstructions()
 
     for instruction in instructions:
-        _handle_reference(separated_instructions, instruction)
+        if isinstance(instruction, ImageReference):
+            _handle_reference(separated_instructions, instruction)
+        elif isinstance(instruction, RootAdjustment):
+            _handle_adjustment(separated_instructions, instruction)
 
     return separated_instructions
