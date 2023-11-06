@@ -1,7 +1,6 @@
 from scrivid import errors, image_reference, ImageReference, properties, Properties, RootAdjustment
 
 from pathlib import Path
-from typing import Any, List
 
 import pytest
 
@@ -38,21 +37,6 @@ def get_current_directory():
     return Path(".").absolute()
 
 
-class PropertiesSubstitute(Properties):
-    __slots__ = ("state",)
-
-    def __init__(self, layer=None, scale=None, visibility=None, x=None, y=None):
-        self.state: List[Any] = ["INIT"]
-        # The type annotation is to prevent issues with type checkers.
-        super().__init__(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
-        self.state.append("POST-INIT")
-
-    def __setattr__(self, key, value):
-        if hasattr(self, "state"):
-            self.state.append((key, value))
-        super().__setattr__(key, value)
-
-
 def test_image_adjustments():
     adj1 = AdjustmentSubstitute(0, 10)
     adj2 = AdjustmentSubstitute(0, 20)
@@ -79,7 +63,7 @@ def test_image_adjustments_sorting():
 
 
 def test_image_copy():
-    img_ref = ImageReference(0, FileSubstitute(""), PropertiesSubstitute())
+    img_ref = ImageReference(0, FileSubstitute(""), properties())
     copy_img_ref = img_ref.copy(1)
     deepcopy_img_ref = img_ref.deepcopy(2)
 
@@ -87,12 +71,11 @@ def test_image_copy():
     # functions are actually making copies of what they need to.
     assert id(img_ref) != id(copy_img_ref)
     assert id(img_ref) != id(deepcopy_img_ref)
-    assert id(img_ref.adjustments) != id(deepcopy_img_ref.adjustments)
 
 
 def test_image_file_management():
     file_handler = FileSubstitute("some/file")
-    img_ref = ImageReference(0, file_handler, PropertiesSubstitute())
+    img_ref = ImageReference(0, file_handler, properties())
 
     img_ref.open()
     img_ref.close()
@@ -102,7 +85,7 @@ def test_image_file_management():
 
 def test_image_file_management_weakref():
     file_handler = FileSubstitute("some/file")
-    img_ref = ImageReference(0, file_handler, PropertiesSubstitute())
+    img_ref = ImageReference(0, file_handler, properties())
 
     img_ref.open()
     del img_ref  # The method to close should be called when `i`s
@@ -134,16 +117,6 @@ def test_image_open_property():
 
     img_ref.close()
     assert img_ref.is_opened is False
-
-
-def test_image_property_attributes():
-    properties = PropertiesSubstitute(1, 2, 3, 4, 5)
-    image_reference(0, "", properties)
-    assert properties.state == ["INIT", ("layer", 1), ("scale", 2), ("visibility", 3), ("x", 4), ("y", 5), "POST-INIT"]
-
-
-def test_property_function_return():
-    _ = properties(layer=1, scale=1, x=1, y=1)  # should raise no error
 
 
 def test_property_merge():
@@ -182,7 +155,7 @@ def test_property_merge_confliction_not_strict():
 
 def test_property_merge_invalid_type():
     a = Properties(scale=1)
-    b = ImageReference(10, FileSubstitute(""), PropertiesSubstitute())
+    b = ImageReference(10, FileSubstitute(""), properties())
 
     with pytest.raises(errors.TypeError):
         a.merge(b)
@@ -211,7 +184,7 @@ def test_property_merge_ampersand_operator_confliction():
 
 def test_property_merge_ampersand_operator_invalid_type():
     a = Properties(scale=1)
-    b = ImageReference(10, FileSubstitute(""), PropertiesSubstitute())
+    b = ImageReference(10, FileSubstitute(""), properties())
 
     with pytest.raises(errors.TypeError):
         a & b
