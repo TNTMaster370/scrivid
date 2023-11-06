@@ -3,7 +3,6 @@ from __future__ import annotations
 from .nodes import Continue, End, HideImage, MotionTree, ShowImage, Start
 from .._file_objects.adjustments import HideAdjustment, ShowAdjustment
 from .._separating_instructions import check_reference_id, separate_instructions, SeparatedInstructions
-from .._utils import sentinel
 
 from typing import TYPE_CHECKING
 

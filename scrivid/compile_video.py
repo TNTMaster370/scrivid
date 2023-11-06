@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ._file_objects import VisibilityStatus
 from ._file_objects.images import ImageReference
+from ._separating_instructions import separate_instructions
 from ._motion_tree import nodes, parse
 from ._utils import ticking
 
@@ -16,6 +17,7 @@ from moviepy.editor import ImageClip
 from moviepy.video.compositing.concatenate import concatenate_videoclips
 
 if TYPE_CHECKING:
+    from ._separating_instructions import SeparatedInstructions
     from .metadata import Metadata
 
     from collections.abc import Sequence
@@ -63,17 +65,18 @@ class _TemporaryDirectory:
 def _create_frame(
         index: int, 
         occurrences: int, 
-        references: Sequence[REFERENCES], 
+        instructions: SeparatedInstructions, 
         window_size: Tuple[int, int], 
         image_directory: Path
 ):
     frame = _FrameCanvas(window_size)
-    references_access = deepcopy(references)  # Avoid modifying the original
+    instructions_access = deepcopy(instructions)  # Avoid modifying the original
     # objects.
 
-    for obj in references_access:
-        while obj.adjustments:
-            adj = obj.adjustments.pop(0)
+    for ID, obj in instructions_access.references.items():
+        relevant_adjustments = instructions_access.adjustments[ID]
+        while relevant_adjustments:
+            adj = relevant_adjustments.pop(0)
 
             if adj.activation_time > index:
                 break
@@ -140,12 +143,13 @@ def compile_video(references: Sequence[REFERENCES], metadata: Metadata):
     :param metadata: An instance of Metadata that stores the attributes
         of the video.
     """
-    motion_tree = parse(references)
+    separated_instructions = separate_instructions(references)
+    motion_tree = parse(separated_instructions)
 
     with _TemporaryDirectory(metadata.save_location) as temp_dir:
         video_length, frames = _generate_frames(motion_tree)
 
         for frame_information in frames:
-            _create_frame(*frame_information, references, metadata.window_size, temp_dir.dir)
+            _create_frame(*frame_information, separated_instructions, metadata.window_size, temp_dir.dir)
 
         _stitch_video(temp_dir.dir, video_length, metadata)
