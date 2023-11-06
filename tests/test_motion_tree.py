@@ -7,14 +7,6 @@ import pytest
 pytest_parametrize = pytest.mark.parametrize
 
 
-def create_references():
-    return [
-        image_reference(1, "1"),
-        image_reference(2, "2"),
-        image_reference(3, "3")
-    ]
-
-
 def has_method(cls, method):
     if (n := getattr(cls, method, None)) and callable(n):
         return True
@@ -23,19 +15,29 @@ def has_method(cls, method):
 
 
 def parse_empty():
-    return parse([])
+    return parse(())
 
 
 def parse_references():
-    return parse(create_references())
+    return parse((
+        image_reference(1, "1"),
+        image_reference(2, "2"),
+        image_reference(3, "3")
+    ))
 
 
 def parse_references_with_adjustments():
-    references = create_references()
-    for index, reference in enumerate(references):
-        reference.add_adjustment(ShowAdjustment(index+1, 2 * (index+1)))
-        reference.add_adjustment(HideAdjustment(index+1, 4 * (index+1)))
-    return parse(references)
+    return parse((
+        image_reference(1, "1"),
+        ShowAdjustment(1, 2),
+        HideAdjustment(1, 4),
+        image_reference(2, "2"),
+        ShowAdjustment(2, 4),
+        HideAdjustment(2, 8),
+        image_reference(3, "3"),
+        ShowAdjustment(3, 6),
+        HideAdjustment(3, 12)
+    ))
 
 
 @pytest_parametrize("indent", [0, 2, 4, 8])

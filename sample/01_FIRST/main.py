@@ -17,10 +17,11 @@ class VisibilityIndex:
         return cls._index_dict[index]
 
 
-def create_image_references(image_directory):
-    objects = []
+def create_instructions(image_directory):
+    instructions = []
+
     for index in range(6):
-        objects.append(
+        instructions.append(
             scrivid.image_reference(
                 index,
                 image_directory / f"img{index+1}.png",
@@ -32,11 +33,11 @@ def create_image_references(image_directory):
             )
         )
 
-        show, hide = VisibilityIndex.access(index)
-        objects[-1].add_adjustment(scrivid.ShowAdjustment(index, show))
-        objects[-1].add_adjustment(scrivid.HideAdjustment(index, hide))
+        show_time, hide_time = VisibilityIndex.access(index)
+        instructions.append(scrivid.ShowAdjustment(index, show_time))
+        instructions.append(scrivid.HideAdjustment(index, hide_time))
 
-    return objects
+    return instructions
 
 
 def generate(save_location):
@@ -47,8 +48,8 @@ def generate(save_location):
         window_size=(852, 480)
     )
 
-    image_references = create_image_references(metadata.save_location / "images")
-    scrivid.compile_video(image_references, metadata)
+    instructions = create_instructions(metadata.save_location / "images")
+    scrivid.compile_video(instructions, metadata)
 
 
 def main():
