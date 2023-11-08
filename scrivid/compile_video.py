@@ -17,15 +17,16 @@ from moviepy.editor import ImageClip
 from moviepy.video.compositing.concatenate import concatenate_videoclips
 
 if TYPE_CHECKING:
+    from ._file_objects.adjustments import RootAdjustment
     from ._separating_instructions import SeparatedInstructions
     from .metadata import Metadata
 
     from collections.abc import Sequence
     from pathlib import Path
-    from typing import Tuple
+    from typing import Union, Tuple
 
+    INSTRUCTIONS = Union[ImageReference, RootAdjustment]
     MotionTree = nodes.MotionTree
-    REFERENCES = ImageReference
 
 
 class _FrameCanvas:
@@ -135,15 +136,16 @@ def _stitch_video(temporary_directory, video_length, metadata):
     concat_clip.write_videofile(f"{metadata.save_location}\\{metadata.video_name}.mp4", fps=metadata.frame_rate)
 
 
-def compile_video(references: Sequence[REFERENCES], metadata: Metadata):
+def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
     """
-    Converts the references into a compiled video.
+    Converts the objects, taken as instructions, into a compiled video.
 
-    :param references: A list of instances of ImageReference's.
+    :param instructions: A list of instances of ImageReference's, and/or a 
+        class of the Adjustment hierarchy.
     :param metadata: An instance of Metadata that stores the attributes
         of the video.
     """
-    separated_instructions = separate_instructions(references)
+    separated_instructions = separate_instructions(instructions)
     motion_tree = parse(separated_instructions)
 
     with _TemporaryDirectory(metadata.save_location) as temp_dir:
