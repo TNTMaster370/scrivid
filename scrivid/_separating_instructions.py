@@ -45,9 +45,6 @@ def _handle_reference(separated_instructions: SeparatedInstructions, reference: 
 
     separated_instructions.references[reference.ID] = reference
 
-    for adjustment in reference.adjustments:
-        _handle_adjustment(separated_instructions, adjustment)
-
 
 def separate_instructions(instructions: Sequence[INSTRUCTIONS]) -> SeparatedInstructions:
     separated_instructions = SeparatedInstructions()

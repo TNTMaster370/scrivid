@@ -11,11 +11,9 @@ from typing import TYPE_CHECKING
 import weakref
 
 from PIL import Image
-from sortedcontainers import SortedSet
 
 if TYPE_CHECKING:
     from ._status import VisibilityStatus
-    from .adjustments import RootAdjustment
     from .properties import Properties
 
     from collections.abc import Hashable
@@ -80,33 +78,28 @@ class ImageFileReference:
 
 
 class ImageReference:
-    __slots__ = ("_adjustments", "_file", "_finalizer", "_ID", "_properties", "__weakref__")
+    __slots__ = ("_file", "_finalizer", "_ID", "_properties", "__weakref__")
 
-    _adjustments: SortedSet[RootAdjustment]
     _file: FileAccess
     _finalizer: weakref.finalize
     _ID: Hashable
     _properties: Properties
 
     def __init__(self, ID: Hashable, file: FileAccess, properties: Properties, /):
-        self._adjustments = SortedSet()
         self._file = file
         self._finalizer = weakref.finalize(self, call_close, self._file)
         self._ID = ID
         self._properties = properties
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}(adjustments={self._adjustments!r}, file={self._file!r}, id={self._ID!r}, "
-            f"properties={self._properties!r})"
-        )
+        id = self._ID
+        file = self._file
+        properties = self._properties
+
+        return f"{self.__class__.__name__}({id=}, {file=}, {properties=})"
 
     def __hash__(self):
         return hash(self._ID)
-
-    @property
-    def adjustments(self):
-        return self._adjustments
 
     # I'm allowing both lowercase and uppercase 'ID' access, since I'm
     # primarily using the uppercase equivalent to prevent name shadowing.
@@ -153,9 +146,6 @@ class ImageReference:
         dc = deepcopy(self, memo)
         dc._ID = new_ID
         return dc
-
-    def add_adjustment(self, new_adjustment: RootAdjustment):
-        self._adjustments.add(new_adjustment)
 
     def get_image_height(self):
         self._file: ImageFileReference

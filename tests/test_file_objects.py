@@ -37,31 +37,6 @@ def get_current_directory():
     return Path(".").absolute()
 
 
-def test_image_adjustments():
-    adj1 = AdjustmentSubstitute(0, 10)
-    adj2 = AdjustmentSubstitute(0, 20)
-
-    img_ref = image_reference(0, "")
-    img_ref.add_adjustment(adj1)
-    img_ref.add_adjustment(adj2)
-
-    assert img_ref.adjustments == {adj1, adj2}
-
-
-def test_image_adjustments_sorting():
-    adj_10 = AdjustmentSubstitute(0, 10)
-    adj_20 = AdjustmentSubstitute(0, 20)
-    adj_30 = AdjustmentSubstitute(0, 30)
-
-    img_ref = image_reference(0, "some/file")
-    img_ref.add_adjustment(adj_30)
-    img_ref.add_adjustment(adj_20)
-    img_ref.add_adjustment(adj_10)
-
-    assert img_ref.adjustments == {adj_10, adj_20, adj_30}
-    # Insertion order does not match sorted order.
-
-
 def test_image_copy():
     img_ref = ImageReference(0, FileSubstitute(""), properties())
     copy_img_ref = img_ref.copy(1)
