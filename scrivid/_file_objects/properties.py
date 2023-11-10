@@ -44,9 +44,6 @@ class Properties:
         return self.merge(other)
 
     def _check_confliction(self, other):
-        if not isinstance(other, Properties):
-            raise errors.TypeError(f"Expected Properties object, got type {type(other)}.")
-
         NO_RETURN = sentinel("NO_RETURN")
 
         for attr in self.__slots__:
@@ -73,8 +70,11 @@ class Properties:
             )
 
     def merge(self, other: Properties, /, *, strict: bool = True):
-        if strict:
+        if not isinstance(other, Properties):
+            raise errors.TypeError(f"Expected Properties object, got type {type(other)}.")
+        elif strict:
             self._check_confliction(other)
+
         return self.__class__(
             layer=self.layer if self.layer is not EXCLUDED else other.layer,
             scale=self.scale if self.scale is not EXCLUDED else other.scale,
