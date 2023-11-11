@@ -94,72 +94,67 @@ def test_image_open_property():
     assert img_ref.is_opened is False
 
 
-def test_property_merge():
-    a = Properties(layer=1)
-    b = Properties(scale=1)
+class Test_Properties:
+    def test_merge(self):
+        a = Properties(layer=1)
+        b = Properties(scale=1)
 
-    c = a.merge(b)
+        c = a.merge(b)
 
-    assert c.layer == 1
-    assert c.scale == 1
+        assert c.layer == 1
+        assert c.scale == 1
 
+    def test_merge_ampersand_operator(self):
+        a = Properties(layer=1)
+        b = Properties(scale=1)
 
-def test_property_merge_confliction():
-    a = Properties(x=1)
-    b = Properties(x=2, y=2)
+        c = a & b
 
-    with pytest.raises(errors.ConflictingAttributesError):
-        a.merge(b)
+        assert c.layer == 1
+        assert c.scale == 1
 
-    with pytest.raises(errors.ConflictingAttributesError):
-        b.merge(a)
+    def test_merge_confliction(self):
+        a = Properties(x=1)
+        b = Properties(x=2, y=2)
 
+        with pytest.raises(errors.ConflictingAttributesError):
+            a.merge(b)
 
-def test_property_merge_confliction_not_strict():
-    a = Properties(x=1)
-    b = Properties(x=2, y=2)
+        with pytest.raises(errors.ConflictingAttributesError):
+            b.merge(a)
 
-    # Note: when the merge function has the strict flag disabled, it will use
-    # the properties from the 'self' caller are favoured in the merging.
-    c = a.merge(b, strict=False)
-    assert c.x == 1
+    def test_merge_confliction_ampersand_operator(self):
+        a = Properties(x=1)
+        b = Properties(x=2, y=2)
 
-    d = b.merge(a, strict=False)
-    assert d.x == 2
+        with pytest.raises(errors.ConflictingAttributesError):
+            a & b
 
+        with pytest.raises(errors.ConflictingAttributesError):
+            b & a
 
-def test_property_merge_invalid_type():
-    a = Properties(scale=1)
-    b = ImageReference(10, FileSubstitute(""), properties())
+    def test_merge_confliction_not_strict(self):
+        a = Properties(x=1)
+        b = Properties(x=2, y=2)
 
-    with pytest.raises(errors.TypeError):
-        a.merge(b)
+        # Note: when the merge function has the strict flag disabled, it will use
+        # the properties from the 'self' caller are favoured in the merging.
+        c = a.merge(b, strict=False)
+        assert c.x == 1
 
+        d = b.merge(a, strict=False)
+        assert d.x == 2
 
-def test_property_merge_ampersand_operator():
-    a = Properties(layer=1)
-    b = Properties(scale=1)
+    def test_merge_invalid_type(self):
+        a = Properties(scale=1)
+        b = ImageReference(10, FileSubstitute(""), properties())
 
-    c = a & b
+        with pytest.raises(errors.TypeError):
+            a.merge(b)
 
-    assert c.layer == 1
-    assert c.scale == 1
+    def test_merge_invalid_type_ampersand_operator(self):
+        a = Properties(scale=1)
+        b = ImageReference(10, FileSubstitute(""), properties())
 
-
-def test_property_merge_ampersand_operator_confliction():
-    a = Properties(x=1)
-    b = Properties(x=2, y=2)
-
-    with pytest.raises(errors.ConflictingAttributesError):
-        a & b
-
-    with pytest.raises(errors.ConflictingAttributesError):
-        b & a
-
-
-def test_property_merge_ampersand_operator_invalid_type():
-    a = Properties(scale=1)
-    b = ImageReference(10, FileSubstitute(""), properties())
-
-    with pytest.raises(errors.TypeError):
-        a & b
+        with pytest.raises(errors.TypeError):
+            a & b
