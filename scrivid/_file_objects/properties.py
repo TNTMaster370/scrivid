@@ -4,17 +4,46 @@ from ._status import VisibilityStatus
 from .. import errors
 from .._utils.sentinel_objects import sentinel
 
+import enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Union
 
 
+def _calculate_append(property: str, a: Properties, b: Properties):
+    a_attr, b_attr = getattr(a, property), getattr(b, property)
+    return (
+        a_attr + b_attr if EXCLUDED not in (a_attr, b_attr)
+        else a_attr if a_attr is not EXCLUDED
+        else b_attr
+    )
+
+
+def _calculate_replacement(property: str, a: Properties, b: Properties):
+    a_attr, b_attr = getattr(a, property), getattr(b, property)
+    return a_attr if a_attr is not EXCLUDED else b_attr
+
+
+class _MergeMode(enum.Enum):
+    APPEND = enum.auto()
+    REPLACEMENT = enum.auto()
+    REVERSE_APPEND = enum.auto()
+    REVERSE_REPLACEMENT = enum.auto()
+
+
+_APPENDING_MODES = (_MergeMode.APPEND, _MergeMode.REVERSE_APPEND)
+_FORWARD_MODES = (_MergeMode.APPEND, _MergeMode.REPLACEMENT)
+_REPLACEMENT_MODES = (_MergeMode.REPLACEMENT, _MergeMode.REVERSE_REPLACEMENT)
+_REVERSE_MODES = (_MergeMode.REVERSE_APPEND, _MergeMode.REVERSE_REPLACEMENT)
+
 EXCLUDED = sentinel("EXCLUDED")
 
 
 class Properties:
     __slots__ = ("layer", "scale", "visibility", "x", "y")
+
+    MERGE_MODE = _MergeMode
 
     def __init__(
             self, *,
@@ -69,19 +98,31 @@ class Properties:
                 second_value=b
             )
 
-    def merge(self, other: Properties, /, *, strict: bool = True):
+    def merge(self, other: Properties, /, *, mode: _MergeMode = _MergeMode.REPLACEMENT, strict: bool = True):
         if not isinstance(other, Properties):
             raise errors.TypeError(f"Expected Properties object, got type {type(other)}.")
-        elif strict:
+        elif mode not in _APPENDING_MODES and strict:
             self._check_confliction(other)
 
-        return self.__class__(
-            layer=self.layer if self.layer is not EXCLUDED else other.layer,
-            scale=self.scale if self.scale is not EXCLUDED else other.scale,
-            visibility=self.visibility if self.visibility is not EXCLUDED else other.visibility,
-            x=self.x if self.x is not EXCLUDED else other.x,
-            y=self.y if self.y is not EXCLUDED else other.y
-        )
+        if mode in _FORWARD_MODES:
+            a, b = self, other
+        elif mode in _REVERSE_MODES:
+            a, b = other, self
+
+        visibility = _calculate_replacement("visibility", a, b)
+
+        if mode in _REPLACEMENT_MODES:
+            layer = _calculate_replacement("layer", a, b)
+            scale = _calculate_replacement("scale", a, b)
+            x = _calculate_replacement("x", a, b)
+            y = _calculate_replacement("y", a, b)
+        elif mode in _APPENDING_MODES:
+            layer = _calculate_append("layer", a, b)
+            scale = _calculate_append("scale", a, b)
+            x = _calculate_append("x", a, b)
+            y = _calculate_append("y", a, b)
+
+        return self.__class__(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
 
 
 def properties(

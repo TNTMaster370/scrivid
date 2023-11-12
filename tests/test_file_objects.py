@@ -1,4 +1,4 @@
-from scrivid import errors, image_reference, ImageReference, properties, Properties, RootAdjustment
+from scrivid import errors, image_reference, ImageReference, properties, Properties, RootAdjustment, VisibilityStatus
 
 from pathlib import Path
 
@@ -95,6 +95,10 @@ def test_image_open_property():
 
 
 class Test_Properties:
+    APPEND = Properties.MERGE_MODE.APPEND
+    REVERSE_APPEND = Properties.MERGE_MODE.REVERSE_APPEND
+    REVERSE_REPLACEMENT = Properties.MERGE_MODE.REVERSE_REPLACEMENT
+
     def test_merge(self):
         a = Properties(layer=1)
         b = Properties(scale=1)
@@ -144,6 +148,41 @@ class Test_Properties:
 
         d = b.merge(a, strict=False)
         assert d.x == 2
+
+    def test_merge_mode_append(self):
+        a = Properties(visibility=VisibilityStatus.HIDE, x=1)
+        b = Properties(visibility=VisibilityStatus.SHOW, x=2)
+
+        c = a.merge(b, mode=self.APPEND, strict=False)
+        assert c.x == 3
+        assert c.visibility is VisibilityStatus.HIDE
+
+        d = b.merge(a, mode=self.APPEND, strict=False)
+        assert d.visibility is VisibilityStatus.SHOW
+        # 'visibility' is not invoked via appending the same way, since adding
+        # two enum objects is not possible, so it invokes the replacement
+        # behaviour instead. This is why there's a reverse-append option.
+
+    def test_merge_mode_reverse_append(self):
+        a = Properties(visibility=VisibilityStatus.HIDE, x=1)
+        b = Properties(visibility=VisibilityStatus.SHOW, x=2)
+
+        c = a.merge(b, mode=self.REVERSE_APPEND, strict=False)
+        assert c.x == 3
+        assert c.visibility is VisibilityStatus.SHOW
+
+        d = b.merge(a, mode=self.REVERSE_APPEND, strict=False)
+        assert d.visibility is VisibilityStatus.HIDE
+
+    def test_merge_mode_reverse_replacement(self):
+        a = Properties(x=1)
+        b = Properties(x=2, y=2)
+
+        c = a.merge(b, mode=self.REVERSE_REPLACEMENT, strict=False)
+        assert c.x == 2
+
+        d = b.merge(a, mode=self.REVERSE_REPLACEMENT, strict=False)
+        assert d.x == 1
 
     def test_merge_invalid_type(self):
         a = Properties(scale=1)
