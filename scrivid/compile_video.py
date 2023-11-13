@@ -10,13 +10,13 @@ from ._utils import ticking
 
 from copy import deepcopy
 import os
+import logging
 import shutil
 from typing import NamedTuple, TYPE_CHECKING
 
 from PIL import Image
 
-from moviepy.editor import ImageClip
-from moviepy.video.compositing.concatenate import concatenate_videoclips
+import av
 
 if TYPE_CHECKING:
     from ._file_objects.adjustments import RootAdjustment
@@ -146,13 +146,23 @@ def _generate_frames(motion_tree: MotionTree):
     return index, frames
 
 
-def _stitch_video(temporary_directory, video_length, metadata):
-    clips = [(ImageClip(f"{temporary_directory}\\{m}.png")
-              .set_duration(1 / metadata.frame_rate))
-             for m in range(video_length)]
+def _stitch_video(temporary_directory, video_length, metadata: Metadata):
+    frame_rate = metadata.frame_rate
+    output_file = str(metadata.save_location / f"{metadata.video_name}.mp4")
 
-    concat_clip = concatenate_videoclips(clips, method="compose")
-    concat_clip.write_videofile(f"{metadata.save_location}\\{metadata.video_name}.mp4", fps=metadata.frame_rate)
+    with av.open(output_file, "w", format="mp4", options={"crf": "23", "pix_fmt": "rgb24"}) as container:
+        stream = container.add_stream("libx264", rate=frame_rate)
+        stream.height = metadata.window_height
+        stream.width = metadata.window_width
+
+        for index in range(video_length):
+            image_path = os.path.join(temporary_directory, f"{index}.png")
+
+            with av.open(image_path) as image:
+                frame = next(image.decode(video=0))
+                frame.pts = index
+                frame.pict_type = (index % frame_rate == 0)
+                container.mux(stream.encode(frame))
 
 
 def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
@@ -164,6 +174,7 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
     :param metadata: An instance of Metadata that stores the attributes
         of the video.
     """
+    logging.basicConfig(level=logging.CRITICAL)
     separated_instructions = separate_instructions(instructions)
     motion_tree = parse(separated_instructions)
 

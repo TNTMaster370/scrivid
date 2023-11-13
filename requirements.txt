@@ -1,6 +1,6 @@
 attrs==23.1.0
+av==9.0.2
 Pillow==9.3.0
-moviepy==1.0.3
 sortedcontainers==2.4.0
 pytest~=6.2.5
 setuptools>=67.0.0

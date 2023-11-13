@@ -5,7 +5,7 @@ from ._status import VisibilityStatus
 from .properties import EXCLUDED, Properties
 
 from abc import ABC, abstractmethod
-from typing import NamedTuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Hashable, Union
