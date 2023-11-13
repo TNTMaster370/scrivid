@@ -10,6 +10,7 @@ from attrs import define, field
 
 class Attribute(enum.Enum):
     BODY = enum.auto()
+    DURATION = enum.auto()
     ID = enum.auto()
     INDEX = enum.auto()
     LENGTH = enum.auto()
@@ -18,6 +19,7 @@ class Attribute(enum.Enum):
 
 _attributes = {
     Attribute.BODY: ("body", list, field(factory=list, init=False)),
+    Attribute.DURATION: ("duration", int, field()),
     Attribute.ID: ("id", Hashable, field()),
     Attribute.INDEX: ("index", int, field()),
     Attribute.LENGTH: ("length", int, field()),

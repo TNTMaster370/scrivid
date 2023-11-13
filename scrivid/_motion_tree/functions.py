@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from .nodes import Continue, End, HideImage, MotionTree, ShowImage, Start
-from .._file_objects.adjustments import HideAdjustment, ShowAdjustment
+from .nodes import Continue, End, HideImage, InvokePrevious, MotionTree, MoveImage, ShowImage, Start
+from .._file_objects.adjustments import HideAdjustment, MoveAdjustment, ShowAdjustment
 from .._separating_instructions import separate_instructions, SeparatedInstructions
 
 from typing import TYPE_CHECKING
@@ -26,7 +26,7 @@ def dump(motion_tree: MotionTree, *, indent: int = 0) -> str:
         return repr(motion_tree)
 
 
-def _create_command_node(adjustment: RootAdjustment) -> Union[HideImage, ShowImage, None]:
+def _create_command_node(adjustment: RootAdjustment) -> Union[HideImage, MoveImage, ShowImage, None]:
     # INITIALIZE
     adjustment_type = type(adjustment)
     adjustment_time = adjustment.activation_time
@@ -35,6 +35,8 @@ def _create_command_node(adjustment: RootAdjustment) -> Union[HideImage, ShowIma
     # OPERATION/TEARDOWN
     if adjustment_type == HideAdjustment:
         return HideImage(relevant_id, adjustment_time)
+    elif adjustment_type == MoveAdjustment:
+        return MoveImage(relevant_id, adjustment_time, adjustment.duration)
     elif adjustment_type == ShowAdjustment:
         return ShowImage(relevant_id, adjustment_time)
     else:
@@ -57,7 +59,19 @@ def _create_motion_tree(separated_instructions: SeparatedInstructions) -> Motion
     return motion_tree
 
 
+def _invoke_duration_value(duration_value: int, current_node: Union[HideImage, MoveImage, ShowImage]) -> int:
+    if not hasattr(current_node, "duration"):
+        return duration_value
+
+    if duration_value == 0 or duration_value <= current_node.duration:
+        return current_node.duration
+    else:
+        return duration_value
+
+
 def _loop_over_adjustments(adjustments: Dict[RootAdjustment]) -> Iterator[MOTION_NODES]:
+    current_node = None
+    duration_value = 0
     sorted_adjustments = SortedList(
         id_of_adj_value 
         for adj_value in adjustments.values() 
@@ -65,18 +79,46 @@ def _loop_over_adjustments(adjustments: Dict[RootAdjustment]) -> Iterator[MOTION
     )
     time_index = 0
 
-    for adjustment in sorted_adjustments:
-        current_node = _create_command_node(adjustment)
-
-        if current_node.time > time_index:
-            difference = current_node.time - time_index
-            yield Continue(difference)
-            time_index += difference
-
+    while sorted_adjustments or current_node:
         if current_node is None:
-            raise TypeError
+            adjustment = sorted_adjustments.pop(0)
+            current_node = _create_command_node(adjustment)
+
+        if current_node.time <= time_index:
+            yield current_node
+            duration_value = _invoke_duration_value(duration_value, current_node)
+            current_node = None
+            continue
+
+        time_difference = current_node.time - time_index
+
+        if duration_value != 0 and duration_value <= time_difference:
+            duration_value = _invoke_duration_value(duration_value, current_node)
+            # duration_difference
+            yield InvokePrevious(duration_value)
+            time_index += duration_value
+            duration_value = 0
+            continue
+
+        elif duration_value != 0 and duration_value > time_difference:
+            yield InvokePrevious(time_difference)
+            time_index += time_difference
+            duration_value = _invoke_duration_value(duration_value - time_difference, current_node)
+            continue
+
+        else:
+            yield Continue(time_difference)
+            time_index += time_difference
 
         yield current_node
+
+        duration_value = _invoke_duration_value(duration_value, current_node)
+        current_node = None
+
+    if current_node is not None:
+        duration_value = _invoke_duration_value(duration_value, current_node)
+    if duration_value != 0:
+        yield InvokePrevious(duration_value)
 
 
 def parse(instructions: Union[Sequence[REFERENCES], SeparatedInstructions]) -> MotionTree:
