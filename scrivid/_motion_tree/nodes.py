@@ -42,6 +42,11 @@ class HideImage(RootMotionTree):
 
 
 @dynamic_attributes
+class InvokePrevious(RootMotionTree):
+    _attributes_ = (Attribute.LENGTH,)
+
+
+@dynamic_attributes
 class MotionTree(RootMotionTree):
     _attributes_ = (Attribute.BODY,)
 
@@ -63,6 +68,19 @@ class MotionTree(RootMotionTree):
                 for node in self.body)
             + "])"
         )
+
+
+@dynamic_attributes
+class MoveImage(RootMotionTree):
+    _attributes_ = (Attribute.ID, Attribute.TIME, Attribute.DURATION)
+
+    # For compatibility with sortedcontainers.SortedList.
+    __eq__ = _compare_attribute_time(operator.eq)
+    __ge__ = _compare_attribute_time(operator.ge)
+    __gt__ = _compare_attribute_time(operator.gt)
+    __le__ = _compare_attribute_time(operator.le)
+    __lt__ = _compare_attribute_time(operator.lt)
+    __ne__ = _compare_attribute_time(operator.ne)
 
 
 @dynamic_attributes

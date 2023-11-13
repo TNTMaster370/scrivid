@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from ._file_objects import VisibilityStatus
+from ._file_objects.adjustments import MoveAdjustment
 from ._file_objects.images import ImageReference
+from ._file_objects.properties import Properties
 from ._separating_instructions import separate_instructions
 from ._motion_tree import nodes, parse
 from ._utils import ticking
@@ -63,6 +65,15 @@ class _TemporaryDirectory:
         shutil.rmtree(self.dir)
 
 
+def _invoke_adjustment_duration(index: int, adj: RootAdjustment):
+    # Assume that the `adj` has a 'duration' attribute.
+    duration = index - adj.activation_time
+    if duration > adj.duration:
+        return adj.duration
+    else:
+        return duration
+
+
 def _create_frame(
         index: int, 
         occurrences: int, 
@@ -73,6 +84,7 @@ def _create_frame(
     frame = _FrameCanvas(window_size)
     instructions_access = deepcopy(instructions)  # Avoid modifying the original
     # objects.
+    merge_settings = {"mode": Properties.MERGE_MODE.REVERSE_APPEND, "strict": False}
 
     for ID, obj in instructions_access.references.items():
         relevant_adjustments = instructions_access.adjustments[ID]
@@ -82,8 +94,11 @@ def _create_frame(
             if adj.activation_time > index:
                 break
 
-            change = adj._enact().merge(obj._properties, strict=False)
-            obj._properties = change
+            args = ()
+            if type(adj) is MoveAdjustment:
+                args = (_invoke_adjustment_duration(index, adj),)
+
+            obj._properties = obj._properties.merge(adj._enact(*args), **merge_settings)
 
         if obj.visibility is VisibilityStatus.HIDE:
             continue
@@ -112,10 +127,14 @@ def _generate_frames(motion_tree: MotionTree):
         type_ = type(node)
         if type_ is nodes.Start:
             frames.append(_FrameInformation(0, 1))
-        elif type_ in (nodes.HideImage, nodes.ShowImage):  # nodes.Start
+        elif type_ in (nodes.HideImage, nodes.MoveImage, nodes.ShowImage):
             if index == frames[-1].index:
                 continue
             frames.append(_FrameInformation(index, 1))
+        elif type_ is nodes.InvokePrevious:
+            for _ in range(node.length):
+                frames.append(_FrameInformation(index, 1))
+                index += 1
         elif type_ is nodes.Continue:
             frame = frames[-1]
             frames[-1] = _FrameInformation(frame.index, frame.occurrences + node.length)

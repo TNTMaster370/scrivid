@@ -37,6 +37,10 @@ def create_instructions(image_directory):
         instructions.append(scrivid.ShowAdjustment(index, show_time))
         instructions.append(scrivid.HideAdjustment(index, hide_time))
 
+    instructions.append(scrivid.MoveAdjustment(2, 106, scrivid.Properties(x=60, y=30), 15))
+    instructions.append(scrivid.MoveAdjustment(2, 122, scrivid.Properties(x=30, y=60), 15))
+    instructions.append(scrivid.MoveAdjustment(4, 270, scrivid.Properties(x=100, y=100), 15))
+
     return instructions
 
 
