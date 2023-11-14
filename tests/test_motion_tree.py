@@ -87,7 +87,11 @@ def test_dump(indent, reference_callable, expected_string_raw):
     (motion_nodes.Continue, "length"),
     (motion_nodes.HideImage, "id"),
     (motion_nodes.HideImage, "time"),
+    (motion_nodes.InvokePrevious, "length"),
     (motion_nodes.MotionTree, "body"),
+    (motion_nodes.MoveImage, "duration"),
+    (motion_nodes.MoveImage, "id"),
+    (motion_nodes.MoveImage, "time"),
     (motion_nodes.ShowImage, "id"),
     (motion_nodes.ShowImage, "time")
 ])
@@ -103,6 +107,12 @@ def test_nodes_has_attributes(node_cls, attr):
     (motion_nodes.HideImage, "__lt__"),
     (motion_nodes.HideImage, "__ne__"),
     (motion_nodes.MotionTree, "convert_to_string"),
+    (motion_nodes.MoveImage, "__eq__"),
+    (motion_nodes.MoveImage, "__ge__"),
+    (motion_nodes.MoveImage, "__gt__"),
+    (motion_nodes.MoveImage, "__le__"),
+    (motion_nodes.MoveImage, "__lt__"),
+    (motion_nodes.MoveImage, "__ne__"),
     (motion_nodes.ShowImage, "__eq__"),
     (motion_nodes.ShowImage, "__ge__"),
     (motion_nodes.ShowImage, "__gt__"),
@@ -118,8 +128,8 @@ def test_nodes_has_methods_additional(node_cls, method):
 
 
 @pytest_parametrize("node_cls", [
-    motion_nodes.Continue, motion_nodes.End, motion_nodes.HideImage, motion_nodes.MotionTree, motion_nodes.ShowImage,
-    motion_nodes.Start
+    motion_nodes.Continue, motion_nodes.End, motion_nodes.HideImage, motion_nodes.InvokePrevious, 
+    motion_nodes.MotionTree, motion_nodes.MoveImage, motion_nodes.ShowImage, motion_nodes.Start
 ])
 @pytest_parametrize("method", ["__init__", "__repr__", "__setattr__", "__delattr__", "__getstate__", "__setstate__"])
 def test_nodes_has_methods_required(node_cls, method):
@@ -130,7 +140,9 @@ def test_nodes_has_methods_required(node_cls, method):
     (motion_nodes.Continue, (0,)),
     (motion_nodes.End, ()),
     (motion_nodes.HideImage, (0, 0)),
+    (motion_nodes.InvokePrevious, (0,)),
     (motion_nodes.MotionTree, ()),
+    (motion_nodes.MoveImage, (0, 0, 0)),
     (motion_nodes.ShowImage, (0, 0)),
     (motion_nodes.Start, ())
 ])
