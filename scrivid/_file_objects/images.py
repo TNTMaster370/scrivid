@@ -173,7 +173,7 @@ class ImageReference:
         self._file.close()
 
 
-def image_reference(
+def create_image_reference(
         ID: Hashable,
         file: Union[str, Path, FileAccess],
         properties: Union[Properties, _NS] = _NS,

@@ -1,5 +1,5 @@
-from scrivid import dump, errors, HideAdjustment, image_reference, motion_nodes, MoveAdjustment, parse, Properties, \
-    ShowAdjustment, walk
+from scrivid import create_image_reference, dump, errors, HideAdjustment, motion_nodes, MoveAdjustment, parse, \
+    Properties, ShowAdjustment, walk
 
 import pytest
 
@@ -21,21 +21,21 @@ def parse_empty():
 
 def parse_references():
     return parse((
-        image_reference(1, "1"),
-        image_reference(2, "2"),
-        image_reference(3, "3")
+        create_image_reference(1, "1"),
+        create_image_reference(2, "2"),
+        create_image_reference(3, "3")
     ))
 
 
 def parse_references_with_adjustments():
     return parse((
-        image_reference(1, "1"),
+        create_image_reference(1, "1"),
         ShowAdjustment(1, 2),
         HideAdjustment(1, 4),
-        image_reference(2, "2"),
+        create_image_reference(2, "2"),
         ShowAdjustment(2, 4),
         HideAdjustment(2, 8),
-        image_reference(3, "3"),
+        create_image_reference(3, "3"),
         ShowAdjustment(3, 6),
         HideAdjustment(3, 12)
     ))
@@ -43,13 +43,13 @@ def parse_references_with_adjustments():
 
 def parse_references_with_duration_adjustments():
     return parse((
-        image_reference(1, "1"),
+        create_image_reference(1, "1"),
         MoveAdjustment(1, 2, Properties(), 10),
-        image_reference(2, "2"),
+        create_image_reference(2, "2"),
         ShowAdjustment(2, 4),
         MoveAdjustment(2, 5, Properties(), 2),
         HideAdjustment(2, 8),
-        image_reference(3, "3"),
+        create_image_reference(3, "3"),
         ShowAdjustment(3, 6),
         MoveAdjustment(3, 8, Properties(), 6)
     ))
@@ -163,8 +163,8 @@ def test_parse(parsing_callable):
 
 def test_parse_duplicate_id():
     references = (
-        image_reference(0, ""),
-        image_reference(0, "")
+        create_image_reference(0, ""),
+        create_image_reference(0, "")
     )  # These two reference objects have the same ID field.
     with pytest.raises(errors.DuplicateIDError):
         parse(references)

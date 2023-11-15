@@ -22,7 +22,7 @@ def create_instructions(image_directory):
 
     for index in range(6):
         instructions.append(
-            scrivid.image_reference(
+            scrivid.create_image_reference(
                 index,
                 image_directory / f"img{index+1}.png",
                 layer=index+1,

@@ -1,4 +1,5 @@
-from scrivid import errors, image_reference, ImageReference, properties, Properties, RootAdjustment, VisibilityStatus
+from scrivid import create_image_reference, errors, ImageReference, properties, Properties, RootAdjustment, \
+    VisibilityStatus
 
 from pathlib import Path
 
@@ -71,18 +72,18 @@ def test_image_file_management_weakref():
 
 def test_image_function_multi_declare_properties():
     with pytest.raises(errors.AttributeError):
-        image_reference(0, "", Properties(layer=0, scale=0, x=0, y=0), x=1, y=1)
+        create_image_reference(0, "", Properties(layer=0, scale=0, x=0, y=0), x=1, y=1)
 
 
 def test_image_open_no_errors():
     image_directory = get_current_directory() / "tests/images/img1.png"
-    img_ref = image_reference(0, image_directory)
+    img_ref = create_image_reference(0, image_directory)
     img_ref.open()  # This call to .open() should not raise any exceptions.
 
 
 def test_image_open_property():
     image_directory = get_current_directory() / "tests/images/img1.png"
-    img_ref = image_reference(0, image_directory)
+    img_ref = create_image_reference(0, image_directory)
 
     assert img_ref.is_opened is False
 
