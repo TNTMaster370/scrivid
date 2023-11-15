@@ -1,4 +1,4 @@
-from scrivid import create_image_reference, errors, ImageReference, properties, Properties, RootAdjustment, \
+from scrivid import create_image_reference, define_properties, errors, ImageReference, Properties, RootAdjustment, \
     VisibilityStatus
 
 from pathlib import Path
@@ -39,7 +39,7 @@ def get_current_directory():
 
 
 def test_image_copy():
-    img_ref = ImageReference(0, FileSubstitute(""), properties())
+    img_ref = ImageReference(0, FileSubstitute(""), define_properties())
     copy_img_ref = img_ref.copy(1)
     deepcopy_img_ref = img_ref.deepcopy(2)
 
@@ -51,7 +51,7 @@ def test_image_copy():
 
 def test_image_file_management():
     file_handler = FileSubstitute("some/file")
-    img_ref = ImageReference(0, file_handler, properties())
+    img_ref = ImageReference(0, file_handler, define_properties())
 
     img_ref.open()
     img_ref.close()
@@ -61,7 +61,7 @@ def test_image_file_management():
 
 def test_image_file_management_weakref():
     file_handler = FileSubstitute("some/file")
-    img_ref = ImageReference(0, file_handler, properties())
+    img_ref = ImageReference(0, file_handler, define_properties())
 
     img_ref.open()
     del img_ref  # The method to close should be called when `i`s
@@ -187,14 +187,14 @@ class Test_Properties:
 
     def test_merge_invalid_type(self):
         a = Properties(scale=1)
-        b = ImageReference(10, FileSubstitute(""), properties())
+        b = ImageReference(10, FileSubstitute(""), define_properties())
 
         with pytest.raises(errors.TypeError):
             a.merge(b)
 
     def test_merge_invalid_type_ampersand_operator(self):
         a = Properties(scale=1)
-        b = ImageReference(10, FileSubstitute(""), properties())
+        b = ImageReference(10, FileSubstitute(""), define_properties())
 
         with pytest.raises(errors.TypeError):
             a & b

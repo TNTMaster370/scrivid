@@ -125,14 +125,14 @@ class Properties:
         return self.__class__(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
 
 
-def properties(
+def define_properties(
         *,
         layer: Union[int, EXCLUDED] = EXCLUDED,
         scale: Union[float, int, EXCLUDED] = EXCLUDED,
         visibility: Union[VisibilityStatus, EXCLUDED] = EXCLUDED,
         x: Union[int, EXCLUDED] = EXCLUDED,
         y: Union[int, EXCLUDED] = EXCLUDED
-):
+) -> Properties:
     # Define default values for non-required variables. If it's intended to be
     # used specifically for merging, you may wish to instantiate it directly,
     # instead of using this factory function.

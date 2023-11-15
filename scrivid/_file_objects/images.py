@@ -3,7 +3,7 @@ from __future__ import annotations
 from .. import errors
 from .._utils.sentinel_objects import sentinel
 from .files import call_close, FileAccess
-from .properties import EXCLUDED, properties as property_factory
+from .properties import define_properties, EXCLUDED
 
 from copy import copy, deepcopy
 from pathlib import Path
@@ -191,7 +191,7 @@ def create_image_reference(
         file = ImageFileReference(file)
 
     if properties is _NS:
-        properties = property_factory(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
+        properties = define_properties(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
     else:
         for name, attr in (("layer", layer), ("scale", scale), ("visibility", visibility), ("x", x), ("y", y)):
             if attr is not EXCLUDED:
