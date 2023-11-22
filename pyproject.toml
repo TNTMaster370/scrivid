@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 addopts = "--showlocals"
 faulthandler_timeout = 120
+markers = "flag_video"
 testpaths = [
     "tests",
 ]
