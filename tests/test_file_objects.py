@@ -1,3 +1,5 @@
+from functions import get_current_directory
+
 from scrivid import create_image_reference, define_properties, errors, ImageReference, Properties, RootAdjustment, \
     VisibilityStatus
 
@@ -32,10 +34,6 @@ class FileSubstitute:
 
     def close(self):
         self.state.append("close")
-
-
-def get_current_directory():
-    return Path(".").absolute()
 
 
 def test_image_copy():
@@ -76,13 +74,13 @@ def test_image_function_multi_declare_properties():
 
 
 def test_image_open_no_errors():
-    image_directory = get_current_directory() / "tests/images/img1.png"
+    image_directory = get_current_directory() / "images/img1.png"
     img_ref = create_image_reference(0, image_directory)
     img_ref.open()  # This call to .open() should not raise any exceptions.
 
 
 def test_image_open_property():
-    image_directory = get_current_directory() / "tests/images/img1.png"
+    image_directory = get_current_directory() / "images/img1.png"
     img_ref = create_image_reference(0, image_directory)
 
     assert img_ref.is_opened is False
