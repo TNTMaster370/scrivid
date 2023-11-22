@@ -3,8 +3,6 @@ from functions import get_current_directory
 from scrivid import create_image_reference, define_properties, errors, ImageReference, Properties, RootAdjustment, \
     VisibilityStatus
 
-from pathlib import Path
-
 import pytest
 
 
