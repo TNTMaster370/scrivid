@@ -44,7 +44,7 @@ def create_instructions(image_directory):
     return instructions
 
 
-def generate(save_location):
+def generate(save_location, images_folder):
     metadata = scrivid.Metadata(
         frame_rate=30,
         save_location=save_location,
@@ -52,13 +52,14 @@ def generate(save_location):
         window_size=(852, 480)
     )
 
-    instructions = create_instructions(metadata.save_location / "images")
+    instructions = create_instructions(images_folder)
     scrivid.compile_video(instructions, metadata)
 
 
 def main():
     save_location = Path(__file__).absolute().parent
-    generate(save_location)
+    images_folder = save_location / "images"
+    generate(save_location, images_folder)
 
 
 if __name__ == "__main__":
