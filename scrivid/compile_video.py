@@ -7,6 +7,7 @@ from ._file_objects.properties import Properties
 from ._separating_instructions import separate_instructions
 from ._motion_tree import nodes, parse
 from ._utils import ticking
+from ._video_stitching import stitch_video
 
 from copy import deepcopy
 import os
@@ -15,8 +16,6 @@ import shutil
 from typing import NamedTuple, TYPE_CHECKING
 
 from PIL import Image
-
-import av
 
 if TYPE_CHECKING:
     from ._file_objects.adjustments import RootAdjustment
@@ -87,7 +86,11 @@ def _create_frame(
     merge_settings = {"mode": Properties.MERGE_MODE.REVERSE_APPEND, "strict": False}
 
     for ID, obj in instructions_access.references.items():
-        relevant_adjustments = instructions_access.adjustments[ID]
+        try:
+            relevant_adjustments = instructions_access.adjustments[ID]
+        except KeyError:
+            relevant_adjustments = None
+
         while relevant_adjustments:
             adj = relevant_adjustments.pop(0)
 
@@ -116,7 +119,7 @@ def _create_frame(
             frame.update_pixel((x, y), obj.get_pixel_value((x - obj_x, y - obj_y)))
 
     for additional_index in range(occurrences):
-        frame.save(image_directory / f"{index + additional_index}.png", "PNG")
+        frame.save(image_directory / f"{index + additional_index:06d}.png", "PNG")
 
 
 def _generate_frames(motion_tree: MotionTree):
@@ -143,26 +146,7 @@ def _generate_frames(motion_tree: MotionTree):
         elif type_ is nodes.End:
             break
 
-    return index, frames
-
-
-def _stitch_video(temporary_directory, video_length, metadata: Metadata):
-    frame_rate = metadata.frame_rate
-    output_file = str(metadata.save_location / f"{metadata.video_name}.mp4")
-
-    with av.open(output_file, "w", format="mp4", options={"crf": "23", "pix_fmt": "rgb24"}) as container:
-        stream = container.add_stream("libx264", rate=frame_rate)
-        stream.height = metadata.window_height
-        stream.width = metadata.window_width
-
-        for index in range(video_length):
-            image_path = os.path.join(temporary_directory, f"{index}.png")
-
-            with av.open(image_path) as image:
-                frame = next(image.decode(video=0))
-                frame.pts = index
-                frame.pict_type = (index % frame_rate == 0)
-                container.mux(stream.encode(frame))
+    return frames
 
 
 def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
@@ -179,9 +163,9 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
     motion_tree = parse(separated_instructions)
 
     with _TemporaryDirectory(metadata.save_location) as temp_dir:
-        video_length, frames = _generate_frames(motion_tree)
+        frames = _generate_frames(motion_tree)
 
         for frame_information in frames:
             _create_frame(*frame_information, separated_instructions, metadata.window_size, temp_dir.dir)
 
-        _stitch_video(temp_dir.dir, video_length, metadata)
+        stitch_video(temp_dir.dir, metadata)
