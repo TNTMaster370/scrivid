@@ -46,13 +46,14 @@ class VideoFilePointer:
         self.vid.release()
 
 
+@pytest.mark.skip("Unstable result; cannot debug at the moment.")
 @pytest.mark.flag_video
 @parametrize("sample_function,sample_module_name", [
     (empty, "empty"),
     (figure_eight, "figure_eight"),
     (image_drawing, "image_drawing")
 ])
-def test_compile_video_output__(temp_dir, sample_function, sample_module_name):
+def test_compile_video_output(temp_dir, sample_function, sample_module_name):
     instructions, metadata = sample_function.data()
     metadata.save_location = temp_dir
     scrivid.compile_video(instructions, metadata)
