@@ -13,8 +13,8 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11']
 
     steps:
-      - name: Print PATH
-        run: echo $PATH
+      # - name: Print PATH
+      #   run: echo $PATH
       - uses: actions/checkout@v2
         # with: actions/checkout
       - name: Set up Python ${{ matrix.python-version }}
@@ -25,5 +25,7 @@ jobs:
         run:
           python -m pip install --upgrade pip
           pip install tox tox-gh-actions
+      - name: List virtual environment contents
+        run: ls -R $RUNNER_TOOL_CACHE/Python/*/x64/lib/python*/site-packages/
       - name: Test with tox
         run: tox
