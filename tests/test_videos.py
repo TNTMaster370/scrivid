@@ -46,7 +46,7 @@ class VideoFilePointer:
         self.vid.release()
 
 
-@pytest.mark.skip("Unstable result; cannot debug at the moment.")
+# @pytest.mark.skip("Unstable result; cannot debug at the moment.")
 @pytest.mark.flag_video
 @parametrize("sample_function,sample_module_name", [
     (empty, "empty"),
