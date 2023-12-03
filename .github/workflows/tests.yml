@@ -26,10 +26,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install tox tox-gh-actions
       - name: Install ffmpeg (ubuntu)
-        if: matrix.os == ubuntu-latest
+        if: '"${{ matrix.os }}" == "ubuntu-latest"'
         run: sudo apt-get install ffmpeg
       - name: Install ffmpeg (windows)
-        if: matrix.os == windows-latest
+        if: '"${{ matrix.os }}" == "windows-latest"'
         run: choco install ffmpeg --version=6.1.0 --elevated
       # - name: List virtual environment contents
       #   run: ls -R $RUNNER_TOOL_CACHE/Python/*/x64/lib/python*/site-packages/
