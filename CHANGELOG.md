@@ -6,12 +6,52 @@ If Scrivid's public API is being used, there should be no issues with upgrading 
 version. There is as of yet no deprecated functionality, so no policy is in place yet for it. When 
 it is, it will be included here.
 
-## 0.1.0
+## 0.2.0
+
+This version is currently in development.
+
+### New Features
+- Added `MoveAdjustment`, a subclass of `RootAdjustment` that handles movement over time, not exclusive to visibility.
+- Added an `ID` required field to `ImageReference`, used for unique identification.
+- Relevant to the `Adjustment` hierarchy:
+  - Added an `ID` required field, used to point to the relevant Reference object; and
+  - Added a hidden method `_enact()`, used internally to get the specific instructions for the change (in the form of a `Properties` object).
+- Added an `ID` field to `HideImage` and `ShowImage` of the `_motion_tree.nodes` module to match the `ID` field of the respective adjustment object.
+- Relevant to `Properties`:
+  - Added a new attribute `visibility`, used to signal whether the Reference is being drawn or not.
+  - Added a method `merge()`, to create a new object by merging its own attributes with another `Properties` object.
+    - Includes a `mode` parameter, which can be used to specify how it's merged. You can merge via either replacement (overwrites the attribute if there's a confliction) or appending (adds both attributes if compatible and specified). Takes in a `_MergeMode` object, detailed below.
+  - Added a class attribute `MERGE_MODE`, which houses an enum class called `_MergeMode`. Specified like this for clarity.
+- Added the following exceptions to the `errors` module:
+  - `ConflictingAttributesError`, for when multiple attributes conflict with each other.
+  - `InternalError`, for when something goes wrong internally.
 
 ### Changes
+- Changed the first parameter of `compile_video()` to be called `instructions` instead of `references`. Now, it can be a list of both reference object and adjustments, instead of just references.
+- Renamed the factory function for `ImageReference`s, from `image_reference()` to `create_image_reference()`.
+- Updated `RootAdjustment` to behave as an abstract base class.
+- Relevant to `Properties`:
+  - Changed the sentinel value that the `Properties` class uses to indicate that an attribute was excluded, to no longer be 'protected' and possible to use externally; and
+  - Renamed the factory function from `properties()` to `define_properties()`.
+- Changed `VisibilityStatus` from the `_file_objects` module to be accessible externally.
+- Replaced the depency [MoviePy](https://github.com/Zulko/moviepy) with pure ffmpeg, through the [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) package.
+
+### Removed
+- Relevant to `ImageReference`:
+  - Removed the `adjustments` field. Now, relevant adjustments must refer to the Reference object by matching with its `ID` field, instead of being contained inside of the class itself; and,
+  - Removed support for the 'bit shift' operators. This was appending to the `adjustment` fields under the hood, and it was also unintuitive.
+- Relevant to the `Adjustments` hierarchy:
+  - Removed support for the 'bit shift' operators.
+
+### Bug Fixes
+- Fixed a bug that prevented members of the `Adjustment` hierarchy from comparing correctly (53182ce84653157557051f745d223f242f3e897a)
+
+## 0.1.0
+
+### New Features
 - Added the following dependencies:
   - [PIL](https://github.com/python-pillow/Pillow) (Python Imaging Library), also referred to as Pillow;
-  - [MoviePy](https://github.com/Zulko/moviepy);
+  - MoviePy;
   - [attrs](https://github.com/python-attrs/attrs); and,
   - [sortedcontainers](https://github.com/grantjenks/python-sortedcontainers).
 - Added the internal '._file_objects' module. This module contains a series of classes and functions that are meant to 
