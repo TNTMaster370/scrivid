@@ -43,7 +43,7 @@ jobs:
       - name: Download Scrivid
         run: 
           python -m pip install --upgrade pip
-          git clone https://github.com/your_username/your_repository.git
+          git clone https://github.com/TNTMaster370/scrivid.git
           cd your_repository
           pip install -e .
       - name: Run Python Script
