@@ -46,7 +46,7 @@ jobs:
       - name: Run Python Script
         run: python -m tests/samples/notatruetest.py
       - name: Save Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: directory-artifact
           path: directory-archive.tar.gz
