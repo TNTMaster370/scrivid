@@ -27,6 +27,6 @@ jobs:
         run: sudo apt-get install ffmpeg
       - name: Install ffmpeg (windows)
         if: matrix.os == 'windows-latest'
-        run: choco install ffmpeg --version=6.1.0 --elevated
+        run: choco install ffmpeg --version=5.1.1 --elevated
       - name: Test with tox
         run: tox
