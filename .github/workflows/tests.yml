@@ -30,27 +30,9 @@ jobs:
         run: choco install ffmpeg --version=5.1.1 --elevated
       - name: Test with tox
         run: tox
-
-  artifact-inspection:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Up Python 3.11
-        uses: actions/checkout@v4
-        with:
-          python-version: '3.11'
-      - name: Download Scrivid
-        run: 
-          python -m pip install --upgrade pip
-          pip install --editable git+https://github.com/TNTMaster370/scrivid.git#egg=scrivid --user
-      - name: Run Python Script
-        run: python -m tests/samples/notatruetest.py
-      - name: Archive Directory
-        run: tar czf directory-archive.tar.gz /scrivid/tests/samples/
-        working-directory: ${{ github.workspace }}
-      - name: Save Artifact
+      - name: Save [Test Cache Video Files] as Artifact (3.11 only)
+        if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v3
         with:
-          name: directory-artifact
-          path: directory-archive.tar.gz
+          name: extracted-artifact
+          path: ${{ github.workspace }}/tests/.scrivid-test-cache
