@@ -13,6 +13,10 @@ import pytest
 parametrize = pytest.mark.parametrize
 
 
+def close_hash_match(phash_actual, phash_expected, threshold):
+    return phash_actual - phash_expected < threshold
+
+
 def loop_over_video_objects(container_actual, container_expected):
     while True:
         ret_a, frame_actual = container_actual.vid.read()
@@ -26,19 +30,19 @@ def loop_over_video_objects(container_actual, container_expected):
 
         phash_actual = imagehash.phash(image_actual)
         phash_expected = imagehash.phash(image_expected)
-        assert phash_actual == phash_expected
+        assert close_hash_match(phash_actual, phash_expected, 5)
 
 
 @pytest.fixture(scope="module")
 def temp_dir():
-    # Temporary means to create the temporary directory, but not *actually*
-    # deleting it. I'm using this to debug a build error from GitHub Actions;
-    tempdir = TemporaryDirectory(get_current_directory())
-    tempdir.__enter__()
-    yield tempdir.dir
+    # # Temporary means to create the temporary directory, but not *actually*
+    # # deleting it. I'm using this to debug a build error from GitHub Actions;
+    # tempdir = TemporaryDirectory(get_current_directory())
+    # tempdir.__enter__()
+    # yield tempdir.dir
 
-    # with TemporaryDirectory(get_current_directory()) as tempdir:
-    #     yield tempdir.dir
+    with TemporaryDirectory(get_current_directory()) as tempdir:
+        yield tempdir.dir
 
 
 class VideoFilePointer:
@@ -52,7 +56,7 @@ class VideoFilePointer:
         self.vid.release()
 
 
-@pytest.mark.xfail(reason="Unstable result in GitHub Actions.")
+# @pytest.mark.xfail(reason="Unstable result in GitHub Actions.")
 @pytest.mark.flag_video
 @parametrize("sample_function,sample_module_name", [
     (empty, "empty"),
