@@ -17,20 +17,34 @@ def close_hash_match(phash_actual, phash_expected, threshold):
     return phash_actual - phash_expected < threshold
 
 
-def loop_over_video_objects(container_actual, container_expected):
-    while True:
-        ret_a, frame_actual = container_actual.vid.read()
-        ret_e, frame_expected = container_expected.vid.read()
+class ComparisonBlock:
+    __slots__ = ("container", "frame", "hash", "image", "ret")
 
-        if not ret_a or not ret_e:
+    def __init__(self, video_path):
+        self.container = VideoFilePointer(video_path)
+        self.ret = None
+        self.frame = None
+
+    def read_container(self):
+        self.ret, self.frame = self.container.vid.read()
+
+    def define_hash(self, hashing_function):
+        self.image = Image.fromarray(opencv.cvtColor(self.frame, opencv.COLOR_BGR2RGB))
+        self.hash = hashing_function(self.image)
+
+
+def loop_over_video_objects(actual, expected):
+    while True:
+        actual.read_container()
+        expected.read_container()
+
+        if not actual.ret or not expected.ret:
             break
 
-        image_actual = Image.fromarray(opencv.cvtColor(frame_actual, opencv.COLOR_BGR2RGB))
-        image_expected = Image.fromarray(opencv.cvtColor(frame_expected, opencv.COLOR_BGR2RGB))
+        actual.define_hash(imagehash.phash)
+        expected.define_hash(imagehash.phash)
 
-        phash_actual = imagehash.phash(image_actual)
-        phash_expected = imagehash.phash(image_expected)
-        assert close_hash_match(phash_actual, phash_expected, 5)
+        assert close_hash_match(actual.hash, expected.hash, 5)
 
 
 @pytest.fixture(scope="module")
@@ -47,10 +61,11 @@ def temp_dir():
 
 class VideoFilePointer:
     def __init__(self, video_path):
+        self._video_path = video_path
         self.vid = opencv.VideoCapture(video_path)
 
     def __enter__(self):
-        return self
+        self.vid = opencv.VideoCapture(self._video_path)
 
     def __exit__(self, *_):
         self.vid.release()
@@ -68,9 +83,8 @@ def test_compile_video_output(temp_dir, sample_function, sample_module_name):
     metadata.save_location = temp_dir
     scrivid.compile_video(instructions, metadata)
 
-    actual_video_path = str(temp_dir / f"{metadata.video_name}.mp4")
-    expected_video_path = str(get_current_directory() / f"videos/__scrivid_\'{sample_module_name}\'__.mp4")
+    actual = ComparisonBlock(str(temp_dir / f"{metadata.video_name}.mp4"))
+    expected = ComparisonBlock(str(get_current_directory() / f"videos/__scrivid_\'{sample_module_name}\'__.mp4"))
 
-    with VideoFilePointer(actual_video_path) as container_actual, \
-            VideoFilePointer(expected_video_path) as container_expected:
-        loop_over_video_objects(container_actual, container_expected)
+    with actual.container, expected.container:
+        loop_over_video_objects(actual, expected)
