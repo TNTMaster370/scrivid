@@ -28,8 +28,8 @@ def has_method(cls, method):
      r"on=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n}{\i}{\i}MoveImage(id='BLOCK', time=21, duration=5), {\n}{\i}{"
      r"\i}InvokePrevious(length=10), {\n}{\i}{\i}MoveImage(id='BLOCK', time=26, duration=10), {\n}{\i}{\i}InvokePrevio"
      r"us(length=5), {\n}{\i}{\i}MoveImage(id='BLOCK', time=36, duration=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n"
-     r"}{\i}{\i}MoveImage(id='BLOCK', time=41, duration=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n}{\i}{\i}End()])"
-    ),
+     r"}{\i}{\i}MoveImage(id='BLOCK', time=41, duration=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n}{\i}{\i}"
+     r"End()])"),
     (image_drawing, 
      r"MotionTree({\n}{\i}body=[{\n}{\i}{\i}Start(), {\n}{\i}{\i}HideImage(id='HIDDEN', time=0), {\n}{\i}{\i}Continue("
      r"length=20), {\n}{\i}{\i}ShowImage(id='HIDDEN', time=20), {\n}{\i}{\i}End()])")
