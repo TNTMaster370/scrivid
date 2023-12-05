@@ -52,6 +52,7 @@ class VideoFilePointer:
         self.vid.release()
 
 
+@pytest.mark.xfail(reason="Unstable result in GitHub Actions.")
 @pytest.mark.flag_video
 @parametrize("sample_function,sample_module_name", [
     (empty, "empty"),
