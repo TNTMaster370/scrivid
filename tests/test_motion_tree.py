@@ -1,5 +1,6 @@
-from scrivid import create_image_reference, dump, errors, HideAdjustment, motion_nodes, MoveAdjustment, parse, \
-    Properties, ShowAdjustment, walk
+from samples import empty, figure_eight, image_drawing
+
+from scrivid import create_image_reference, dump, errors, motion_nodes, parse, walk
 
 import pytest
 
@@ -15,71 +16,35 @@ def has_method(cls, method):
         return False
 
 
-def parse_empty():
-    return parse(())
-
-
-def parse_references():
-    return parse((
-        create_image_reference(1, "1"),
-        create_image_reference(2, "2"),
-        create_image_reference(3, "3")
-    ))
-
-
-def parse_references_with_adjustments():
-    return parse((
-        create_image_reference(1, "1"),
-        ShowAdjustment(1, 2),
-        HideAdjustment(1, 4),
-        create_image_reference(2, "2"),
-        ShowAdjustment(2, 4),
-        HideAdjustment(2, 8),
-        create_image_reference(3, "3"),
-        ShowAdjustment(3, 6),
-        HideAdjustment(3, 12)
-    ))
-
-
-def parse_references_with_duration_adjustments():
-    return parse((
-        create_image_reference(1, "1"),
-        MoveAdjustment(1, 2, Properties(), 10),
-        create_image_reference(2, "2"),
-        ShowAdjustment(2, 4),
-        MoveAdjustment(2, 5, Properties(), 2),
-        HideAdjustment(2, 8),
-        create_image_reference(3, "3"),
-        ShowAdjustment(3, 6),
-        MoveAdjustment(3, 8, Properties(), 6)
-    ))
-
-
 @pytest_parametrize("indent", [0, 2, 4, 8])
-@pytest_parametrize("reference_callable,expected_string_raw", [
-    (parse_empty, "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}End()])"),
-    (parse_references, "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}End()])"),
-    (parse_references_with_adjustments,
-     "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}ShowImage(id"
-     "=1, time=2), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}HideImage(id=1, time=4), {\\n}{\\i}{\\i}ShowImage("
-     "id=2, time=4), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}ShowImage(id=3, time=6), {\\n}{\\i}{\\i}Continue"
-     "(length=2), {\\n}{\\i}{\\i}HideImage(id=2, time=8), {\\n}{\\i}{\\i}Continue(length=4), {\\n}{\\i}{\\i}HideImage(i"
-     "d=3, time=12), {\\n}{\\i}{\\i}End()])"),
-    (parse_references_with_duration_adjustments,
-     "MotionTree({\\n}{\\i}body=[{\\n}{\\i}{\\i}Start(), {\\n}{\\i}{\\i}Continue(length=2), {\\n}{\\i}{\\i}MoveImage(i"
-     "d=1, time=2, duration=10), {\\n}{\\i}{\\i}InvokePrevious(length=2), {\\n}{\\i}{\\i}ShowImage(id=2, time=4), {\\n"
-     "}{\\i}{\\i}InvokePrevious(length=1), {\\n}{\\i}{\\i}MoveImage(id=2, time=5, duration=2), {\\n}{\\i}{\\i}InvokePr"
-     "evious(length=1), {\\n}{\\i}{\\i}ShowImage(id=3, time=6), {\\n}{\\i}{\\i}InvokePrevious(length=2), {\\n}{\\i}{\\"
-     "i}HideImage(id=2, time=8), {\\n}{\\i}{\\i}MoveImage(id=3, time=8, duration=6), {\\n}{\\i}{\\i}InvokePrevious(len"
-     "gth=6), {\\n}{\\i}{\\i}End()])")
+@pytest_parametrize("sample_module,expected_string_raw", [
+    (empty, 
+     r"MotionTree({\n}{\i}body=[{\n}{\i}{\i}Start(), {\n}{\i}{\i}HideImage(id='HIDDEN', time=0), {\n}{\i}{\i}Continue("
+     r"length=1), {\n}{\i}{\i}MoveImage(id='HIDDEN', time=1, duration=11), {\n}{\i}{\i}InvokePrevious(length=11), {\n}"
+     r"{\i}{\i}End()])"),
+    (figure_eight, 
+     r"MotionTree({\n}{\i}body=[{\n}{\i}{\i}Start(), {\n}{\i}{\i}Continue(length=6), {\n}{\i}{\i}MoveImage(id='BLOCK',"
+     r" time=6, duration=10), {\n}{\i}{\i}InvokePrevious(length=10), {\n}{\i}{\i}MoveImage(id='BLOCK', time=16, durati"
+     r"on=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n}{\i}{\i}MoveImage(id='BLOCK', time=21, duration=5), {\n}{\i}{"
+     r"\i}InvokePrevious(length=10), {\n}{\i}{\i}MoveImage(id='BLOCK', time=26, duration=10), {\n}{\i}{\i}InvokePrevio"
+     r"us(length=5), {\n}{\i}{\i}MoveImage(id='BLOCK', time=36, duration=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n"
+     r"}{\i}{\i}MoveImage(id='BLOCK', time=41, duration=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n}{\i}{\i}End()])"
+    ),
+    (image_drawing, 
+     r"MotionTree({\n}{\i}body=[{\n}{\i}{\i}Start(), {\n}{\i}{\i}HideImage(id='HIDDEN', time=0), {\n}{\i}{\i}Continue("
+     r"length=20), {\n}{\i}{\i}ShowImage(id='HIDDEN', time=20), {\n}{\i}{\i}End()])")
 ])
-def test_dump(indent, reference_callable, expected_string_raw):
+def test_dump(indent, sample_module, expected_string_raw):
     expected = (
         expected_string_raw
         .replace("{\\i}", " " * indent)
         .replace("{\\n}", "\n" if indent else "")
     )
-    actual = dump(reference_callable(), indent=indent)
+
+    instructions, _ = sample_module.data()
+    motion_tree = parse(instructions)
+
+    actual = dump(motion_tree, indent=indent)
     assert actual == expected
 
 
@@ -151,14 +116,10 @@ def test_nodes_inheritance(node_cls, args):
     assert isinstance(node, motion_nodes.RootMotionTree)
 
 
-@pytest_parametrize("parsing_callable", [
-    parse_empty,
-    parse_references,
-    parse_references_with_adjustments,
-    parse_references_with_duration_adjustments
-])
-def test_parse(parsing_callable):
-    parsing_callable()  # This should not raise an exception.
+@pytest_parametrize("sample_module", [empty, figure_eight, image_drawing])
+def test_parse(sample_module):
+    instructions, _ = sample_module.data()
+    parse(instructions)
 
 
 def test_parse_duplicate_id():
@@ -170,21 +131,22 @@ def test_parse_duplicate_id():
         parse(references)
 
 
-@pytest_parametrize("parsing_callable,expected_node_order", [
-    (parse_empty, [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.End]),
-    (parse_references, [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.End]),
-    (parse_references_with_adjustments,
-     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.Continue, motion_nodes.ShowImage, motion_nodes.Continue,
-      motion_nodes.HideImage, motion_nodes.ShowImage, motion_nodes.Continue, motion_nodes.ShowImage,
-      motion_nodes.Continue, motion_nodes.HideImage, motion_nodes.Continue, motion_nodes.HideImage, motion_nodes.End]),
-    (parse_references_with_duration_adjustments, 
-     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.Continue, motion_nodes.MoveImage, 
-      motion_nodes.InvokePrevious, motion_nodes.ShowImage, motion_nodes.InvokePrevious, motion_nodes.MoveImage,
-      motion_nodes.InvokePrevious, motion_nodes.ShowImage, motion_nodes.InvokePrevious, motion_nodes.HideImage, 
-      motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.End])
+@pytest_parametrize("sample_module,expected_node_order", [
+    (empty, 
+     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.HideImage, motion_nodes.Continue,
+      motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.End]),
+    (figure_eight,
+     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.Continue, motion_nodes.MoveImage,
+      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.MoveImage,
+      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.MoveImage,
+      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.End]),
+    (image_drawing, 
+     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.HideImage, motion_nodes.Continue,
+      motion_nodes.ShowImage, motion_nodes.End])
 ])
-def test_walk(parsing_callable, expected_node_order):
-    motion_tree = parsing_callable()
+def test_walk(sample_module, expected_node_order):
+    instructions, _ = sample_module.data()
+    motion_tree = parse(instructions)
     for actual, expected_node in zip(walk(motion_tree), expected_node_order):
         actual_node = type(actual)
         assert actual_node is expected_node
