@@ -30,9 +30,9 @@ jobs:
         run: choco install ffmpeg --version=5.1.1 --elevated
       - name: Test with tox
         run: tox
-      - name: Save [Test Cache Video Files] as Artifact (3.11 only)
-        if: matrix.python-version == '3.11'
-        uses: actions/upload-artifact@v3
-        with:
-          name: extracted-artifact
-          path: ${{ github.workspace }}/tests/.scrivid-test-cache
+      # - name: Save [Test Cache Video Files] as Artifact (3.11 only)
+      #   if: matrix.python-version == '3.11'
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: extracted-artifact
+      #     path: ${{ github.workspace }}/tests/.scrivid-test-cache
