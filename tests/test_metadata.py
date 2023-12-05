@@ -18,3 +18,9 @@ def test_metadata_window_attributes():
 
     metadata.window_size = (10, 8)
     assert metadata.window_size == (10, 8)
+
+
+def test_metadata_window_attributes_exclusion():
+    metadata = Metadata()
+    assert metadata.window_height is None
+    assert metadata.window_width is None
