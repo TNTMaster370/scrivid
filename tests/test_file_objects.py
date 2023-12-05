@@ -146,6 +146,28 @@ class Test_Properties:
         d = b.merge(a, strict=False)
         assert d.x == 2
 
+    def test_merge_missing_attribute(self):
+        a = Properties(x=1)
+        b = Properties(x=1)
+        del a.x
+
+        with pytest.raises(errors.AttributeError):
+            a.merge(b)
+
+        with pytest.raises(errors.AttributeError):
+            b.merge(a)
+
+    def test_merge_missing_attribute_ampersand_operator(self):
+        a = Properties(x=1)
+        b = Properties(x=1)
+        del a.x
+
+        with pytest.raises(errors.AttributeError):
+            a & b
+
+        with pytest.raises(errors.AttributeError):
+            b & a
+
     def test_merge_mode_append(self):
         a = Properties(visibility=VisibilityStatus.HIDE, x=1)
         b = Properties(visibility=VisibilityStatus.SHOW, x=2)
