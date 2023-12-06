@@ -27,6 +27,6 @@ class TemporaryDirectory:
         os.mkdir(self.dir)
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, *_):
         import shutil
         shutil.rmtree(self.dir)
