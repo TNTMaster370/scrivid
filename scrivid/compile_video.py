@@ -39,7 +39,11 @@ class _FrameCanvas:
     def save(self, filename: Path, format_: str):
         self._canvas.save(filename, format_)
 
-    def update_pixel(self, coordinates: Tuple[int, int], new_pixel_value: Tuple[int, int, int]):
+    def update_pixel(
+            self,
+            coordinates: Tuple[int, int],
+            new_pixel_value: Tuple[int, int, int]
+    ):
         try:
             self._pixel_canvas.__setitem__(coordinates, new_pixel_value)
         except IndexError:
@@ -80,9 +84,12 @@ def _create_frame(
         image_directory: Path
 ):
     frame = _FrameCanvas(window_size)
-    instructions_access = deepcopy(instructions)  # Avoid modifying the original
-    # objects.
-    merge_settings = {"mode": Properties.MERGE_MODE.REVERSE_APPEND, "strict": False}
+    instructions_access = deepcopy(instructions)  # Avoid modifying the
+    # original objects.
+    merge_settings = {
+        "mode": Properties.MERGE_MODE.REVERSE_APPEND,
+        "strict": False
+    }
 
     for ID, obj in instructions_access.references.items():
         try:
@@ -100,7 +107,10 @@ def _create_frame(
             if type(adj) is MoveAdjustment:
                 args = (_invoke_adjustment_duration(index, adj),)
 
-            obj._properties = obj._properties.merge(adj._enact(*args), **merge_settings)
+            obj._properties = obj._properties.merge(
+                adj._enact(*args),
+                **merge_settings
+            )
 
         if obj.visibility is VisibilityStatus.HIDE:
             continue
@@ -115,10 +125,16 @@ def _create_frame(
                 range(obj_x, obj_x + obj.get_image_width()),
                 range(obj_y, obj_y + obj.get_image_height())
         ):
-            frame.update_pixel((x, y), obj.get_pixel_value((x - obj_x, y - obj_y)))
+            frame.update_pixel(
+                (x, y),
+                obj.get_pixel_value((x - obj_x, y - obj_y))
+            )
 
     for additional_index in range(occurrences):
-        frame.save(image_directory / f"{index + additional_index:06d}.png", "PNG")
+        frame.save(
+            image_directory / f"{index + additional_index:06d}.png",
+            "PNG"
+        )
 
 
 def _generate_frames(motion_tree: MotionTree):
@@ -139,7 +155,10 @@ def _generate_frames(motion_tree: MotionTree):
                 index += 1
         elif type_ is nodes.Continue:
             frame = frames[-1]
-            frames[-1] = _FrameInformation(frame.index, frame.occurrences + node.length)
+            frames[-1] = _FrameInformation(
+                frame.index,
+                frame.occurrences + node.length
+            )
             del frame
             index += node.length
         elif type_ is nodes.End:
@@ -164,6 +183,11 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
         frames = _generate_frames(motion_tree)
 
         for frame_information in frames:
-            _create_frame(*frame_information, separated_instructions, metadata.window_size, temp_dir.dir)
+            _create_frame(
+                *frame_information,
+                separated_instructions,
+                metadata.window_size,
+                temp_dir.dir
+            )
 
         stitch_video(temp_dir.dir, metadata)

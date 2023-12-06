@@ -5,6 +5,7 @@ from .properties import EXCLUDED, Properties
 
 from abc import ABC, abstractmethod
 import operator
+import textwrap
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -14,13 +15,23 @@ if TYPE_CHECKING:
 def _compare_activation_time(operation: operator):
     def function(a, b):
         if not isinstance(b, RootAdjustment):
-            raise TypeError(f"Expected type {a.__class__.__name__}, got type {b.__class__.__name__}")
+            raise TypeError(
+                textwrap.dedent(f"""
+                    Expected type {a.__class__.__name__}, got type 
+                    {b.__class__.__name__}
+                """)
+            )
         return operation(a._activation_time, b._activation_time)
 
     return function
 
 
-def _increment_value(full_value: Union[float, int, EXCLUDED], duration: int, length: int, precision: Union[float, int]):
+def _increment_value(
+        full_value: Union[float, int, EXCLUDED],
+        duration: int,
+        length: int,
+        precision: Union[float, int]
+):
     if full_value is EXCLUDED:
         return full_value
 
@@ -95,7 +106,13 @@ class HideAdjustment(RootAdjustment):
 class MoveAdjustment(RootAdjustment):
     __slots__ = ("_change", "_duration")
 
-    def __init__(self, ID: Hashable, activation_time: int, change: Properties, duration: int):
+    def __init__(
+            self,
+            ID: Hashable,
+            activation_time: int,
+            change: Properties,
+            duration: int
+    ):
         super().__init__(ID, activation_time)
         self._change = change
         self._duration = duration
@@ -121,7 +138,12 @@ class MoveAdjustment(RootAdjustment):
             return self._split_change(length)
 
     def _split_change(self, length: int = 1) -> Properties:
-        scale = _increment_value(self._change.scale, self._duration, length, 0.1)
+        scale = _increment_value(
+            self._change.scale,
+            self._duration,
+            length,
+            0.1
+        )
         x = _increment_value(self._change.x, self._duration, length, 1)
         y = _increment_value(self._change.y, self._duration, length, 1)
 

@@ -1,6 +1,9 @@
 from functions import get_current_directory
 
-from scrivid import create_image_reference, define_properties, errors, ImageReference, Properties, VisibilityStatus
+from scrivid import (
+    create_image_reference, define_properties, errors, ImageReference,
+    Properties, VisibilityStatus
+)
 
 import pytest
 
@@ -56,7 +59,13 @@ def test_image_file_management_weakref():
 
 def test_image_function_multi_declare_properties():
     with pytest.raises(errors.AttributeError):
-        create_image_reference(0, "", Properties(layer=0, scale=0, x=0, y=0), x=1, y=1)
+        create_image_reference(
+            0,
+            "",
+            Properties(layer=0, scale=0, x=0, y=0),
+            x=1,
+            y=1
+        )
 
 
 def test_image_open_no_errors():
@@ -126,8 +135,9 @@ class Test_Properties:
         a = Properties(x=1)
         b = Properties(x=2, y=2)
 
-        # Note: when the merge function has the strict flag disabled, it will use
-        # the properties from the 'self' caller are favoured in the merging.
+        # Note: when the merge function has the strict flag disabled, it will
+        # use the properties from the 'self' caller are favoured in the
+        # merging.
         c = a.merge(b, strict=False)
         assert c.x == 1
 

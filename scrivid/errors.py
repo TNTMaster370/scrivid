@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import textwrap
 from typing import TYPE_CHECKING
 
 from attrs import define, field
@@ -20,7 +21,13 @@ if TYPE_CHECKING:
 # and not anything like __repr__ or hidden variables.
 
 
-def _replace_in_string(string: str, new_section: str, start: int, end: int) -> str:
+def _replace_in_string(
+        string: str,
+        new_section: str,
+        start: int,
+        end: int
+) -> str:
+    # ...
     return string[:start] + new_section + string[end:]
 
 
@@ -47,10 +54,10 @@ class ConflictingAttributesError(AttributeError):
     An exception that is propagated when two attribute values conflict with 
     each other.
     """
-    default_message = (
-        "Conflicting attributes: \'{{first_name}}\' (set to {{first_value}}) and \'{{second_name}}\' (set to {{second_"
-        "value}})."
-    )
+    default_message = textwrap.dedent("""
+        Conflicting attributes: \'{{first_name}}\' (set to {{first_value}}) and
+         \'{{second_name}}\' (set to {{second_value}})."
+    """).replace("\n", "")
 
     first_name: Any = field(kw_only=True)
     first_value: Any = field(kw_only=True)
@@ -66,7 +73,10 @@ class ConflictingAttributesError(AttributeError):
 @define(frozen=True)
 class DuplicateIDError(ScrividException):
     """ An exception that is propagated when there is a duplicate ID field. """
-    default_message = "Duplicate ID field found between multiple identical objects: \'{{duplicate_id}}\'"
+    default_message = textwrap.dedent("""
+        Duplicate ID field found between multiple identical objects: \'{{duplic
+        ate_id}}\'
+    """).replace("\n", "")
 
     duplicate_id: Hashable = field(kw_only=True)
     message: str = field(kw_only=True)

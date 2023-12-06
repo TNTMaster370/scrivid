@@ -62,10 +62,14 @@ class MotionTree(RootMotionTree):
             f"{indent_sequence}{self.__class__.__name__}("
             + f"{indent_sequence}{' ' * indent}body=["
             + ', '.join(
-                node.convert_to_string(indent=indent, _previous_indent=(2*indent)+_previous_indent)
+                node.convert_to_string(
+                    indent=indent,
+                    _previous_indent=(2*indent)+_previous_indent
+                )
                 if getattr(node, "convert_to_string", False)
                 else f"{indent_sequence}{' ' * (2 * indent)}{node!r}"
-                for node in self.body)
+                for node in self.body
+            )
             + "])"
         )
 

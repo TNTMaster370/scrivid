@@ -7,6 +7,7 @@ from .properties import define_properties, EXCLUDED
 
 from copy import copy, deepcopy
 from pathlib import Path
+import textwrap
 from typing import TYPE_CHECKING
 import weakref
 
@@ -85,7 +86,13 @@ class ImageReference:
     _ID: Hashable
     _properties: Properties
 
-    def __init__(self, ID: Hashable, file: FileAccess, properties: Properties, /):
+    def __init__(
+            self,
+            ID: Hashable,
+            file: FileAccess,
+            properties: Properties,
+            /
+    ):
         self._file = file
         self._finalizer = weakref.finalize(self, call_close, self._file)
         self._ID = ID
@@ -191,10 +198,27 @@ def create_image_reference(
         file = ImageFileReference(file)
 
     if properties is _NS:
-        properties = define_properties(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
+        properties = define_properties(
+            layer=layer,
+            scale=scale,
+            visibility=visibility,
+            x=x,
+            y=y
+        )
     else:
-        for name, attr in (("layer", layer), ("scale", scale), ("visibility", visibility), ("x", x), ("y", y)):
+        for name, attr in (
+                ("layer", layer),
+                ("scale", scale),
+                ("visibility", visibility),
+                ("x", x),
+                ("y", y)
+        ):
             if attr is not EXCLUDED:
-                raise errors.AttributeError(f"Attribute \'{name}\' should not be specified if \'properties\' is.")
+                raise errors.AttributeError(
+                    textwrap.dedent(f"""
+                        Attribute \'{name}\' should not be specified if \'prope
+                        rties\' is.
+                    """)
+                )
 
     return ImageReference(ID, file, properties)

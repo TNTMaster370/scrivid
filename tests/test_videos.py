@@ -29,7 +29,9 @@ class ComparisonBlock:
         self.ret, self.frame = self.container.vid.read()
 
     def define_hash(self, hashing_function):
-        self.image = Image.fromarray(opencv.cvtColor(self.frame, opencv.COLOR_BGR2RGB))
+        self.image = Image.fromarray(
+            opencv.cvtColor(self.frame, opencv.COLOR_BGR2RGB)
+        )
         self.hash = hashing_function(self.image)
 
 
@@ -78,7 +80,12 @@ def test_compile_video_output(temp_dir, sample_function, sample_module_name):
     scrivid.compile_video(instructions, metadata)
 
     actual = ComparisonBlock(str(temp_dir / f"{metadata.video_name}.mp4"))
-    expected = ComparisonBlock(str(get_current_directory() / f"videos/__scrivid_\'{sample_module_name}\'__.mp4"))
+    expected = ComparisonBlock(
+        str(
+            get_current_directory() 
+            / f"videos/__scrivid_\'{sample_module_name}\'__.mp4"
+        )
+    )
 
     with actual.container, expected.container:
         loop_over_video_objects(actual, expected)

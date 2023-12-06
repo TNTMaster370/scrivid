@@ -22,13 +22,17 @@ def loop_over_namespace(namespace):
 
 @pytest_parametrize("exception,kwargs", [
     (errors.ConflictingAttributesError, 
-     {"first_name": "first_name", "first_value": "first_value", "second_name": "second_name", 
-      "second_value": "second_value"}),
+     {"first_name": "first_name", "first_value": "first_value", 
+      "second_name": "second_name", "second_value": "second_value"}),
     (errors.DuplicateIDError, {"duplicate_id": "duplicate_id"})
 ])
 def test_exceptions_default_message(exception, kwargs):
     exc = exception(**kwargs)
-    default_message = exception.default_message.replace("{", "").replace("}", "")
+    default_message = (
+        exception
+        .default_message.replace("{", "")
+        .replace("}", "")
+    )
     assert exc.message == default_message
 
 

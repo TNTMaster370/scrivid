@@ -5,6 +5,7 @@ from .. import errors
 from .._utils.sentinel_objects import sentinel
 
 import enum
+import textwrap
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -65,9 +66,10 @@ class Properties:
         visibility = getattr(self, "visibility", "<NOT_FOUND>")
         x = getattr(self, "x", "<NOT_FOUND>")
         y = getattr(self, "y", "<NOT_FOUND>")
-        return (
-            f"{self.__class__.__name__}({layer=}, {scale=}, {visibility=}, {x=}, {y=})"
-        )
+        return textwrap.dedent(f"""
+            {self.__class__.__name__}({layer=}, {scale=}, {visibility=}, {x=}, 
+            {y=})
+        """)
 
     def __and__(self, other):
         return self.merge(other)
@@ -81,11 +83,17 @@ class Properties:
 
             if a is NO_RETURN:
                 raise errors.AttributeError(
-                    f"Attribute \'{attr}\' not found in {self.__class__.__name__} instance \'{self}\'"
+                    textwrap.dedent(f"""
+                        Attribute \'{attr}\' not found in 
+                        {self.__class__.__name__} instance \'{self}\'
+                    """)
                 )
             elif b is NO_RETURN:
                 raise errors.AttributeError(
-                    f"Attribute \'{attr}\' not found in {other.__class__.__name__} instance \'{other}\'"
+                    textwrap.dedent(f"""
+                        Attribute \'{attr}\' not found in 
+                        {other.__class__.__name__} instance \'{other}\'
+                    """)
                 )
 
             if (EXCLUDED in (a, b)) or (a == b):
@@ -98,9 +106,17 @@ class Properties:
                 second_value=b
             )
 
-    def merge(self, other: Properties, /, *, mode: _MergeMode = _MergeMode.REPLACEMENT, strict: bool = True):
+    def merge(
+            self,
+            other: Properties,
+            /, *,
+            mode: _MergeMode = _MergeMode.REPLACEMENT,
+            strict: bool = True
+    ):
         if not isinstance(other, Properties):
-            raise errors.TypeError(f"Expected Properties object, got type {type(other)}.")
+            raise errors.TypeError(
+                f"Expected Properties object, got type {type(other)}."
+            )
         elif mode not in _APPENDING_MODES and strict:
             self._check_confliction(other)
 
@@ -122,7 +138,13 @@ class Properties:
             x = _calculate_append("x", a, b)
             y = _calculate_append("y", a, b)
 
-        return self.__class__(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
+        return self.__class__(
+            layer=layer,
+            scale=scale,
+            visibility=visibility,
+            x=x,
+            y=y
+        )
 
 
 def define_properties(
@@ -138,4 +160,10 @@ def define_properties(
     # instead of using this factory function.
     if visibility is EXCLUDED:
         visibility = VisibilityStatus.SHOW
-    return Properties(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
+    return Properties(
+        layer=layer,
+        scale=scale,
+        visibility=visibility,
+        x=x,
+        y=y
+    )

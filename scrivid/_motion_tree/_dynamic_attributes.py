@@ -4,6 +4,7 @@ from .. import errors
 
 from collections.abc import Hashable
 import enum
+import textwrap
 
 from attrs import define, field
 
@@ -51,12 +52,19 @@ def dynamic_attributes(cls=None, /):
         return wrapper
 
     if not hasattr(cls, "_attributes_"):
-        raise errors.InternalError(message=f"Class \'{cls.__name__}\' does not define _attributes_.")
+        raise errors.InternalError(
+            message=f"Class \'{cls.__name__}\' does not define _attributes_."
+        )
 
     for attr in cls._attributes_:
         try:
             _attributes[attr]
         except KeyError:
-            raise errors.InternalError(message=f"Class \'{cls.__name__}\' has an undefined attribute: \'{attr}\'.")
+            raise errors.InternalError(
+                message=textwrap.dedent(f"""
+                    Class \'{cls.__name__}\' has an undefined attribute: \'
+                    {attr}\'.
+                """)
+            )
 
     return wrapper()  # @dynamic_attributes
