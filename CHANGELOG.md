@@ -8,8 +8,6 @@ it is, it will be included here.
 
 ## 0.2.0
 
-This version is currently in development.
-
 ### New Features
 - Added `MoveAdjustment`, a subclass of `RootAdjustment` that handles movement over time, not exclusive to visibility.
 - Added an `ID` required field to `ImageReference`, used for unique identification.
