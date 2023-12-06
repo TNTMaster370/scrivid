@@ -2,6 +2,8 @@ from samples import empty, figure_eight, image_drawing
 
 from scrivid import create_image_reference, dump, errors, motion_nodes, parse, walk
 
+import textwrap
+
 import pytest
 
 
@@ -19,26 +21,31 @@ def has_method(cls, method):
 @pytest_parametrize("indent", [0, 2, 4, 8])
 @pytest_parametrize("sample_module,expected_string_raw", [
     (empty, 
-     r"MotionTree({\n}{\i}body=[{\n}{\i}{\i}Start(), {\n}{\i}{\i}HideImage(id='HIDDEN', time=0), {\n}{\i}{\i}Continue("
-     r"length=1), {\n}{\i}{\i}MoveImage(id='HIDDEN', time=1, duration=11), {\n}{\i}{\i}InvokePrevious(length=11), {\n}"
-     r"{\i}{\i}End()])"),
+     textwrap.dedent(r"""
+     MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Continue(len
+     gth=1), {\b}{\i}{\i}MoveImage(id='HIDDEN', time=1, duration=11), {\b}{\i}{\i}InvokePrevious(length=11), {\b}{\i}{\
+     i}End()])
+     """).replace("\n", "")),
     (figure_eight, 
-     r"MotionTree({\n}{\i}body=[{\n}{\i}{\i}Start(), {\n}{\i}{\i}Continue(length=6), {\n}{\i}{\i}MoveImage(id='BLOCK',"
-     r" time=6, duration=10), {\n}{\i}{\i}InvokePrevious(length=10), {\n}{\i}{\i}MoveImage(id='BLOCK', time=16, durati"
-     r"on=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n}{\i}{\i}MoveImage(id='BLOCK', time=21, duration=5), {\n}{\i}{"
-     r"\i}InvokePrevious(length=10), {\n}{\i}{\i}MoveImage(id='BLOCK', time=26, duration=10), {\n}{\i}{\i}InvokePrevio"
-     r"us(length=5), {\n}{\i}{\i}MoveImage(id='BLOCK', time=36, duration=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n"
-     r"}{\i}{\i}MoveImage(id='BLOCK', time=41, duration=5), {\n}{\i}{\i}InvokePrevious(length=5), {\n}{\i}{\i}"
-     r"End()])"),
+     textwrap.dedent(r"""
+     MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}Continue(length=6), {\b}{\i}{\i}MoveImage(id='BLOCK', ti
+     me=6, duration=10), {\b}{\i}{\i}InvokePrevious(length=10), {\b}{\i}{\i}MoveImage(id='BLOCK', time=16, duration=5),
+      {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}MoveImage(id='BLOCK', time=21, duration=5), {\b}{\i}{\i}InvokeP
+     revious(length=10), {\b}{\i}{\i}MoveImage(id='BLOCK', time=26, duration=10), {\b}{\i}{\i}InvokePrevious(length=5),
+      {\b}{\i}{\i}MoveImage(id='BLOCK', time=36, duration=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}MoveIma
+     ge(id='BLOCK', time=41, duration=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}End()])
+     """).replace("\n", "")),
     (image_drawing, 
-     r"MotionTree({\n}{\i}body=[{\n}{\i}{\i}Start(), {\n}{\i}{\i}HideImage(id='HIDDEN', time=0), {\n}{\i}{\i}Continue("
-     r"length=20), {\n}{\i}{\i}ShowImage(id='HIDDEN', time=20), {\n}{\i}{\i}End()])")
+     textwrap.dedent(r"""
+     MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Continue(len
+     gth=20), {\b}{\i}{\i}ShowImage(id='HIDDEN', time=20), {\b}{\i}{\i}End()])
+     """).replace("\n", ""))
 ])
 def test_dump(indent, sample_module, expected_string_raw):
     expected = (
         expected_string_raw
-        .replace("{\\i}", " " * indent)
-        .replace("{\\n}", "\n" if indent else "")
+        .replace(r"{\i}", " " * indent)
+        .replace(r"{\b}", "\n" if indent else "")
     )
 
     instructions, _ = sample_module.data()
