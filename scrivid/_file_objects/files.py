@@ -4,6 +4,10 @@ from pathlib import Path
 from typing import Protocol, runtime_checkable, Union
 
 
+def call_close(file: FileAccess):
+    file.close()
+
+
 @runtime_checkable
 class FileAccess(Protocol):
     """
@@ -15,10 +19,6 @@ class FileAccess(Protocol):
     def is_opened(self) -> bool: ...
     def open(self): ...
     def close(self): ...
-
-
-def call_close(file: FileAccess):
-    file.close()
 
 
 class FileReference:
