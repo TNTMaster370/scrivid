@@ -5,7 +5,7 @@ from ._file_objects import (
     RootAdjustment, ShowAdjustment, VisibilityStatus
 )
 from ._motion_tree import dump, nodes as motion_nodes, parse, walk
-from .compile_video import compile_video
+from ._video_crafting import compile_video
 from .metadata import Metadata
 
 

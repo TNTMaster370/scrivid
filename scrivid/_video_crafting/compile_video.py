@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from ._file_objects import VisibilityStatus
-from ._file_objects.adjustments import MoveAdjustment
-from ._file_objects.images import ImageReference
-from ._file_objects.properties import Properties
-from ._separating_instructions import separate_instructions
-from ._motion_tree import nodes, parse
-from ._utils import ticking
+from .._file_objects import VisibilityStatus
+from .._file_objects.adjustments import MoveAdjustment
+from .._file_objects.images import ImageReference
+from .._file_objects.properties import Properties
+from .._separating_instructions import separate_instructions
+from .._motion_tree import nodes, parse
+from .._utils import ticking
 from ._video_stitching import stitch_video
 
 from copy import deepcopy
@@ -17,9 +17,9 @@ from typing import NamedTuple, TYPE_CHECKING
 from PIL import Image
 
 if TYPE_CHECKING:
-    from ._file_objects.adjustments import RootAdjustment
-    from ._separating_instructions import SeparatedInstructions
-    from .metadata import Metadata
+    from .._file_objects.adjustments import RootAdjustment
+    from .._separating_instructions import SeparatedInstructions
+    from ..metadata import Metadata
 
     from collections.abc import Sequence
     from pathlib import Path
