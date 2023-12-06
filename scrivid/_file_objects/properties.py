@@ -69,7 +69,7 @@ class Properties:
         return textwrap.dedent(f"""
             {self.__class__.__name__}({layer=}, {scale=}, {visibility=}, {x=}, 
             {y=})
-        """)
+        """).replace("\n", "")
 
     def __and__(self, other):
         return self.merge(other)
