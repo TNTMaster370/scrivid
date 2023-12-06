@@ -219,10 +219,10 @@ class Test_Properties:
         b = Properties(x=2, y=2)
 
         with pytest.raises(errors.ConflictingAttributesError):
-            c = a.merge(b, mode=self.REVERSE_STRICT_REPLACEMENT)
+            a.merge(b, mode=self.REVERSE_STRICT_REPLACEMENT)
 
         with pytest.raises(errors.ConflictingAttributesError):
-            d = b.merge(a, mode=self.REVERSE_STRICT_REPLACEMENT)
+            b.merge(a, mode=self.REVERSE_STRICT_REPLACEMENT)
 
     def test_merge_invalid_type(self):
         a = Properties(scale=1)
