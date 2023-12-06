@@ -86,10 +86,7 @@ def _create_frame(
     frame = _FrameCanvas(window_size)
     instructions_access = deepcopy(instructions)  # Avoid modifying the
     # original objects.
-    merge_settings = {
-        "mode": Properties.MERGE_MODE.REVERSE_APPEND,
-        "strict": False
-    }
+    merge_settings = {"mode": Properties.MERGE_MODE.REVERSE_APPEND}
 
     for ID, obj in instructions_access.references.items():
         try:

@@ -31,12 +31,25 @@ class _MergeMode(enum.Enum):
     REPLACEMENT = enum.auto()
     REVERSE_APPEND = enum.auto()
     REVERSE_REPLACEMENT = enum.auto()
+    REVERSE_STRICT_REPLACEMENT = enum.auto()
+    STRICT_REPLACEMENT = enum.auto()
 
 
 _APPENDING_MODES = (_MergeMode.APPEND, _MergeMode.REVERSE_APPEND)
-_FORWARD_MODES = (_MergeMode.APPEND, _MergeMode.REPLACEMENT)
-_REPLACEMENT_MODES = (_MergeMode.REPLACEMENT, _MergeMode.REVERSE_REPLACEMENT)
-_REVERSE_MODES = (_MergeMode.REVERSE_APPEND, _MergeMode.REVERSE_REPLACEMENT)
+_FORWARD_MODES = (
+    _MergeMode.APPEND, _MergeMode.REPLACEMENT, _MergeMode.STRICT_REPLACEMENT
+)
+_REPLACEMENT_MODES = (
+    _MergeMode.REPLACEMENT, _MergeMode.REVERSE_REPLACEMENT,
+    _MergeMode.REVERSE_STRICT_REPLACEMENT, _MergeMode.STRICT_REPLACEMENT
+)
+_REVERSE_MODES = (
+    _MergeMode.REVERSE_APPEND, _MergeMode.REVERSE_REPLACEMENT, 
+    _MergeMode.REVERSE_STRICT_REPLACEMENT
+)
+_STRICT_MODES = (
+    _MergeMode.REVERSE_STRICT_REPLACEMENT, _MergeMode.STRICT_REPLACEMENT
+)
 
 EXCLUDED = sentinel("EXCLUDED")
 
@@ -110,14 +123,13 @@ class Properties:
             self,
             other: Properties,
             /, *,
-            mode: _MergeMode = _MergeMode.REPLACEMENT,
-            strict: bool = True
+            mode: _MergeMode = _MergeMode.STRICT_REPLACEMENT
     ):
         if not isinstance(other, Properties):
             raise errors.TypeError(
                 f"Expected Properties object, got type {type(other)}."
             )
-        elif mode not in _APPENDING_MODES and strict:
+        elif mode in _STRICT_MODES:
             self._check_confliction(other)
 
         if mode in _FORWARD_MODES:

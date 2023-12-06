@@ -90,8 +90,12 @@ def test_image_open_property():
 
 class Test_Properties:
     APPEND = Properties.MERGE_MODE.APPEND
+    REPLACEMENT = Properties.MERGE_MODE.REPLACEMENT
     REVERSE_APPEND = Properties.MERGE_MODE.REVERSE_APPEND
     REVERSE_REPLACEMENT = Properties.MERGE_MODE.REVERSE_REPLACEMENT
+    REVERSE_STRICT_REPLACEMENT = (
+        Properties.MERGE_MODE.REVERSE_STRICT_REPLACEMENT
+    )
 
     def test_merge(self):
         a = Properties(layer=1)
@@ -131,19 +135,6 @@ class Test_Properties:
         with pytest.raises(errors.ConflictingAttributesError):
             b & a
 
-    def test_merge_confliction_not_strict(self):
-        a = Properties(x=1)
-        b = Properties(x=2, y=2)
-
-        # Note: when the merge function has the strict flag disabled, it will
-        # use the properties from the 'self' caller are favoured in the
-        # merging.
-        c = a.merge(b, strict=False)
-        assert c.x == 1
-
-        d = b.merge(a, strict=False)
-        assert d.x == 2
-
     def test_merge_missing_attribute(self):
         a = Properties(x=1)
         b = Properties(x=1)
@@ -170,36 +161,68 @@ class Test_Properties:
         a = Properties(visibility=VisibilityStatus.HIDE, x=1)
         b = Properties(visibility=VisibilityStatus.SHOW, x=2)
 
-        c = a.merge(b, mode=self.APPEND, strict=False)
+        c = a.merge(b, mode=self.APPEND)
         assert c.x == 3
         assert c.visibility is VisibilityStatus.HIDE
 
-        d = b.merge(a, mode=self.APPEND, strict=False)
+        d = b.merge(a, mode=self.APPEND)
         assert d.visibility is VisibilityStatus.SHOW
         # 'visibility' is not invoked via appending the same way, since adding
         # two enum objects is not possible, so it invokes the replacement
         # behaviour instead. This is why there's a reverse-append option.
 
+    def test_merge_mode_replacement(self):
+        a = Properties(x=1)
+        b = Properties(x=2, y=2)
+
+        c = a.merge(b, mode=self.REPLACEMENT)
+        assert c.x == 1
+
+        d = b.merge(a, mode=self.REPLACEMENT)
+        assert d.x == 2
+
     def test_merge_mode_reverse_append(self):
         a = Properties(visibility=VisibilityStatus.HIDE, x=1)
         b = Properties(visibility=VisibilityStatus.SHOW, x=2)
 
-        c = a.merge(b, mode=self.REVERSE_APPEND, strict=False)
+        c = a.merge(b, mode=self.REVERSE_APPEND)
         assert c.x == 3
         assert c.visibility is VisibilityStatus.SHOW
 
-        d = b.merge(a, mode=self.REVERSE_APPEND, strict=False)
+        d = b.merge(a, mode=self.REVERSE_APPEND)
         assert d.visibility is VisibilityStatus.HIDE
 
     def test_merge_mode_reverse_replacement(self):
         a = Properties(x=1)
         b = Properties(x=2, y=2)
 
-        c = a.merge(b, mode=self.REVERSE_REPLACEMENT, strict=False)
+        c = a.merge(b, mode=self.REVERSE_REPLACEMENT)
         assert c.x == 2
 
-        d = b.merge(a, mode=self.REVERSE_REPLACEMENT, strict=False)
+        d = b.merge(a, mode=self.REVERSE_REPLACEMENT)
         assert d.x == 1
+
+    def test_merge_mode_reverse_strict_replacement(self):
+        a = Properties(x=1)
+        b = Properties(y=2)
+
+        c = a.merge(b, mode=self.REVERSE_STRICT_REPLACEMENT)
+        assert c.x == 1
+        assert c.y == 2
+
+        d = b.merge(a, mode=self.REVERSE_STRICT_REPLACEMENT)
+        assert d.x == 1
+        assert d.y == 2
+
+    def test_merge_mode_reverse_strict_replacement_confliction(self):
+        a = Properties(x=1)
+        b = Properties(x=2, y=2)
+
+        with pytest.raises(errors.ConflictingAttributesError):
+            c = a.merge(b, mode=self.REVERSE_STRICT_REPLACEMENT)
+
+        with pytest.raises(errors.ConflictingAttributesError):
+            d = b.merge(a, mode=self.REVERSE_STRICT_REPLACEMENT)
 
     def test_merge_invalid_type(self):
         a = Properties(scale=1)
