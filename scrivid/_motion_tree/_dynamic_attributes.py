@@ -21,7 +21,6 @@ _attributes = {
     Attribute.BODY: ("body", list, field(factory=list, init=False)),
     Attribute.DURATION: ("duration", int, field()),
     Attribute.ID: ("id", Hashable, field()),
-    Attribute.INDEX: ("index", int, field()),
     Attribute.LENGTH: ("length", int, field()),
     Attribute.TIME: ("time", int, field())
 }

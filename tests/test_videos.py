@@ -49,12 +49,6 @@ def loop_over_video_objects(actual, expected):
 
 @pytest.fixture(scope="module")
 def temp_dir():
-    # # Temporary means to create the temporary directory, but not *actually*
-    # # deleting it. I'm using this to debug a build error from GitHub Actions;
-    # tempdir = TemporaryDirectory(get_current_directory())
-    # tempdir.__enter__()
-    # yield tempdir.dir
-
     with TemporaryDirectory(get_current_directory()) as tempdir:
         yield tempdir.dir
 

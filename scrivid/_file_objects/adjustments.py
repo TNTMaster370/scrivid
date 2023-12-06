@@ -1,14 +1,23 @@
 from __future__ import annotations
 
-from ._operations import comparison_function
 from ._status import VisibilityStatus
 from .properties import EXCLUDED, Properties
 
 from abc import ABC, abstractmethod
+import operator
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Hashable, Union
+
+
+def _compare_activation_time(operation: operator):
+    def function(a, b):
+        if not isinstance(b, RootAdjustment):
+            raise TypeError(f"Expected type {a.__class__.__name__}, got type {b.__class__.__name__}")
+        return operation(a._activation_time, b._activation_time)
+
+    return function
 
 
 def _increment_value(full_value: Union[float, int, EXCLUDED], duration: int, length: int, precision: Union[float, int]):
@@ -60,22 +69,22 @@ class RootAdjustment(ABC):
 
 
 """ self == other """
-RootAdjustment.__eq__ = comparison_function("_activation_time", "==", RootAdjustment)
+RootAdjustment.__eq__ = _compare_activation_time(operator.eq)
 
 """ self >= other """
-RootAdjustment.__ge__ = comparison_function("_activation_time", ">=", RootAdjustment)
+RootAdjustment.__ge__ = _compare_activation_time(operator.ge)
 
 """ self > other """
-RootAdjustment.__gt__ = comparison_function("_activation_time", ">", RootAdjustment)
+RootAdjustment.__gt__ = _compare_activation_time(operator.gt)
 
 """ self <= other """
-RootAdjustment.__le__ = comparison_function("_activation_time", "<=", RootAdjustment)
+RootAdjustment.__le__ = _compare_activation_time(operator.le)
 
 """ self < other """
-RootAdjustment.__lt__ = comparison_function("_activation_time", "<", RootAdjustment)
+RootAdjustment.__lt__ = _compare_activation_time(operator.lt)
 
 """ self != other """
-RootAdjustment.__ne__ = comparison_function("_activation_time", "!=", RootAdjustment)
+RootAdjustment.__ne__ = _compare_activation_time(operator.ne)
 
 
 class HideAdjustment(RootAdjustment):

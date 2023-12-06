@@ -1,20 +1,8 @@
 from functions import get_current_directory
 
-from scrivid import create_image_reference, define_properties, errors, ImageReference, Properties, RootAdjustment, \
-    VisibilityStatus
+from scrivid import create_image_reference, define_properties, errors, ImageReference, Properties, VisibilityStatus
 
 import pytest
-
-
-class AdjustmentSubstitute(RootAdjustment):
-    __slots__ = ("state",)
-
-    def __init__(self, ID, activation_time: int):
-        super().__init__(ID, activation_time)
-        self.state = []
-
-    def _enact(self):
-        self.state.append("utilize")
 
 
 class FileSubstitute:

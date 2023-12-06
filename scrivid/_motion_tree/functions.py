@@ -27,12 +27,10 @@ def dump(motion_tree: MotionTree, *, indent: int = 0) -> str:
 
 
 def _create_command_node(adjustment: RootAdjustment) -> Union[HideImage, MoveImage, ShowImage, None]:
-    # INITIALIZE
     adjustment_type = type(adjustment)
     adjustment_time = adjustment.activation_time
     relevant_id = adjustment.ID
 
-    # OPERATION/TEARDOWN
     if adjustment_type == HideAdjustment:
         return HideImage(relevant_id, adjustment_time)
     elif adjustment_type == MoveAdjustment:
@@ -44,10 +42,8 @@ def _create_command_node(adjustment: RootAdjustment) -> Union[HideImage, MoveIma
 
 
 def _create_motion_tree(separated_instructions: SeparatedInstructions) -> MotionTree:
-    # INITIALIZE
     motion_tree = MotionTree()
 
-    # OPERATION
     motion_tree.body.append(Start())
 
     for node in _loop_over_adjustments(separated_instructions.adjustments):
@@ -55,7 +51,6 @@ def _create_motion_tree(separated_instructions: SeparatedInstructions) -> Motion
 
     motion_tree.body.append(End())
 
-    # TEARDOWN
     return motion_tree
 
 
@@ -94,7 +89,6 @@ def _loop_over_adjustments(adjustments: Dict[RootAdjustment]) -> Iterator[MOTION
 
         if duration_value != 0 and duration_value <= time_difference:
             duration_value = _invoke_duration_value(duration_value, current_node)
-            # duration_difference
             yield InvokePrevious(duration_value)
             time_index += duration_value
             duration_value = 0

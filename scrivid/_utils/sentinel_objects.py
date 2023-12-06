@@ -1,5 +1,5 @@
 class _SentinelBase(type):
-    def __new__(mcs, *args, **kwargs):
+    def __new__(mcs, *_, **__):
         raise TypeError(f"{mcs!r} is not callable")
 
     def __repr__(self):

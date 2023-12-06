@@ -11,7 +11,6 @@ from ._video_stitching import stitch_video
 
 from copy import deepcopy
 import os
-import logging
 import shutil
 from typing import NamedTuple, TYPE_CHECKING
 
@@ -60,7 +59,7 @@ class _TemporaryDirectory:
         os.mkdir(self.dir)
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, *_):
         shutil.rmtree(self.dir)
 
 
@@ -158,7 +157,6 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
     :param metadata: An instance of Metadata that stores the attributes
         of the video.
     """
-    logging.basicConfig(level=logging.CRITICAL)
     separated_instructions = separate_instructions(instructions)
     motion_tree = parse(separated_instructions)
 

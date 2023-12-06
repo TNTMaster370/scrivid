@@ -60,7 +60,6 @@ class Properties:
         self.y = y
 
     def __repr__(self):
-        getattr(self, "", "<NOT_FOUND>")
         layer = getattr(self, "layer", "<NOT_FOUND>")
         scale = getattr(self, "scale", "<NOT_FOUND>")
         visibility = getattr(self, "visibility", "<NOT_FOUND>")
