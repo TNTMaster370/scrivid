@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from ._coordinates import ImageCoordinates
+from .interface import QualmInterface
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .._file_objects.images import ImageReference
+
+    from typing import List
 
 
 def _above(a: ImageCoordinates, b: ImageCoordinates):
@@ -16,11 +19,16 @@ def _left_of(a: ImageCoordinates, b: ImageCoordinates):
     return a.x_prime < b.x
 
 
-class DrawingConfliction:
+class DrawingConfliction(QualmInterface):
     __slots__ = ()
 
     @classmethod
-    def check(cls, image_a: ImageReference, image_b: ImageReference):
+    def check(
+            cls,
+            qualms: List[QualmInterface],
+            image_a: ImageReference,
+            image_b: ImageReference
+    ):
         if not image_a.is_opened:
             image_a.open()
         if not image_b.is_opened:
@@ -35,4 +43,4 @@ class DrawingConfliction:
         if _above(a, b) or _above(b, a):
             return
 
-        return cls()
+        qualms.append(cls())

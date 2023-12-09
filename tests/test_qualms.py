@@ -36,8 +36,10 @@ class TestDrawingConfliction:
             x=b.x,
             y=b.y
         )
+        qualms = []
+        DrawingConfliction.check(qualms, image_a, image_b)
 
-        return DrawingConfliction.check(image_a, image_b)
+        return qualms
 
     @parametrize("a,b", [
         (_Coordinates(256, 256), _Coordinates(256, 256)),  # Same spot
@@ -48,7 +50,7 @@ class TestDrawingConfliction:
     ])
     def test_match(self, a, b):
         result = self._get_check(a, b)
-        assert isinstance(result, DrawingConfliction)
+        assert len(result) == 1 and isinstance(result[0], DrawingConfliction)
 
     @parametrize("a,b", [
         (_Coordinates(256, 256), _Coordinates(0, 0)),  # Top-Left
@@ -62,4 +64,4 @@ class TestDrawingConfliction:
     ])
     def test_no_match(self, a, b):
         result = self._get_check(a, b)
-        assert result is None
+        assert result == []
