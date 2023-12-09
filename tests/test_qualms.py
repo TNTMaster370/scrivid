@@ -8,6 +8,7 @@ import pytest
 # ALIAS
 DrawingConfliction = qualms.DrawingConfliction
 parametrize = pytest.mark.parametrize
+OutOfRange = qualms.OutOfRange
 
 
 directory = get_current_directory() / "images"
@@ -64,4 +65,36 @@ class TestDrawingConfliction:
     ])
     def test_no_match(self, a, b):
         result = self._get_check(a, b)
+        assert result == []
+
+
+class TestOutOfRange:
+    window_size = (500, 500)
+
+    @staticmethod
+    def _get_check(a, window_size):
+        image_a = create_image_reference(
+            1,
+            directory / "img1.png",
+            x=a.x,
+            y=a.y
+        )
+        qualms = []
+        OutOfRange.check(qualms, image_a, window_size)
+
+        return qualms
+
+    @parametrize("a", [
+        _Coordinates(-100, -100), _Coordinates(122, -100),
+        _Coordinates(345, -100), _Coordinates(345, 122),
+        _Coordinates(345, 345), _Coordinates(122, 345),
+        _Coordinates(-100, 345), _Coordinates(-100, 122),
+    ])
+    def test_match(self, a):
+        result = self._get_check(a, self.window_size)
+        assert len(result) == 1 and isinstance(result[0], OutOfRange)
+
+    @parametrize("a", [_Coordinates(100, 100)])
+    def test_no_match(self, a):
+        result = self._get_check(a, self.window_size)
         assert result == []
