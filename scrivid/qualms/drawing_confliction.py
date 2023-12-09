@@ -1,26 +1,18 @@
 from __future__ import annotations
 
+from ._coordinates import ImageCoordinates
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .._file_objects.images import ImageReference
 
 
-def _above(a: _Coordinates, b: _Coordinates):
+def _above(a: ImageCoordinates, b: ImageCoordinates):
     return a.y_prime < b.y
 
 
-class _Coordinates:
-    __slots__ = ("x", "x_prime", "y", "y_prime")
-
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.x_prime = x + width
-        self.y = y
-        self.y_prime = y + height
-
-
-def _left_of(a: _Coordinates, b: _Coordinates):
+def _left_of(a: ImageCoordinates, b: ImageCoordinates):
     return a.x_prime < b.x
 
 
@@ -34,18 +26,8 @@ class DrawingConfliction:
         if not image_b.is_opened:
             image_b.open()
 
-        a = _Coordinates(
-            image_a.x,
-            image_a.y,
-            image_a.get_image_width(),
-            image_a.get_image_height()
-        )
-        b = _Coordinates(
-            image_b.x,
-            image_b.y,
-            image_b.get_image_width(),
-            image_b.get_image_height()
-        )
+        a = ImageCoordinates(image_a)
+        b = ImageCoordinates(image_b)
 
         if _left_of(a, b) or _left_of(b, a):
             return
