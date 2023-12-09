@@ -1,4 +1,4 @@
-from .drawing import DrawingConfliction
+from .drawing_confliction import DrawingConfliction
 
 
 __all__ = ["DrawingConfliction"]
