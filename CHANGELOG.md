@@ -6,6 +6,15 @@ If Scrivid's public API is being used, there should be no issues with upgrading 
 version. There is as of yet no deprecated functionality, so no policy is in place yet for it. When 
 it is, it will be included here.
 
+## 0.3.0
+
+This version is in development.
+
+### New Features
+- Added a `qualms` module, for flags as to possible incorrect behaviour.
+  - Added `DrawingConfliction`, for when two images on the same layer have an
+    overlap between them.
+
 ## 0.2.0
 
 ### New Features
