@@ -54,6 +54,7 @@ class ConflictingAttributesError(AttributeError):
     An exception that is propagated when two attribute values conflict with 
     each other.
     """
+
     default_message = textwrap.dedent("""
         Conflicting attributes: \'{{first_name}}\' (set to {{first_value}}) and
          \'{{second_name}}\' (set to {{second_value}})."
@@ -73,6 +74,7 @@ class ConflictingAttributesError(AttributeError):
 @define(frozen=True)
 class DuplicateIDError(ScrividException):
     """ An exception that is propagated when there is a duplicate ID field. """
+
     default_message = textwrap.dedent("""
         Duplicate ID field found between multiple identical objects: \'{{duplic
         ate_id}}\'
@@ -93,13 +95,11 @@ class InternalError(ScrividException):
     of Scrivid functionality goes wrong. This should not be externally accessed
     except for debugging functionality.
     """
-    message: str = field(kw_only=True)
-    stack: FrameInfo = field(kw_only=True)
+    exc: Exception = field(repr=False)
 
-    @stack.default
-    def _default_stack(self):
-        import inspect
-        return inspect.stack()
+    @property
+    def message(self):
+        return f"There was an internal error that occured: {self.exc!r}"
 
 
 class OperatorError(ScrividException):

@@ -53,7 +53,9 @@ def dynamic_attributes(cls=None, /):
 
     if not hasattr(cls, "_attributes_"):
         raise errors.InternalError(
-            message=f"Class \'{cls.__name__}\' does not define _attributes_."
+            AttributeError(textwrap.dedent(f"""
+                Class \'{cls.__name__}\' does not define \'_attributes_\'.
+            """).replace("\n", ""))
         )
 
     for attr in cls._attributes_:
@@ -61,10 +63,10 @@ def dynamic_attributes(cls=None, /):
             _attributes[attr]
         except KeyError:
             raise errors.InternalError(
-                message=textwrap.dedent(f"""
+                AttributeError(textwrap.dedent(f"""
                     Class \'{cls.__name__}\' has an undefined attribute: \'
                     {attr}\'.
-                """)
+                """).replace("\n", ""))
             )
 
     return wrapper()  # @dynamic_attributes
