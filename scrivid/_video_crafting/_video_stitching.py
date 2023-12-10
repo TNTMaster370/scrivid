@@ -1,15 +1,20 @@
+from .. import errors
+
 import os
 
 import ffmpeg
 
 
 def _concatenate(*, input_file, input_settings, output_file, output_settings):
-    (
-        ffmpeg
-        .input(input_file, **input_settings)
-        .output(output_file, **output_settings)
-        .run(quiet=True)
-    )
+    try:
+        (
+            ffmpeg
+            .input(input_file, **input_settings)
+            .output(output_file, **output_settings)
+            .run(quiet=True)
+        )
+    except ffmpeg._run.Error as exc:
+        raise errors.InternalErrorFromFFMPEG(exc, exc.stdout, exc.stderr)
 
 
 def stitch_video(temporary_directory, metadata):

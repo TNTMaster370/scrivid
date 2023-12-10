@@ -99,7 +99,13 @@ class InternalError(ScrividException):
 
     @property
     def message(self):
-        return f"There was an internal error that occured: {self.exc!r}"
+        return f"There was an internal error that occured: {self.exc}"
+
+
+@define(frozen=True)
+class InternalErrorFromFFMPEG(InternalError):
+    stdout: Any = field(repr=False)
+    stderr: Any = field(repr=False)
 
 
 class OperatorError(ScrividException):
