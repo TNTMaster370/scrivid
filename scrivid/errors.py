@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from attrs import define, field
 
 if TYPE_CHECKING:
-    from inspect import FrameInfo
     from typing import Any, Hashable
 
 
