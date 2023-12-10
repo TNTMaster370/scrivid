@@ -42,6 +42,8 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
     :param metadata: An instance of Metadata that stores the attributes
         of the video.
     """
+    metadata._validate()
+
     separated_instructions = separate_instructions(instructions)
     motion_tree = parse(separated_instructions)
 
