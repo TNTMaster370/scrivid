@@ -1,5 +1,5 @@
 from functions import get_current_directory, TemporaryDirectory
-from samples import empty, figure_eight, image_drawing
+from samples import empty, figure_eight, image_drawing, overlap, slide
 
 import scrivid
 
@@ -72,7 +72,9 @@ class VideoFilePointer:
 @parametrize("sample_function,sample_module_name", [
     (empty, "empty"),
     (figure_eight, "figure_eight"),
-    (image_drawing, "image_drawing")
+    (image_drawing, "image_drawing"),
+    (overlap, "overlap"),
+    (slide, "slide")
 ])
 def test_compile_video_output(temp_dir, sample_function, sample_module_name):
     instructions, metadata = sample_function.data()
