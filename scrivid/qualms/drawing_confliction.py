@@ -3,6 +3,7 @@ from __future__ import annotations
 from ._coordinates import ImageCoordinates
 from .interface import QualmInterface
 
+import textwrap
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -20,7 +21,26 @@ def _left_of(a: ImageCoordinates, b: ImageCoordinates):
 
 
 class DrawingConfliction(QualmInterface):
-    __slots__ = ()
+    __slots__ = ("image_a", "image_b")
+
+    code = "D101"
+    severity = 4
+
+    def __init__(self, image_a: ImageReference, image_b: ImageReference):
+        self.image_a = image_a
+        self.image_b = image_b
+
+    def __repr__(self):
+        image_a = self.image_a
+        image_b = self.image_b
+
+        return f"{self.__class__.__name__}({image_a=}, {image_b=})"
+
+    def _message(self) -> str:
+        return textwrap.dedent(f"""
+            images with IDs \'{self.image_a.ID}\' and \'{self.image_b.ID}\' 
+            overlap with each other
+        """).replace("\n", "")
 
     @classmethod
     def check(
@@ -43,4 +63,4 @@ class DrawingConfliction(QualmInterface):
         if _above(a, b) or _above(b, a):
             return
 
-        qualms.append(cls())
+        qualms.append(cls(image_a, image_b))

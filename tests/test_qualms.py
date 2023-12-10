@@ -2,6 +2,8 @@ from functions import get_current_directory
 
 from scrivid import create_image_reference, qualms
 
+import textwrap
+
 import pytest
 
 
@@ -66,6 +68,22 @@ class TestDrawingConfliction:
     def test_no_match(self, a, b):
         result = self._get_check(a, b)
         assert result == []
+
+
+@parametrize("qualm,expected", [
+    (DrawingConfliction(
+        create_image_reference("1", ""),
+        create_image_reference("2", "")
+     ),
+     ":D101:4: images with IDs \'1\' and \'2\' overlap with each other"),
+    (OutOfRange(create_image_reference("1", "")),
+     textwrap.dedent("""
+        :D102:3: image with ID \'1\' may be printed outside of canvas 
+        boundaries
+     """).replace("\n", "")),
+])
+def test_message(qualm, expected):
+    assert str(qualm) == expected
 
 
 class TestOutOfRange:
