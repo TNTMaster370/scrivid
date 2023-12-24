@@ -2,47 +2,99 @@ from __future__ import annotations
 
 from .._file_objects import MoveAdjustment, Properties, VisibilityStatus
 from .._motion_tree import nodes
-from .._separating_instructions import SeparatedInstructions
-from .._utils import ticking
+from .._utils import TemporaryAttribute, ticking
 
 from copy import deepcopy
-from typing import NamedTuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from PIL import Image
 
 if TYPE_CHECKING:
     from .._file_objects import RootAdjustment
+    from .._separating_instructions import SeparatedInstructions
 
     from pathlib import Path
-    from typing import Tuple
+    from typing import List, Tuple
 
     MotionTree = nodes.MotionTree
 
 
+def _call_close(value):
+    value.close()
+
+
 class _FrameCanvas:
-    __slots__ = ("_canvas", "_pixel_canvas")
+    __slots__ = (
+        "_canvas", "_pixel_canvas", "index", "references",
+        "temporary_directory", "window_size"
+    )
 
-    def __init__(self, size: Tuple[int, int]):
-        self._canvas = Image.new("RGB", size, (255, 255, 255))
+    def __init__(
+            self,
+            index: int,
+            temporary_directory: Path,
+            window_size: Tuple[int, int]
+    ):
+        self._canvas = Image.new("RGB", window_size, (255, 255, 255))
         self._pixel_canvas = self._canvas.load()
+        self.index = index
+        self.references = {}
+        self.temporary_directory = temporary_directory
+        self.window_size = window_size
 
-    def save(self, filename: Path, format_: str):
-        self._canvas.save(filename, format_)
+    def _manage_reference(self, reference):
+        if not reference.is_opened:
+            reference.open()
+
+        ref_x = reference.x
+        ref_y = reference.y
+
+        for x, y in ticking(
+                range(ref_x, ref_x + reference.get_image_width()),
+                range(ref_y, ref_y + reference.get_image_height())
+        ):
+            self.update_pixel(
+                (x, y),
+                reference.get_pixel_value((x - ref_x, y - ref_y))
+            )
+
+    def draw(self):
+        try:
+            highest_layer = max(self.references)
+        except ValueError:
+            return self.save()
+
+        for layer_index in range(highest_layer + 1):
+            if layer_index not in self.references:
+                continue
+
+            references = self.references[layer_index]
+            for reference in references:
+                self._manage_reference(reference)
+
+        self.save()
+
+    def save(self):
+        self._canvas.save(
+            self.temporary_directory / f"{self.index:06d}.png",
+            "PNG"
+        )
+        self._canvas.close()
+        self._canvas = None
+        self._pixel_canvas = None
 
     def update_pixel(
             self,
             coordinates: Tuple[int, int],
             new_pixel_value: Tuple[int, int, int]
     ):
+        # if coordinates[0] < 0 or coordinates[1] < 0:
+        #     return
+
         try:
             self._pixel_canvas.__setitem__(coordinates, new_pixel_value)
         except IndexError:
             pass
-
-
-class _FrameInformation(NamedTuple):
-    index: int
-    occurrences: int
 
 
 def _invoke_adjustment_duration(index: int, adj: RootAdjustment):
@@ -55,20 +107,17 @@ def _invoke_adjustment_duration(index: int, adj: RootAdjustment):
 
 
 def create_frame(
-        index: int, 
-        occurrences: int, 
-        instructions: SeparatedInstructions, 
-        window_size: Tuple[int, int], 
-        image_directory: Path
+        frame: _FrameCanvas,
+        split_instructions: SeparatedInstructions
 ):
-    frame = _FrameCanvas(window_size)
-    instructions_access = deepcopy(instructions)  # Avoid modifying the
+    index = frame.index
+    instructions = deepcopy(split_instructions)  # Avoid modifying the
     # original objects.
     merge_settings = {"mode": Properties.MERGE_MODE.REVERSE_APPEND}
 
-    for ID, obj in instructions_access.references.items():
+    for ID, reference in instructions.references.items():
         try:
-            relevant_adjustments = instructions_access.adjustments[ID]
+            relevant_adjustments = instructions.adjustments[ID]
         except KeyError:
             relevant_adjustments = None
 
@@ -82,61 +131,69 @@ def create_frame(
             if type(adj) is MoveAdjustment:
                 args = (_invoke_adjustment_duration(index, adj),)
 
-            obj._properties = obj._properties.merge(
+            reference._properties = reference._properties.merge(
                 adj._enact(*args),
                 **merge_settings
             )
 
-        if obj.visibility is VisibilityStatus.HIDE:
+        if reference.visibility is VisibilityStatus.HIDE:
             continue
 
-        if not obj.is_opened:
-            obj.open()
+        layer = reference.layer
+        if layer not in frame.references:
+            frame.references[layer] = set()
 
-        obj_x = obj.x
-        obj_y = obj.y
+        frame.references[layer].add(reference)
 
-        for x, y in ticking(
-                range(obj_x, obj_x + obj.get_image_width()),
-                range(obj_y, obj_y + obj.get_image_height())
-        ):
-            frame.update_pixel(
-                (x, y),
-                obj.get_pixel_value((x - obj_x, y - obj_y))
-            )
-
-    for additional_index in range(occurrences):
-        frame.save(
-            image_directory / f"{index + additional_index:06d}.png",
-            "PNG"
-        )
+    frame.draw()
 
 
-def generate_frames(motion_tree: MotionTree):
+def fill_undrawn_frames(temporary_directory: Path, video_length: int):
+    with TemporaryAttribute(cleanup=_call_close) as frame_assignment:
+        for index in range(video_length):
+            try:
+                frame_assignment.value = Image.open(
+                    str(temporary_directory / f"{index:06d}.png")
+                )
+            except FileNotFoundError:
+                frame_assignment.value.save(
+                    temporary_directory / f"{index:06d}.png"
+                )
+
+
+def generate_frames(
+        motion_tree: MotionTree,
+        temporary_directory: Path,
+        window_size: Tuple[int, int]
+) -> Tuple[List[_FrameCanvas], int]:
+    # ...
     frames = []
     index = 0
 
     for node in motion_tree.body:
         type_ = type(node)
         if type_ is nodes.Start:
-            frames.append(_FrameInformation(0, 1))
+            frames.append(_FrameCanvas(0, temporary_directory, window_size))
         elif type_ in (nodes.HideImage, nodes.MoveImage, nodes.ShowImage):
             if index == frames[-1].index:
                 continue
-            frames.append(_FrameInformation(index, 1))
-        elif type_ is nodes.InvokePrevious:
-            for _ in range(node.length):
-                frames.append(_FrameInformation(index, 1))
-                index += 1
-        elif type_ is nodes.Continue:
-            frame = frames[-1]
-            frames[-1] = _FrameInformation(
-                frame.index,
-                frame.occurrences + node.length
+            frames.append(
+                _FrameCanvas(index, temporary_directory, window_size)
             )
-            del frame
+        elif type_ is nodes.InvokePrevious:
+            start = 0
+            if index == frames[-1].index:
+                start = 1
+                index += 1
+            for _ in range(start, node.length):
+                frames.append(
+                    _FrameCanvas(index, temporary_directory, window_size)
+                )
+                index += 1
+            del start
+        elif type_ is nodes.Continue:
             index += node.length
         elif type_ is nodes.End:
             break
 
-    return frames
+    return frames, index

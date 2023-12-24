@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ._frame_drawing import create_frame, generate_frames
+from ._frame_drawing import create_frame, fill_undrawn_frames, generate_frames
 from ._video_stitching import stitch_video
 
 from .._separating_instructions import separate_instructions
@@ -37,14 +37,17 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
         metadata.save_location / ".scrivid-cache"
     ) as temp_dir:
         # ...
-        frames = generate_frames(motion_tree)
+        frames, video_length = generate_frames(
+            motion_tree,
+            temp_dir.dir,
+            metadata.window_size
+        )
 
         for frame_information in frames:
             create_frame(
-                *frame_information,
-                separated_instructions,
-                metadata.window_size,
-                temp_dir.dir
+                frame_information,
+                separated_instructions
             )
 
+        fill_undrawn_frames(temp_dir.dir, video_length)
         stitch_video(temp_dir.dir, metadata)
