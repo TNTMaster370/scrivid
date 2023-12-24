@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from ._add_to_list import add_qualm
 from ._coordinates import ImageCoordinates
+from ._index import Index
 from .interface import QualmInterface
 
 import textwrap
@@ -21,20 +23,31 @@ def _left_of(a: ImageCoordinates, b: ImageCoordinates):
 
 
 class DrawingConfliction(QualmInterface):
-    __slots__ = ("image_a", "image_b")
+    __slots__ = ("image_a", "image_b", "index")
 
     code = "D101"
     severity = 4
 
-    def __init__(self, image_a: ImageReference, image_b: ImageReference):
+    def __init__(
+            self,
+            index: int,
+            image_a: ImageReference,
+            image_b: ImageReference
+    ):
         self.image_a = image_a
         self.image_b = image_b
+        self.index = Index(index)
 
     def __repr__(self):
         image_a = self.image_a
         image_b = self.image_b
+        index_start = self.index.start
+        index_end = self.index.end
 
-        return f"{self.__class__.__name__}({image_a=}, {image_b=})"
+        return textwrap.dedent(f"""
+            {self.__class__.__name__}({index_start=}, {index_end=}, {image_a=},
+             {image_b=})
+        """).replace("\n", "")
 
     def _message(self) -> str:
         return textwrap.dedent(f"""
@@ -46,6 +59,7 @@ class DrawingConfliction(QualmInterface):
     def check(
             cls,
             qualms: List[QualmInterface],
+            index: int,
             image_a: ImageReference,
             image_b: ImageReference
     ):
@@ -63,4 +77,4 @@ class DrawingConfliction(QualmInterface):
         if _above(a, b) or _above(b, a):
             return
 
-        qualms.append(cls(image_a, image_b))
+        add_qualm(qualms, cls, index, image_a, image_b)

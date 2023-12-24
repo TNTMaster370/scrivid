@@ -12,8 +12,17 @@ This version is in development.
 
 ### New Features
 - Added a `qualms` module, for flags as to possible incorrect behaviour.
+  - Added `QualmInterface`, which the base class that defines the interface for
+    qualm objects.
   - Added `DrawingConfliction`, for when two images on the same layer have an
     overlap between them.
+  - Added `OutOfRange`, for when an image is partially or completely out of 
+    range of the canvas.
+
+### Changes
+- `compile_video` now has a new implementation. Now, the function will only draw every unique frame during the drawing phase, and then will resave the in-between frames (in-betweens are identical to the most recent unique frame).
+  - This change was made to eventually facilitate a multi-processing option, if a user wants to dedicate more computer power on frame-drawing.
+
 
 ## 0.2.0
 
