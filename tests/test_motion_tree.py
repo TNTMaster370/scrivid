@@ -24,29 +24,23 @@ def has_method(cls, method):
 @pytest_parametrize("sample_module,expected_string_raw", [
     (empty, 
      textwrap.dedent(r"""
-        MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id=
-        'HIDDEN', time=0), {\b}{\i}{\i}Continue(length=1), {\b}{\i}{\i}MoveImag
-        e(id='HIDDEN', time=1, duration=11), {\b}{\i}{\i}InvokePrevious(length=
-        11), {\b}{\i}{\i}End()])
+        MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Continue(
+        length=1), {\b}{\i}{\i}MoveImage(id='HIDDEN', time=1, duration=11), {\b}{\i}{\i}InvokePrevious(length=11), {\b}
+        {\i}{\i}End()])
      """).replace("\n", "")),
     (figure_eight, 
      textwrap.dedent(r"""
-        MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}Continue(leng
-        th=6), {\b}{\i}{\i}MoveImage(id='BLOCK', time=6, duration=10), {\b}{\i}
-        {\i}InvokePrevious(length=10), {\b}{\i}{\i}MoveImage(id='BLOCK', time=1
-        6, duration=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}MoveI
-        mage(id='BLOCK', time=21, duration=5), {\b}{\i}{\i}InvokePrevious(lengt
-        h=10), {\b}{\i}{\i}MoveImage(id='BLOCK', time=26, duration=10), {\b}{\i
-        }{\i}InvokePrevious(length=5), {\b}{\i}{\i}MoveImage(id='BLOCK', time=3
-        6, duration=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}MoveI
-        mage(id='BLOCK', time=41, duration=5), {\b}{\i}{\i}InvokePrevious(lengt
-        h=5), {\b}{\i}{\i}End()])
+        MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}Continue(length=6), {\b}{\i}{\i}MoveImage(id='BLOCK',
+         time=6, duration=10), {\b}{\i}{\i}InvokePrevious(length=10), {\b}{\i}{\i}MoveImage(id='BLOCK', time=16, durati
+        on=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}MoveImage(id='BLOCK', time=21, duration=5), {\b}{\i}{
+        \i}InvokePrevious(length=10), {\b}{\i}{\i}MoveImage(id='BLOCK', time=26, duration=10), {\b}{\i}{\i}InvokePrevio
+        us(length=5), {\b}{\i}{\i}MoveImage(id='BLOCK', time=36, duration=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b
+        }{\i}{\i}MoveImage(id='BLOCK', time=41, duration=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}End()])
      """).replace("\n", "")),
     (image_drawing, 
      textwrap.dedent(r"""
-        MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id=
-        'HIDDEN', time=0), {\b}{\i}{\i}Continue(length=20), {\b}{\i}{\i}ShowIma
-        ge(id='HIDDEN', time=20), {\b}{\i}{\i}End()])
+        MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Continue(
+        length=20), {\b}{\i}{\i}ShowImage(id='HIDDEN', time=20), {\b}{\i}{\i}End()])
      """).replace("\n", ""))
 ])
 def test_dump(indent, sample_module, expected_string_raw):
@@ -108,9 +102,8 @@ def test_nodes_has_methods_additional(node_cls, method):
 
 
 @pytest_parametrize("node_cls", [
-    motion_nodes.Continue, motion_nodes.End, motion_nodes.HideImage,
-    motion_nodes.InvokePrevious, motion_nodes.MotionTree,
-    motion_nodes.MoveImage, motion_nodes.ShowImage, motion_nodes.Start
+    motion_nodes.Continue, motion_nodes.End, motion_nodes.HideImage, motion_nodes.InvokePrevious,
+    motion_nodes.MotionTree, motion_nodes.MoveImage, motion_nodes.ShowImage, motion_nodes.Start
 ])
 @pytest_parametrize("method", [
     "__init__", "__repr__", "__setattr__", "__delattr__", "__getstate__",
@@ -152,20 +145,16 @@ def test_parse_duplicate_id():
 
 @pytest_parametrize("sample_module,expected_node_order", [
     (empty, 
-     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.HideImage,
-      motion_nodes.Continue, motion_nodes.MoveImage,
-      motion_nodes.InvokePrevious, motion_nodes.End]),
-    (figure_eight,
-     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.Continue,
-      motion_nodes.MoveImage, motion_nodes.InvokePrevious,
-      motion_nodes.MoveImage, motion_nodes.InvokePrevious,
-      motion_nodes.MoveImage, motion_nodes.InvokePrevious,
-      motion_nodes.MoveImage, motion_nodes.InvokePrevious,
-      motion_nodes.MoveImage, motion_nodes.InvokePrevious,
+     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.HideImage, motion_nodes.Continue,
       motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.End]),
+    (figure_eight,
+     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.Continue, motion_nodes.MoveImage,
+      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.MoveImage,
+      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.MoveImage,
+      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.End]),
     (image_drawing, 
-     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.HideImage,
-      motion_nodes.Continue, motion_nodes.ShowImage, motion_nodes.End])
+     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.HideImage, motion_nodes.Continue,
+      motion_nodes.ShowImage, motion_nodes.End])
 ])
 def test_walk(sample_module, expected_node_order):
     instructions, _ = sample_module.data()

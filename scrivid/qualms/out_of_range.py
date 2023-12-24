@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from ._add_to_list import add_qualm
 from ._coordinates import ImageCoordinates
+from ._index import Index
 from .interface import QualmInterface
 
-import textwrap
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,12 +14,13 @@ if TYPE_CHECKING:
 
 
 class OutOfRange(QualmInterface):
-    __slots__ = ("image",)
+    __slots__ = ("image", "index")
 
     code = "D102"
     severity = 3
 
-    def __init__(self, image: ImageReference):
+    def __init__(self, index: int, image: ImageReference):
+        self.index = Index(index)
         self.image = image
 
     def __repr__(self) -> str:
@@ -27,27 +29,19 @@ class OutOfRange(QualmInterface):
         return f"{self.__class__.__name__}({image=})"
 
     def _message(self) -> str:
-        return textwrap.dedent(f"""
-            image with ID \'{self.image.ID}\' may be printed outside of canvas 
-            boundaries
-        """).replace("\n", "")
+        return f"image with ID \'{self.image.ID}\' may be printed outside of canvas boundaries"
 
     @classmethod
-    def check(
-            cls,
-            qualms: List[QualmInterface],
-            image: ImageReference,
-            window_size: Tuple[int, int]
-    ):
+    def check(cls, qualms: List[QualmInterface], index: int, image: ImageReference, window_size: Tuple[int, int]):
         if not image.is_opened:
             image.open()
 
         a = ImageCoordinates(image)
 
         if a.x < 0 or a.y < 0:
-            qualms.append(cls(image))
+            add_qualm(qualms, cls, index, image)
             return
 
         if a.x_prime > window_size[0] or a.y_prime > window_size[1]:
-            qualms.append(cls(image))
+            add_qualm(qualms, cls, index, image)
             return

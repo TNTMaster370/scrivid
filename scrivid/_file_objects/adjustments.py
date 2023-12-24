@@ -5,7 +5,6 @@ from .properties import EXCLUDED, Properties
 
 from abc import ABC, abstractmethod
 import operator
-import textwrap
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -15,12 +14,7 @@ if TYPE_CHECKING:
 def _compare_activation_time(operation: operator):
     def function(a, b):
         if not isinstance(b, RootAdjustment):
-            raise TypeError(
-                textwrap.dedent(f"""
-                    Expected type {a.__class__.__name__}, got type 
-                    {b.__class__.__name__}
-                """)
-            )
+            raise TypeError(f"Expected type {a.__class__.__name__}, got type {b.__class__.__name__}")
         return operation(a._activation_time, b._activation_time)
 
     return function

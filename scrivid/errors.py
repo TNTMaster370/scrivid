@@ -20,13 +20,7 @@ if TYPE_CHECKING:
 # and not anything like __repr__ or hidden variables.
 
 
-def _replace_in_string(
-        string: str,
-        new_section: str,
-        start: int,
-        end: int
-) -> str:
-    # ...
+def _replace_in_string(string: str, new_section: str, start: int, end: int) -> str:
     return string[:start] + new_section + string[end:]
 
 
@@ -55,8 +49,8 @@ class ConflictingAttributesError(AttributeError):
     """
 
     default_message = textwrap.dedent("""
-        Conflicting attributes: \'{{first_name}}\' (set to {{first_value}}) and
-         \'{{second_name}}\' (set to {{second_value}})."
+        Conflicting attributes: \'{{first_name}}\' (set to {{first_value}}) and \'{{second_name}}\' (set to {{second_va
+        lue}})."
     """).replace("\n", "")
 
     first_name: Any = field(kw_only=True)
@@ -74,10 +68,7 @@ class ConflictingAttributesError(AttributeError):
 class DuplicateIDError(ScrividException):
     """ An exception that is propagated when there is a duplicate ID field. """
 
-    default_message = textwrap.dedent("""
-        Duplicate ID field found between multiple identical objects: \'{{duplic
-        ate_id}}\'
-    """).replace("\n", "")
+    default_message = "Duplicate ID field found between multiple identical objects: \'{{duplicate_id}}\'"
 
     duplicate_id: Hashable = field(kw_only=True)
     message: str = field(kw_only=True)

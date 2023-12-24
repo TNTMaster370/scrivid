@@ -4,7 +4,6 @@ from . import errors
 from ._utils.sentinel_objects import sentinel
 
 from pathlib import Path
-import textwrap
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -17,9 +16,7 @@ _NOT_SPECIFIED = sentinel("_NOT_SPECIFIED")
 def _check_attribute_presense(metadata, name):
     value = getattr(metadata, name, _NOT_SPECIFIED)
     if value is _NOT_SPECIFIED:
-        raise errors.AttributeError(textwrap.dedent(f"""
-            Metadata object missing required attribute \'{name}\'.
-        """).replace("\n", ""))
+        raise errors.AttributeError(f"Metadata object missing required attribute \'{name}\'.")
 
 
 def _check_attribute_type(metadata, name, types, validator):
@@ -28,10 +25,7 @@ def _check_attribute_type(metadata, name, types, validator):
         return
 
     if not validator(value):
-        raise errors.AttributeError(textwrap.dedent(f"""
-            Metadata attribute \'{name}\' expected type(s) {types}; got type 
-            {type(value)}.
-        """).replace("\n", ""))
+        raise errors.AttributeError(f"Metadata attribute \'{name}\' expected type(s) {types}; got type {type(value)}.")
 
 
 def _is_specified(obj):
@@ -67,7 +61,9 @@ class Metadata:
     _window_size: Tuple[int, int]
 
     def __init__(
-        self, *, fps: Union[int, _NOT_SPECIFIED] = _NOT_SPECIFIED,
+        self,
+        *,
+        fps: Union[int, _NOT_SPECIFIED] = _NOT_SPECIFIED,
         frame_rate: Union[int, _NOT_SPECIFIED] = _NOT_SPECIFIED,
         save_location: Union[str, Path, _NOT_SPECIFIED] = _NOT_SPECIFIED,
         video_name: Union[str, _NOT_SPECIFIED] = _NOT_SPECIFIED,
@@ -139,22 +135,10 @@ class Metadata:
         _check_attribute_presense(self, "video_name")
         _check_attribute_presense(self, "window_size")
 
-        _check_attribute_type(
-            self, "frame_rate", "int", _TypeValidatingCallables.int_
-        )
-        _check_attribute_type(
-            self, "save_location", "str, Path",
-            _TypeValidatingCallables.str_or_path
-        )
-        _check_attribute_type(
-            self, "video_name", "str", _TypeValidatingCallables.str_
-        )
-        _check_attribute_type(
-            self, "window_size", "tuple[int, int]",
-            _TypeValidatingCallables.tuple_of_two_ints
-        )
+        _check_attribute_type(self, "frame_rate", "int", _TypeValidatingCallables.int_)
+        _check_attribute_type(self, "save_location", "str, Path", _TypeValidatingCallables.str_or_path)
+        _check_attribute_type(self, "video_name", "str", _TypeValidatingCallables.str_)
+        _check_attribute_type(self, "window_size", "tuple[int, int]", _TypeValidatingCallables.tuple_of_two_ints)
 
         if self.window_width % 2 != 0 or self.window_height % 2 != 0:
-            raise errors.AttributeError(
-                "Metadata attribute \'window_size\' must contain even numbers."
-            )
+            raise errors.AttributeError("Metadata attribute \'window_size\' must contain even numbers.")

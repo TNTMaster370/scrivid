@@ -59,13 +59,7 @@ def test_image_file_management_weakref():
 
 def test_image_function_multi_declare_properties():
     with pytest.raises(errors.AttributeError):
-        create_image_reference(
-            0,
-            "",
-            Properties(layer=0, scale=0, x=0, y=0),
-            x=1,
-            y=1
-        )
+        create_image_reference(0, "", Properties(layer=0, scale=0, x=0, y=0), x=1, y=1)
 
 
 def test_image_open_no_errors():
@@ -93,9 +87,7 @@ class Test_Properties:
     REPLACEMENT = Properties.MERGE_MODE.REPLACEMENT
     REVERSE_APPEND = Properties.MERGE_MODE.REVERSE_APPEND
     REVERSE_REPLACEMENT = Properties.MERGE_MODE.REVERSE_REPLACEMENT
-    REVERSE_STRICT_REPLACEMENT = (
-        Properties.MERGE_MODE.REVERSE_STRICT_REPLACEMENT
-    )
+    REVERSE_STRICT_REPLACEMENT = Properties.MERGE_MODE.REVERSE_STRICT_REPLACEMENT
 
     def test_merge(self):
         a = Properties(layer=1)

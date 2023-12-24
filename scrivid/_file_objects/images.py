@@ -7,7 +7,6 @@ from .properties import define_properties, EXCLUDED
 
 from copy import copy, deepcopy
 from pathlib import Path
-import textwrap
 from typing import TYPE_CHECKING
 import weakref
 
@@ -214,11 +213,6 @@ def create_image_reference(
                 ("y", y)
         ):
             if attr is not EXCLUDED:
-                raise errors.AttributeError(
-                    textwrap.dedent(f"""
-                        Attribute \'{name}\' should not be specified if \'prope
-                        rties\' is.
-                    """)
-                )
+                raise errors.AttributeError(f"Attribute \'{name}\' should not be specified if \'properties\' is.")
 
     return ImageReference(ID, file, properties)

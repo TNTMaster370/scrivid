@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from ._add_to_list import add_qualm
 from ._coordinates import ImageCoordinates
+from ._index import Index
 from .interface import QualmInterface
 
-import textwrap
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -21,34 +22,29 @@ def _left_of(a: ImageCoordinates, b: ImageCoordinates):
 
 
 class DrawingConfliction(QualmInterface):
-    __slots__ = ("image_a", "image_b")
+    __slots__ = ("image_a", "image_b", "index")
 
     code = "D101"
     severity = 4
 
-    def __init__(self, image_a: ImageReference, image_b: ImageReference):
+    def __init__(self, index: int, image_a: ImageReference, image_b: ImageReference):
         self.image_a = image_a
         self.image_b = image_b
+        self.index = Index(index)
 
     def __repr__(self):
         image_a = self.image_a
         image_b = self.image_b
+        index_start = self.index.start
+        index_end = self.index.end
 
-        return f"{self.__class__.__name__}({image_a=}, {image_b=})"
+        return f"{self.__class__.__name__}({index_start=}, {index_end=}, {image_a=}, {image_b=})"
 
     def _message(self) -> str:
-        return textwrap.dedent(f"""
-            images with IDs \'{self.image_a.ID}\' and \'{self.image_b.ID}\' 
-            overlap with each other
-        """).replace("\n", "")
+        return f"images with IDs \'{self.image_a.ID}\' and \'{self.image_b.ID}\' overlap with each other"
 
     @classmethod
-    def check(
-            cls,
-            qualms: List[QualmInterface],
-            image_a: ImageReference,
-            image_b: ImageReference
-    ):
+    def check(cls, qualms: List[QualmInterface], index: int, image_a: ImageReference, image_b: ImageReference):
         if not image_a.is_opened:
             image_a.open()
         if not image_b.is_opened:
@@ -63,4 +59,4 @@ class DrawingConfliction(QualmInterface):
         if _above(a, b) or _above(b, a):
             return
 
-        qualms.append(cls(image_a, image_b))
+        add_qualm(qualms, cls, index, image_a, image_b)

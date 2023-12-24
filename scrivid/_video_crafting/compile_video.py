@@ -33,21 +33,12 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
     separated_instructions = separate_instructions(instructions)
     motion_tree = parse(separated_instructions)
 
-    with TemporaryDirectory(
-        metadata.save_location / ".scrivid-cache"
-    ) as temp_dir:
+    with TemporaryDirectory(metadata.save_location / ".scrivid-cache") as temp_dir:
         # ...
-        frames, video_length = generate_frames(
-            motion_tree,
-            temp_dir.dir,
-            metadata.window_size
-        )
+        frames, video_length = generate_frames(motion_tree, temp_dir.dir, metadata.window_size)
 
         for frame_information in frames:
-            create_frame(
-                frame_information,
-                separated_instructions
-            )
+            create_frame(frame_information, separated_instructions)
 
         fill_undrawn_frames(temp_dir.dir, video_length)
         stitch_video(temp_dir.dir, metadata)

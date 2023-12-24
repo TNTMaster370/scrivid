@@ -24,17 +24,9 @@ def _call_close(value):
 
 
 class _FrameCanvas:
-    __slots__ = (
-        "_canvas", "_pixel_canvas", "index", "references",
-        "temporary_directory", "window_size"
-    )
+    __slots__ = ("_canvas", "_pixel_canvas", "index", "references", "temporary_directory", "window_size")
 
-    def __init__(
-            self,
-            index: int,
-            temporary_directory: Path,
-            window_size: Tuple[int, int]
-    ):
+    def __init__(self, index: int, temporary_directory: Path, window_size: Tuple[int, int]):
         self._canvas = Image.new("RGB", window_size, (255, 255, 255))
         self._pixel_canvas = self._canvas.load()
         self.index = index
@@ -53,10 +45,7 @@ class _FrameCanvas:
                 range(ref_x, ref_x + reference.get_image_width()),
                 range(ref_y, ref_y + reference.get_image_height())
         ):
-            self.update_pixel(
-                (x, y),
-                reference.get_pixel_value((x - ref_x, y - ref_y))
-            )
+            self.update_pixel((x, y), reference.get_pixel_value((x - ref_x, y - ref_y)))
 
     def draw(self):
         try:
@@ -75,10 +64,7 @@ class _FrameCanvas:
         self.save()
 
     def save(self):
-        self._canvas.save(
-            self.temporary_directory / f"{self.index:06d}.png",
-            "PNG"
-        )
+        self._canvas.save(self.temporary_directory / f"{self.index:06d}.png", "PNG")
         self._canvas.close()
         self._canvas = None
         self._pixel_canvas = None
@@ -106,10 +92,7 @@ def _invoke_adjustment_duration(index: int, adj: RootAdjustment):
         return duration
 
 
-def create_frame(
-        frame: _FrameCanvas,
-        split_instructions: SeparatedInstructions
-):
+def create_frame(frame: _FrameCanvas, split_instructions: SeparatedInstructions):
     index = frame.index
     instructions = deepcopy(split_instructions)  # Avoid modifying the
     # original objects.
@@ -131,10 +114,7 @@ def create_frame(
             if type(adj) is MoveAdjustment:
                 args = (_invoke_adjustment_duration(index, adj),)
 
-            reference._properties = reference._properties.merge(
-                adj._enact(*args),
-                **merge_settings
-            )
+            reference._properties = reference._properties.merge(adj._enact(*args), **merge_settings)
 
         if reference.visibility is VisibilityStatus.HIDE:
             continue
@@ -177,18 +157,14 @@ def generate_frames(
         elif type_ in (nodes.HideImage, nodes.MoveImage, nodes.ShowImage):
             if index == frames[-1].index:
                 continue
-            frames.append(
-                _FrameCanvas(index, temporary_directory, window_size)
-            )
+            frames.append(_FrameCanvas(index, temporary_directory, window_size))
         elif type_ is nodes.InvokePrevious:
             start = 0
             if index == frames[-1].index:
                 start = 1
                 index += 1
             for _ in range(start, node.length):
-                frames.append(
-                    _FrameCanvas(index, temporary_directory, window_size)
-                )
+                frames.append(_FrameCanvas(index, temporary_directory, window_size))
                 index += 1
             del start
         elif type_ is nodes.Continue:
