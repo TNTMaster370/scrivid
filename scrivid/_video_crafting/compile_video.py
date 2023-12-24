@@ -5,9 +5,8 @@ from ._video_stitching import stitch_video
 
 from .._separating_instructions import separate_instructions
 from .._motion_tree import parse
+from .._utils import TemporaryDirectory
 
-import os
-import shutil
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -15,22 +14,9 @@ if TYPE_CHECKING:
     from ..metadata import Metadata
 
     from collections.abc import Sequence
-    from pathlib import Path
     from typing import Union
 
     INSTRUCTIONS = Union[ImageReference, RootAdjustment]
-
-
-class _TemporaryDirectory:
-    def __init__(self, folder_location: Path):
-        self.dir = folder_location / ".scrivid-cache"
-
-    def __enter__(self):
-        os.mkdir(self.dir)
-        return self
-
-    def __exit__(self, *_):
-        shutil.rmtree(self.dir)
 
 
 def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
@@ -47,7 +33,10 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
     separated_instructions = separate_instructions(instructions)
     motion_tree = parse(separated_instructions)
 
-    with _TemporaryDirectory(metadata.save_location) as temp_dir:
+    with TemporaryDirectory(
+        metadata.save_location / ".scrivid-cache"
+    ) as temp_dir:
+        # ...
         frames = generate_frames(motion_tree)
 
         for frame_information in frames:
