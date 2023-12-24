@@ -154,7 +154,7 @@ class Metadata:
             _TypeValidatingCallables.tuple_of_two_ints
         )
 
-        if self.window_width % 2 != 0 or self.window_height % 2  != 0:
+        if self.window_width % 2 != 0 or self.window_height % 2 != 0:
             raise errors.AttributeError(
                 "Metadata attribute \'window_size\' must contain even numbers."
             )
