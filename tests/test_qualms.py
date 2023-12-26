@@ -72,7 +72,7 @@ class _QualmsTests(ABC):
 
 class TestDrawingConfliction(_QualmsTests):
     matching_coordinates = [
-        (_Coordinates(256, 256), _Coordinates(256, 256)),  # Same spot
+        (_Coordinates(256, 256), _Coordinates(256, 256)),  # Exact same spot
         (_Coordinates(256, 256), _Coordinates(156, 156)),  # Offset, top-left
         (_Coordinates(256, 256), _Coordinates(411, 156)),  # Offset: top-right
         (_Coordinates(256, 256), _Coordinates(156, 411)),  # Offset: bot-left
