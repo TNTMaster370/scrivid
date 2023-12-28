@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from .. import motion_tree
+
 from .._file_objects import MoveAdjustment, Properties, VisibilityStatus
-from .._motion_tree import nodes
 from .._utils import TemporaryAttribute, ticking
 
 from copy import deepcopy
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import List, Tuple
 
-    MotionTree = nodes.MotionTree
+    MotionTree = motion_tree.MotionTree
 
 
 def _call_close(value):
@@ -142,7 +143,7 @@ def fill_undrawn_frames(temporary_directory: Path, video_length: int):
 
 
 def generate_frames(
-        motion_tree: MotionTree,
+        parsed_motion_tree: MotionTree,
         temporary_directory: Path,
         window_size: Tuple[int, int]
 ) -> Tuple[List[_FrameCanvas], int]:
@@ -150,15 +151,15 @@ def generate_frames(
     frames = []
     index = 0
 
-    for node in motion_tree.body:
+    for node in parsed_motion_tree.body:
         type_ = type(node)
-        if type_ is nodes.Start:
+        if type_ is motion_tree.Start:
             frames.append(_FrameCanvas(0, temporary_directory, window_size))
-        elif type_ in (nodes.HideImage, nodes.MoveImage, nodes.ShowImage):
+        elif type_ in (motion_tree.HideImage, motion_tree.MoveImage, motion_tree.ShowImage):
             if index == frames[-1].index:
                 continue
             frames.append(_FrameCanvas(index, temporary_directory, window_size))
-        elif type_ is nodes.InvokePrevious:
+        elif type_ is motion_tree.InvokePrevious:
             start = 0
             if index == frames[-1].index:
                 start = 1
@@ -167,9 +168,9 @@ def generate_frames(
                 frames.append(_FrameCanvas(index, temporary_directory, window_size))
                 index += 1
             del start
-        elif type_ is nodes.Continue:
+        elif type_ is motion_tree.Continue:
             index += node.length
-        elif type_ is nodes.End:
+        elif type_ is motion_tree.End:
             break
 
     return frames, index

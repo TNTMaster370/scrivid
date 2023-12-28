@@ -3,8 +3,9 @@ from __future__ import annotations
 from ._frame_drawing import create_frame, fill_undrawn_frames, generate_frames
 from ._video_stitching import stitch_video
 
+from .. import motion_tree
+
 from .._separating_instructions import separate_instructions
-from .._motion_tree import parse
 from .._utils import TemporaryDirectory
 
 from typing import TYPE_CHECKING
@@ -31,11 +32,10 @@ def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):
     metadata._validate()
 
     separated_instructions = separate_instructions(instructions)
-    motion_tree = parse(separated_instructions)
+    parsed_motion_tree = motion_tree.parse(separated_instructions)
 
     with TemporaryDirectory(metadata.save_location / ".scrivid-cache") as temp_dir:
-        # ...
-        frames, video_length = generate_frames(motion_tree, temp_dir.dir, metadata.window_size)
+        frames, video_length = generate_frames(parsed_motion_tree, temp_dir.dir, metadata.window_size)
 
         for frame_information in frames:
             create_frame(frame_information, separated_instructions)

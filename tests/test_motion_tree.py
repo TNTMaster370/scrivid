@@ -1,8 +1,6 @@
 from samples import empty, figure_eight, image_drawing
 
-from scrivid import (
-    create_image_reference, dump, errors, motion_nodes, parse, walk
-)
+from scrivid import create_image_reference, errors, motion_tree
 
 import textwrap
 
@@ -51,48 +49,48 @@ def test_dump(indent, sample_module, expected_string_raw):
     )
 
     instructions, _ = sample_module.data()
-    motion_tree = parse(instructions)
+    parsed_motion_tree = motion_tree.parse(instructions)
 
-    actual = dump(motion_tree, indent=indent)
+    actual = motion_tree.dump(parsed_motion_tree, indent=indent)
     assert actual == expected
 
 
 @pytest_parametrize("node_cls,attr", [
-    (motion_nodes.Continue, "length"),
-    (motion_nodes.HideImage, "id"),
-    (motion_nodes.HideImage, "time"),
-    (motion_nodes.InvokePrevious, "length"),
-    (motion_nodes.MotionTree, "body"),
-    (motion_nodes.MoveImage, "duration"),
-    (motion_nodes.MoveImage, "id"),
-    (motion_nodes.MoveImage, "time"),
-    (motion_nodes.ShowImage, "id"),
-    (motion_nodes.ShowImage, "time")
+    (motion_tree.Continue, "length"),
+    (motion_tree.HideImage, "id"),
+    (motion_tree.HideImage, "time"),
+    (motion_tree.InvokePrevious, "length"),
+    (motion_tree.MotionTree, "body"),
+    (motion_tree.MoveImage, "duration"),
+    (motion_tree.MoveImage, "id"),
+    (motion_tree.MoveImage, "time"),
+    (motion_tree.ShowImage, "id"),
+    (motion_tree.ShowImage, "time")
 ])
 def test_nodes_has_attributes(node_cls, attr):
     assert hasattr(node_cls, attr)
 
 
 @pytest_parametrize("node_cls,method", [
-    (motion_nodes.HideImage, "__eq__"),
-    (motion_nodes.HideImage, "__ge__"),
-    (motion_nodes.HideImage, "__gt__"),
-    (motion_nodes.HideImage, "__le__"),
-    (motion_nodes.HideImage, "__lt__"),
-    (motion_nodes.HideImage, "__ne__"),
-    (motion_nodes.MotionTree, "convert_to_string"),
-    (motion_nodes.MoveImage, "__eq__"),
-    (motion_nodes.MoveImage, "__ge__"),
-    (motion_nodes.MoveImage, "__gt__"),
-    (motion_nodes.MoveImage, "__le__"),
-    (motion_nodes.MoveImage, "__lt__"),
-    (motion_nodes.MoveImage, "__ne__"),
-    (motion_nodes.ShowImage, "__eq__"),
-    (motion_nodes.ShowImage, "__ge__"),
-    (motion_nodes.ShowImage, "__gt__"),
-    (motion_nodes.ShowImage, "__le__"),
-    (motion_nodes.ShowImage, "__lt__"),
-    (motion_nodes.ShowImage, "__ne__"),
+    (motion_tree.HideImage, "__eq__"),
+    (motion_tree.HideImage, "__ge__"),
+    (motion_tree.HideImage, "__gt__"),
+    (motion_tree.HideImage, "__le__"),
+    (motion_tree.HideImage, "__lt__"),
+    (motion_tree.HideImage, "__ne__"),
+    (motion_tree.MotionTree, "convert_to_string"),
+    (motion_tree.MoveImage, "__eq__"),
+    (motion_tree.MoveImage, "__ge__"),
+    (motion_tree.MoveImage, "__gt__"),
+    (motion_tree.MoveImage, "__le__"),
+    (motion_tree.MoveImage, "__lt__"),
+    (motion_tree.MoveImage, "__ne__"),
+    (motion_tree.ShowImage, "__eq__"),
+    (motion_tree.ShowImage, "__ge__"),
+    (motion_tree.ShowImage, "__gt__"),
+    (motion_tree.ShowImage, "__le__"),
+    (motion_tree.ShowImage, "__lt__"),
+    (motion_tree.ShowImage, "__ne__"),
 ])
 def test_nodes_has_methods_additional(node_cls, method):
     # This test function accounts for motion_node classes that are not
@@ -102,8 +100,8 @@ def test_nodes_has_methods_additional(node_cls, method):
 
 
 @pytest_parametrize("node_cls", [
-    motion_nodes.Continue, motion_nodes.End, motion_nodes.HideImage, motion_nodes.InvokePrevious,
-    motion_nodes.MotionTree, motion_nodes.MoveImage, motion_nodes.ShowImage, motion_nodes.Start
+    motion_tree.Continue, motion_tree.End, motion_tree.HideImage, motion_tree.InvokePrevious, motion_tree.MotionTree,
+    motion_tree.MoveImage, motion_tree.ShowImage, motion_tree.Start
 ])
 @pytest_parametrize("method", [
     "__init__", "__repr__", "__setattr__", "__delattr__", "__getstate__",
@@ -114,24 +112,24 @@ def test_nodes_has_methods_required(node_cls, method):
 
 
 @pytest_parametrize("node_cls,args", [
-    (motion_nodes.Continue, (0,)),
-    (motion_nodes.End, ()),
-    (motion_nodes.HideImage, (0, 0)),
-    (motion_nodes.InvokePrevious, (0,)),
-    (motion_nodes.MotionTree, ()),
-    (motion_nodes.MoveImage, (0, 0, 0)),
-    (motion_nodes.ShowImage, (0, 0)),
-    (motion_nodes.Start, ())
+    (motion_tree.Continue, (0,)),
+    (motion_tree.End, ()),
+    (motion_tree.HideImage, (0, 0)),
+    (motion_tree.InvokePrevious, (0,)),
+    (motion_tree.MotionTree, ()),
+    (motion_tree.MoveImage, (0, 0, 0)),
+    (motion_tree.ShowImage, (0, 0)),
+    (motion_tree.Start, ())
 ])
 def test_nodes_inheritance(node_cls, args):
     node = node_cls(*args)
-    assert isinstance(node, motion_nodes.RootMotionTree)
+    assert isinstance(node, motion_tree.RootMotionTree)
 
 
 @pytest_parametrize("sample_module", [empty, figure_eight, image_drawing])
 def test_parse(sample_module):
     instructions, _ = sample_module.data()
-    parse(instructions)
+    motion_tree.parse(instructions)
 
 
 def test_parse_duplicate_id():
@@ -140,25 +138,25 @@ def test_parse_duplicate_id():
         create_image_reference(0, "")
     )  # These two reference objects have the same ID field.
     with pytest.raises(errors.DuplicateIDError):
-        parse(references)
+        motion_tree.parse(references)
 
 
 @pytest_parametrize("sample_module,expected_node_order", [
     (empty, 
-     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.HideImage, motion_nodes.Continue,
-      motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.End]),
+     [motion_tree.MotionTree, motion_tree.Start, motion_tree.HideImage, motion_tree.Continue, motion_tree.MoveImage,
+      motion_tree.InvokePrevious, motion_tree.End]),
     (figure_eight,
-     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.Continue, motion_nodes.MoveImage,
-      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.MoveImage,
-      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.MoveImage,
-      motion_nodes.InvokePrevious, motion_nodes.MoveImage, motion_nodes.InvokePrevious, motion_nodes.End]),
+     [motion_tree.MotionTree, motion_tree.Start, motion_tree.Continue, motion_tree.MoveImage,
+      motion_tree.InvokePrevious, motion_tree.MoveImage, motion_tree.InvokePrevious, motion_tree.MoveImage,
+      motion_tree.InvokePrevious, motion_tree.MoveImage, motion_tree.InvokePrevious, motion_tree.MoveImage,
+      motion_tree.InvokePrevious, motion_tree.MoveImage, motion_tree.InvokePrevious, motion_tree.End]),
     (image_drawing, 
-     [motion_nodes.MotionTree, motion_nodes.Start, motion_nodes.HideImage, motion_nodes.Continue,
-      motion_nodes.ShowImage, motion_nodes.End])
+     [motion_tree.MotionTree, motion_tree.Start, motion_tree.HideImage, motion_tree.Continue, motion_tree.ShowImage,
+      motion_tree.End])
 ])
 def test_walk(sample_module, expected_node_order):
     instructions, _ = sample_module.data()
-    motion_tree = parse(instructions)
-    for actual, expected_node in zip(walk(motion_tree), expected_node_order):
+    parsed_motion_tree = motion_tree.parse(instructions)
+    for actual, expected_node in zip(motion_tree.walk(parsed_motion_tree), expected_node_order):
         actual_node = type(actual)
         assert actual_node is expected_node
