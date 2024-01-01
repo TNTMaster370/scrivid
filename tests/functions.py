@@ -17,6 +17,23 @@ def hacky_import(file, module_name):
     return module
 
 
+def _unpack_arg(arg):
+    try:
+        return [a for a in arg]
+    except TypeError:
+        return [arg]
+
+
+def relational_unpacking(first_arg, second_arg):
+    complete_args = []
+
+    for a in _unpack_arg(first_arg):
+        for b in _unpack_arg(second_arg):
+            complete_args.append((a, b))
+
+    return complete_args
+
+
 # Copied from `scrivid.compile_video` to avoid dependency.
 class TemporaryDirectory:
     def __init__(self, folder_location: Path):
