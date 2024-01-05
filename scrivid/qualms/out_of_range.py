@@ -25,8 +25,12 @@ class OutOfRange(QualmInterface):
 
     def __repr__(self) -> str:
         image = self.image
+        index = self.index
 
-        return f"{self.__class__.__name__}({image=})"
+        return f"{self.__class__.__name__}({index=}, {image=})"
+
+    def _comparison(self, other) -> bool:
+        return self.image is other.image
 
     def _message(self) -> str:
         return f"image with ID \'{self.image.ID}\' may be printed outside of canvas boundaries"

@@ -1,6 +1,6 @@
 from functions import get_current_directory, relational_unpacking
 
-from scrivid import create_image_reference, qualms
+from scrivid import create_image_reference, errors, qualms
 
 import textwrap
 
@@ -85,16 +85,10 @@ class Setup_DrawingConfliction:
         )
 
     @classmethod
-    def unpack(cls, matches, indexes):
-        coordinates = force_lookup(cls, f"{'non_' if not matches else ''}matching_coordinates")
-        first_arg = force_lookup(cls, f"_args_{indexes[0]}")
-        second_arg = force_lookup(cls, f"_args_{indexes[1]}")
-        unpacked_coordinates = []
-
-        for a, b in coordinates:
-            unpacked_coordinates.append((first_arg(a), second_arg(b)))
-
-        return unpacked_coordinates
+    def unpack(cls, arg, constructor_index):
+        constructor_a = force_lookup(cls, f"_args_{constructor_index[0]}")
+        constructor_b = force_lookup(cls, f"_args_{constructor_index[1]}")
+        return (constructor_a(arg[0]), constructor_b(arg[1]))
 
 
 class Setup_OutOfRange:
@@ -115,16 +109,28 @@ class Setup_OutOfRange:
             y=a.y
         )
 
+    @staticmethod
+    def _args_b(b):
+        return create_image_reference(
+            2,
+            directory / "img2.png",
+            x=b.x,
+            y=b.y
+        )
+
+    @staticmethod
+    def _args_c(c):
+        return create_image_reference(
+            3,
+            directory / "img3.png",
+            x=c.x,
+            y=c.y
+        )
+
     @classmethod
-    def unpack(cls, matches, index):
-        coordinates = force_lookup(cls, f"{'non_' if not matches else ''}matching_coordinates")
-        arg = force_lookup(cls, f"_args_{index}")
-        unpacked_coordinates = []
-
-        for a in coordinates:
-            unpacked_coordinates.append((arg(a), cls.window_size))
-
-        return unpacked_coordinates
+    def unpack(cls, arg, constructor_index):
+        constructor = force_lookup(cls, f"_args_{constructor_index}")
+        return (constructor(arg), cls.window_size)
 
 
 # =============================================================================
@@ -133,23 +139,29 @@ class Setup_OutOfRange:
 
 
 MATCHING_CONDITIONS = [
-    *relational_unpacking(qualms.DrawingConfliction, Setup_DrawingConfliction.unpack(True, "ab")),
-    *relational_unpacking(qualms.OutOfRange, Setup_OutOfRange.unpack(True, "a"))
+    *relational_unpacking(Setup_DrawingConfliction, Setup_DrawingConfliction.matching_coordinates, "ab"),
+    *relational_unpacking(Setup_OutOfRange, Setup_OutOfRange.matching_coordinates, "a")
 ]
 
 
-@parametrize("cls,args", MATCHING_CONDITIONS)
-def test_check_match(cls, args):
+@parametrize("setup_class,arguments,constructor_indexes", MATCHING_CONDITIONS)
+def test_check_match(setup_class, arguments, constructor_indexes):
+    args = setup_class.unpack(arguments, constructor_indexes)
+    cls = setup_class.relevant_class
     qualms = []
+
     cls.check(qualms, 0, *args)
     assert len(qualms) == 1 and isinstance(qualms[0], cls)
 
 
-@parametrize("cls,args", MATCHING_CONDITIONS)
-def test_check_multiple_match_aligned(cls, args):
+@parametrize("setup_class,arguments,constructor_indexes", MATCHING_CONDITIONS)
+def test_check_multiple_match_aligned(setup_class, arguments, constructor_indexes):
+    args = setup_class.unpack(arguments, constructor_indexes)
+    cls = setup_class.relevant_class
     qualms = []
-    cls.check(qualms, 1, *args)
-    cls.check(qualms, 2, *args)
+
+    for time in (1, 2):
+        cls.check(qualms, time, *args)
 
     assert (
         len(qualms) == 1
@@ -159,11 +171,14 @@ def test_check_multiple_match_aligned(cls, args):
     )
 
 
-@parametrize("cls,args", MATCHING_CONDITIONS)
-def test_check_multiple_match_unaligned(cls, args):
+@parametrize("setup_class,arguments,constructor_indexes", MATCHING_CONDITIONS)
+def test_check_multiple_match_unaligned(setup_class, arguments, constructor_indexes):
+    args = setup_class.unpack(arguments, constructor_indexes)
+    cls = setup_class.relevant_class
     qualms = []
-    cls.check(qualms, 1, *args)
-    cls.check(qualms, 3, *args)
+
+    for time in (1, 3):
+        cls.check(qualms, time, *args)
 
     assert (
         len(qualms) == 2
@@ -172,14 +187,67 @@ def test_check_multiple_match_unaligned(cls, args):
     )
 
 
-@parametrize("cls,args", [
-    *relational_unpacking(qualms.DrawingConfliction, Setup_DrawingConfliction.unpack(False, "ab")),
-    *relational_unpacking(qualms.OutOfRange, Setup_OutOfRange.unpack(False, "a"))
+@parametrize("setup_class,arguments,constructor_indexes", [
+    *relational_unpacking(Setup_DrawingConfliction, Setup_DrawingConfliction.non_matching_coordinates, "ab"),
+    *relational_unpacking(Setup_OutOfRange, Setup_OutOfRange.non_matching_coordinates, "a")
 ])
-def test_check_no_match(cls, args):
+def test_check_no_match(setup_class, arguments, constructor_indexes):
+    args = setup_class.unpack(arguments, constructor_indexes)
+    cls = setup_class.relevant_class
     qualms = []
+
     cls.check(qualms, 0, *args)
     assert qualms == []
+
+
+IMG_REF_A = create_image_reference(1, directory / "img1.png")
+IMG_REF_B = create_image_reference(2, directory / "img2.png")
+IMG_REF_C = create_image_reference(3, directory / "img3.png")
+
+
+@parametrize("qualm_a,args_a,qualm_b,args_b", [
+    (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B), qualms.OutOfRange, (IMG_REF_A,)),
+    (qualms.OutOfRange, (IMG_REF_A,), qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B))
+])
+def test_comparison_different_types(qualm_a, args_a, qualm_b, args_b):
+    qualm_object_a = qualm_a(0, *args_a)
+    qualm_object_b = qualm_b(0, *args_b)
+
+    assert (qualm_object_a == qualm_object_b) is False
+
+
+@parametrize("qualm,args_a,args_b", [
+    (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B), (IMG_REF_A, IMG_REF_C)),
+    (qualms.OutOfRange, (IMG_REF_A,), (IMG_REF_B,))
+])
+def test_comparison_false(qualm, args_a, args_b):
+    qualm_object_a = qualm(0, *args_a)
+    qualm_object_b = qualm(0, *args_b)
+
+    assert (qualm_object_a == qualm_object_b) is False
+
+
+@parametrize("qualm,args", [
+    (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
+    (qualms.OutOfRange, (IMG_REF_A,))
+])
+def test_comparison_invalid_type(qualm, args):
+    qualm_object = qualm(0, *args)
+    wrong_type = "STRING IS NOT VALID."
+
+    with pytest.raises(errors.TypeError):
+        qualm_object == wrong_type
+
+
+@parametrize("qualm,args", [
+    (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
+    (qualms.OutOfRange, (IMG_REF_A,))
+])
+def test_comparison_true(qualm, args):
+    qualm_object_a = qualm(0, *args)
+    qualm_object_b = qualm(0, *args)
+
+    assert (qualm_object_a == qualm_object_b) is True
 
 
 @parametrize("qualm,expected", [

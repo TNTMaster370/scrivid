@@ -24,14 +24,20 @@ def _unpack_arg(arg):
         return [arg]
 
 
-def relational_unpacking(first_arg, second_arg):
-    complete_args = []
+def _recursive_relational_unpacking(complete_args, iters, prev_values):
+    if len(iters) == 1:
+        for item in _unpack_arg(iters):
+            complete_args.append((*prev_values, item))
+        return complete_args
 
-    for a in _unpack_arg(first_arg):
-        for b in _unpack_arg(second_arg):
-            complete_args.append((a, b))
+    for item in _unpack_arg(iters[0]):
+        _recursive_relational_unpacking(complete_args, iters[1:], (*prev_values, item))
 
     return complete_args
+
+
+def relational_unpacking(*iters):
+    return _recursive_relational_unpacking([], iters, ())
 
 
 # Copied from `scrivid.compile_video` to avoid dependency.

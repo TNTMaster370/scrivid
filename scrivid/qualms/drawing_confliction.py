@@ -35,10 +35,12 @@ class DrawingConfliction(QualmInterface):
     def __repr__(self):
         image_a = self.image_a
         image_b = self.image_b
-        index_start = self.index.start
-        index_end = self.index.end
+        index = self.index
 
-        return f"{self.__class__.__name__}({index_start=}, {index_end=}, {image_a=}, {image_b=})"
+        return f"{self.__class__.__name__}({index=}, {image_a=}, {image_b=})"
+
+    def _comparison(self, other) -> bool:
+        return self.image_a is other.image_a and self.image_b is other.image_b
 
     def _message(self) -> str:
         return f"images with IDs \'{self.image_a.ID}\' and \'{self.image_b.ID}\' overlap with each other"
