@@ -1,7 +1,9 @@
-from functions import get_current_directory, relational_unpacking
+from functions import get_current_directory
 
 from scrivid import create_image_reference, errors, qualms
 
+from abc import ABC, abstractmethod
+import itertools
 import textwrap
 
 import pytest
@@ -26,6 +28,15 @@ def force_lookup(cls, value):
     return cls.__dict__[value]
 
 
+def initialize_image_reference(index, coordinates=None):
+    kwargs = {}
+
+    if coordinates is not None:
+        kwargs = {"x": coordinates.x, "y": coordinates.y}
+
+    return create_image_reference(index, directory / f"img{index}.png", **kwargs)
+
+
 # =============================================================================
 #                                SETUP OBJECTS
 # =============================================================================
@@ -36,8 +47,28 @@ def force_lookup(cls, value):
 # =============================================================================
 
 
-class Setup_DrawingConfliction:
-    args = "coords"
+class BaseSetup(ABC):
+    matching_coordinates: list
+    non_matching_coordinates: list
+    relevant_class: qualms
+
+    @classmethod
+    def fully_unpack_coordinates(cls, matching):
+        coordinates = getattr(cls, f"{'non_' if not matching else ''}matching_coordinates")
+        args = []
+
+        for coordinate in coordinates:
+            args.append(cls.invoke_coordinates(coordinate))
+
+        return ((cls.relevant_class,), args)
+
+    @classmethod
+    @abstractmethod
+    def invoke_coordinates(cls):
+        raise NotImplementedError
+
+
+class Setup_DrawingConfliction(BaseSetup):
     matching_coordinates = [
         (Coordinates(256, 256), Coordinates(256, 256)),  # Exact same spot
         (Coordinates(256, 256), Coordinates(156, 156)),  # Offset, top-left
@@ -57,41 +88,14 @@ class Setup_DrawingConfliction:
     ]
     relevant_class = qualms.DrawingConfliction
 
-    @staticmethod
-    def _args_a(a):
-        return create_image_reference(
-            1,
-            directory / "img1.png",
-            x=a.x,
-            y=a.y
-        )
-
-    @staticmethod
-    def _args_b(b):
-        return create_image_reference(
-            2,
-            directory / "img2.png",
-            x=b.x,
-            y=b.y
-        )
-
-    @staticmethod
-    def _args_c(c):
-        return create_image_reference(
-            3,
-            directory / "img3.png",
-            x=c.x,
-            y=c.y
-        )
-
     @classmethod
-    def unpack(cls, arg, constructor_index):
-        constructor_a = force_lookup(cls, f"_args_{constructor_index[0]}")
-        constructor_b = force_lookup(cls, f"_args_{constructor_index[1]}")
-        return (constructor_a(arg[0]), constructor_b(arg[1]))
+    def invoke_coordinates(cls, coordinate):
+        args_a = initialize_image_reference(1, coordinate[0])
+        args_b = initialize_image_reference(2, coordinate[1])
+        return (args_a, args_b)
 
 
-class Setup_OutOfRange:
+class Setup_OutOfRange(BaseSetup):
     matching_coordinates = [
         Coordinates(-100, -100), Coordinates(122, -100), Coordinates(345, -100), Coordinates(345, 122),
         Coordinates(345, 345), Coordinates(122, 345), Coordinates(-100, 345), Coordinates(-100, 122)
@@ -100,37 +104,10 @@ class Setup_OutOfRange:
     relevant_class = qualms.OutOfRange
     window_size = (500, 500)
 
-    @staticmethod
-    def _args_a(a):
-        return create_image_reference(
-            1,
-            directory / "img1.png",
-            x=a.x,
-            y=a.y
-        )
-
-    @staticmethod
-    def _args_b(b):
-        return create_image_reference(
-            2,
-            directory / "img2.png",
-            x=b.x,
-            y=b.y
-        )
-
-    @staticmethod
-    def _args_c(c):
-        return create_image_reference(
-            3,
-            directory / "img3.png",
-            x=c.x,
-            y=c.y
-        )
-
     @classmethod
-    def unpack(cls, arg, constructor_index):
-        constructor = force_lookup(cls, f"_args_{constructor_index}")
-        return (constructor(arg), cls.window_size)
+    def invoke_coordinates(cls, coordinate):
+        args_a = initialize_image_reference(1, coordinate)
+        return (args_a, cls.window_size)
 
 
 # =============================================================================
@@ -139,25 +116,20 @@ class Setup_OutOfRange:
 
 
 MATCHING_CONDITIONS = [
-    *relational_unpacking(Setup_DrawingConfliction, Setup_DrawingConfliction.matching_coordinates, "ab"),
-    *relational_unpacking(Setup_OutOfRange, Setup_OutOfRange.matching_coordinates, "a")
+    *tuple(a for a in itertools.product(*Setup_DrawingConfliction.fully_unpack_coordinates(True))),
+    *tuple(a for a in itertools.product(*Setup_OutOfRange.fully_unpack_coordinates(True)))
 ]
 
 
-@parametrize("setup_class,arguments,constructor_indexes", MATCHING_CONDITIONS)
-def test_check_match(setup_class, arguments, constructor_indexes):
-    args = setup_class.unpack(arguments, constructor_indexes)
-    cls = setup_class.relevant_class
+@parametrize("cls,args", MATCHING_CONDITIONS)
+def test_check_match(cls, args):
     qualms = []
-
     cls.check(qualms, 0, *args)
     assert len(qualms) == 1 and isinstance(qualms[0], cls)
 
 
-@parametrize("setup_class,arguments,constructor_indexes", MATCHING_CONDITIONS)
-def test_check_multiple_match_aligned(setup_class, arguments, constructor_indexes):
-    args = setup_class.unpack(arguments, constructor_indexes)
-    cls = setup_class.relevant_class
+@parametrize("cls,args", MATCHING_CONDITIONS)
+def test_check_multiple_match_aligned(cls, args):
     qualms = []
 
     for time in (1, 2):
@@ -171,10 +143,8 @@ def test_check_multiple_match_aligned(setup_class, arguments, constructor_indexe
     )
 
 
-@parametrize("setup_class,arguments,constructor_indexes", MATCHING_CONDITIONS)
-def test_check_multiple_match_unaligned(setup_class, arguments, constructor_indexes):
-    args = setup_class.unpack(arguments, constructor_indexes)
-    cls = setup_class.relevant_class
+@parametrize("cls,args", MATCHING_CONDITIONS)
+def test_check_multiple_match_unaligned(cls, args):
     qualms = []
 
     for time in (1, 3):
@@ -187,22 +157,19 @@ def test_check_multiple_match_unaligned(setup_class, arguments, constructor_inde
     )
 
 
-@parametrize("setup_class,arguments,constructor_indexes", [
-    *relational_unpacking(Setup_DrawingConfliction, Setup_DrawingConfliction.non_matching_coordinates, "ab"),
-    *relational_unpacking(Setup_OutOfRange, Setup_OutOfRange.non_matching_coordinates, "a")
+@parametrize("cls,args", [
+    *tuple(a for a in itertools.product(*Setup_DrawingConfliction.fully_unpack_coordinates(False))),
+    *tuple(a for a in itertools.product(*Setup_OutOfRange.fully_unpack_coordinates(False)))
 ])
-def test_check_no_match(setup_class, arguments, constructor_indexes):
-    args = setup_class.unpack(arguments, constructor_indexes)
-    cls = setup_class.relevant_class
+def test_check_no_match(cls, args):
     qualms = []
-
     cls.check(qualms, 0, *args)
     assert qualms == []
 
 
-IMG_REF_A = create_image_reference(1, directory / "img1.png")
-IMG_REF_B = create_image_reference(2, directory / "img2.png")
-IMG_REF_C = create_image_reference(3, directory / "img3.png")
+IMG_REF_A = initialize_image_reference(1)
+IMG_REF_B = initialize_image_reference(2)
+IMG_REF_C = initialize_image_reference(3)
 
 
 @parametrize("qualm_a,args_a,qualm_b,args_b", [
