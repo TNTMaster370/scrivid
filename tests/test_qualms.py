@@ -20,7 +20,7 @@ def assemble_qualm_args(*setup_classes, matches):
     args = []
 
     for setup_class in setup_classes:
-        for a in itertools.product(setup_class.fully_unpack_coordinates(matches)):
+        for a in itertools.product(*setup_class.fully_unpack_coordinates(matches)):
             args.append(a)
 
     return args
