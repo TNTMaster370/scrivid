@@ -16,6 +16,16 @@ parametrize = pytest.mark.parametrize
 directory = get_current_directory() / "images"
 
 
+def assemble_qualm_args(*setup_classes, matches):
+    args = []
+
+    for setup_class in setup_classes:
+        for a in itertools.product(setup_class.fully_unpack_coordinates(matches)):
+            args.append(a)
+
+    return args
+
+
 class Coordinates:
     __slots__ = ("x", "y")
 
@@ -110,15 +120,15 @@ class Setup_OutOfRange(BaseSetup):
         return (args_a, cls.window_size)
 
 
+SETUP_CLASSES = (Setup_DrawingConfliction, Setup_OutOfRange)
+
+
 # =============================================================================
 #                                ACTUAL  TESTS
 # =============================================================================
 
 
-MATCHING_CONDITIONS = [
-    *tuple(a for a in itertools.product(*Setup_DrawingConfliction.fully_unpack_coordinates(True))),
-    *tuple(a for a in itertools.product(*Setup_OutOfRange.fully_unpack_coordinates(True)))
-]
+MATCHING_CONDITIONS = assemble_qualm_args(*SETUP_CLASSES, True)
 
 
 @parametrize("cls,args", MATCHING_CONDITIONS)
@@ -157,10 +167,7 @@ def test_check_multiple_match_unaligned(cls, args):
     )
 
 
-@parametrize("cls,args", [
-    *tuple(a for a in itertools.product(*Setup_DrawingConfliction.fully_unpack_coordinates(False))),
-    *tuple(a for a in itertools.product(*Setup_OutOfRange.fully_unpack_coordinates(False)))
-])
+@parametrize("cls,args", assemble_qualm_args(*SETUP_CLASSES, matches=False))
 def test_check_no_match(cls, args):
     qualms = []
     cls.check(qualms, 0, *args)
