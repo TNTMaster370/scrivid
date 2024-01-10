@@ -15,13 +15,21 @@ parametrize = pytest.mark.parametrize
 
 directory = get_current_directory() / "images"
 
+IMAGE_LIMIT = 3
 
-def assemble_qualm_args(*setup_classes, matches):
+
+def assemble_qualm_args(*setup_classes, matches, count=1):
     args = []
 
     for setup_class in setup_classes:
-        for a in itertools.product(*setup_class.fully_unpack_coordinates(matches)):
-            args.append(a)
+        current_args = []
+
+        for count_index in range(count):
+            current_args.append(setup_class.fully_unpack_coordinates(count_index, matches))
+
+        current_args = transpose(*current_args)
+        for a, b in itertools.product((setup_class.relevant_class,), current_args):
+            args.append((a, *b))
 
     return args
 
@@ -47,6 +55,10 @@ def initialize_image_reference(index, coordinates=None):
     return create_image_reference(index, directory / f"img{index}.png", **kwargs)
 
 
+def transpose(*i):
+    return tuple(i_ for i_ in zip(*i))
+
+
 # =============================================================================
 #                                SETUP OBJECTS
 # =============================================================================
@@ -63,14 +75,15 @@ class BaseSetup(ABC):
     relevant_class: qualms
 
     @classmethod
-    def fully_unpack_coordinates(cls, matching):
+    def fully_unpack_coordinates(cls, index, matching):
         coordinates = getattr(cls, f"{'non_' if not matching else ''}matching_coordinates")
         args = []
 
         for coordinate in coordinates:
-            args.append(cls.invoke_coordinates(coordinate))
+            args.append(cls.invoke_coordinates(coordinate, index))
 
-        return ((cls.relevant_class,), args)
+        # return ((cls.relevant_class,), args)
+        return args
 
     @classmethod
     @abstractmethod
@@ -99,9 +112,9 @@ class Setup_DrawingConfliction(BaseSetup):
     relevant_class = qualms.DrawingConfliction
 
     @classmethod
-    def invoke_coordinates(cls, coordinate):
-        args_a = initialize_image_reference(1, coordinate[0])
-        args_b = initialize_image_reference(2, coordinate[1])
+    def invoke_coordinates(cls, coordinate, index):
+        args_a = initialize_image_reference((index % IMAGE_LIMIT) + 1, coordinate[0])
+        args_b = initialize_image_reference((index % IMAGE_LIMIT) + 2, coordinate[1])
         return (args_a, args_b)
 
 
@@ -115,8 +128,8 @@ class Setup_OutOfRange(BaseSetup):
     window_size = (500, 500)
 
     @classmethod
-    def invoke_coordinates(cls, coordinate):
-        args_a = initialize_image_reference(1, coordinate)
+    def invoke_coordinates(cls, coordinate, index):
+        args_a = initialize_image_reference((index % IMAGE_LIMIT) + 1, coordinate)
         return (args_a, cls.window_size)
 
 
@@ -148,6 +161,25 @@ def test_check_multiple_match_aligned(cls, args):
     assert (
         len(qualms) == 1
         and isinstance(qualms[0], cls)
+        and qualms[0].index.start == 1
+        and qualms[0].index.end == 2
+    )
+
+
+@parametrize("cls,args_q,args_r", assemble_qualm_args(*SETUP_CLASSES, count=2, matches=True))
+def test_check_multiple_match_different_args(cls, args_q, args_r):
+    qualms = []
+    combination = "qrq"  # The `combination` variable refers to the order of
+    # the args used in the matching.
+
+    for char, time in zip(combination, (1, 1, 2)):
+        args = args_q if char == "q" else args_r
+        cls.check(qualms, time, *args)
+
+    assert (
+        len(qualms) == 2
+        and isinstance(qualms[0], cls)
+        and isinstance(qualms[1], cls)
         and qualms[0].index.start == 1
         and qualms[0].index.end == 2
     )
