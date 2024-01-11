@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from PIL import Image
 
 if TYPE_CHECKING:
-    from .._file_objects import RootAdjustment
+    from ..abc import Adjustment
     from .._separating_instructions import SeparatedInstructions
 
     from pathlib import Path
@@ -84,7 +84,7 @@ class _FrameCanvas:
             pass
 
 
-def _invoke_adjustment_duration(index: int, adj: RootAdjustment):
+def _invoke_adjustment_duration(index: int, adj: Adjustment):
     # Assume that the `adj` has a 'duration' attribute.
     duration = index - adj.activation_time
     if duration > adj.duration:

@@ -1,23 +1,14 @@
 from __future__ import annotations
 
+from ..abc import Adjustment
+
 from ._status import VisibilityStatus
 from .properties import EXCLUDED, Properties
 
-from abc import ABC, abstractmethod
-import operator
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Hashable, Union
-
-
-def _compare_activation_time(operation: operator):
-    def function(a, b):
-        if not isinstance(b, RootAdjustment):
-            raise TypeError(f"Expected type {a.__class__.__name__}, got type {b.__class__.__name__}")
-        return operation(a._activation_time, b._activation_time)
-
-    return function
 
 
 def _increment_value(
@@ -40,14 +31,14 @@ def _increment_value(
     return value + (remainder - (excess_precision * precision))
 
 
-class RootAdjustment(ABC):
-    __slots__ = ("_activation_time", "_ID")
+class HideAdjustment(Adjustment):
+    __slots__ = ("_ID", "activation_time")
 
     def __init__(self, ID: Hashable, activation_time: int):
-        self._activation_time = activation_time
         self._ID = ID
+        self.activation_time = activation_time
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         id = self._ID
         activation_time = self._activation_time
 
@@ -57,8 +48,49 @@ class RootAdjustment(ABC):
         return hash((self._ID, self._activation_time))
 
     @property
-    def activation_time(self):
-        return self._activation_time
+    def id(self):
+        return self._ID
+
+    @property
+    def ID(self):
+        return self._ID
+
+    def _compare(self, other, operation) -> bool:
+        if not hasattr(other, "activation_time"):
+            return NotImplemented
+        else:
+            return operation(self.activation_time, other.activation_time)
+
+    def _enact(self) -> Properties:
+        return Properties(visibility=VisibilityStatus.HIDE)
+
+
+class MoveAdjustment(Adjustment):
+    __slots__ = ("_change", "_ID", "activation_time", "duration")
+
+    def __init__(
+            self,
+            ID: Hashable,
+            activation_time: int,
+            change: Properties,
+            duration: int
+    ):
+        self._change = change
+        self.duration = duration
+        self._ID = ID
+        self.activation_time = activation_time
+
+    def __repr__(self):
+        id = self._ID
+        activation_time = self._activation_time
+        change = self._change
+        duration = self.duration
+
+        return f"{self.__class__.__name__}({id=!r}, {activation_time=!r}, {change=!r}, {duration=!r})"
+
+    @property
+    def change(self):
+        return self._change
 
     @property
     def id(self):
@@ -68,65 +100,14 @@ class RootAdjustment(ABC):
     def ID(self):
         return self._ID
 
-    @abstractmethod
-    def _enact(self) -> Properties:
-        ...
-
-
-""" self == other """
-RootAdjustment.__eq__ = _compare_activation_time(operator.eq)
-
-""" self >= other """
-RootAdjustment.__ge__ = _compare_activation_time(operator.ge)
-
-""" self > other """
-RootAdjustment.__gt__ = _compare_activation_time(operator.gt)
-
-""" self <= other """
-RootAdjustment.__le__ = _compare_activation_time(operator.le)
-
-""" self < other """
-RootAdjustment.__lt__ = _compare_activation_time(operator.lt)
-
-""" self != other """
-RootAdjustment.__ne__ = _compare_activation_time(operator.ne)
-
-
-class HideAdjustment(RootAdjustment):
-    def _enact(self) -> Properties:
-        return Properties(visibility=VisibilityStatus.HIDE)
-
-
-class MoveAdjustment(RootAdjustment):
-    __slots__ = ("_change", "_duration")
-
-    def __init__(
-            self,
-            ID: Hashable,
-            activation_time: int,
-            change: Properties,
-            duration: int
-    ):
-        super().__init__(ID, activation_time)
-        self._change = change
-        self._duration = duration
-
-    def __repr__(self):
-        change = self._change
-        duration = self._duration
-
-        return f"{super().__repr__()[:-1]}, {change=!r}, {duration=!r})"
-
-    @property
-    def change(self):
-        return self._change
-
-    @property
-    def duration(self):
-        return self._duration
+    def _compare(self, other, operation) -> bool:
+        if not hasattr(other, "activation_time"):
+            return NotImplemented
+        else:
+            return operation(self.activation_time, other.activation_time)
 
     def _enact(self, length: int) -> Properties:
-        if self._duration == 1 or self._duration == length:
+        if self.duration == 1 or self.duration == length:
             return self._change
         else:
             return self._split_change(length)
@@ -134,16 +115,45 @@ class MoveAdjustment(RootAdjustment):
     def _split_change(self, length: int = 1) -> Properties:
         scale = _increment_value(
             self._change.scale,
-            self._duration,
+            self.duration,
             length,
             0.1
         )
-        x = _increment_value(self._change.x, self._duration, length, 1)
-        y = _increment_value(self._change.y, self._duration, length, 1)
+        x = _increment_value(self._change.x, self.duration, length, 1)
+        y = _increment_value(self._change.y, self.duration, length, 1)
 
         return Properties(scale=scale, x=x, y=y)
 
 
-class ShowAdjustment(RootAdjustment):
+class ShowAdjustment(Adjustment):
+    __slots__ = ("_ID", "activation_time")
+
+    def __init__(self, ID: Hashable, activation_time: int):
+        self._ID = ID
+        self.activation_time = activation_time
+
+    def __repr__(self) -> str:
+        id = self._ID
+        activation_time = self._activation_time
+
+        return f"{self.__class__.__name__}({id=!r}, {activation_time=!r})"
+
+    def __hash__(self):
+        return hash((self._ID, self._activation_time))
+
+    @property
+    def id(self):
+        return self._ID
+
+    @property
+    def ID(self):
+        return self._ID
+
+    def _compare(self, other, operation) -> bool:
+        if not hasattr(other, "activation_time"):
+            return NotImplemented
+        else:
+            return operation(self.activation_time, other.activation_time)
+
     def _enact(self) -> Properties:
         return Properties(visibility=VisibilityStatus.SHOW)

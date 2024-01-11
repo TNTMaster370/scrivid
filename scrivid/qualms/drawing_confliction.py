@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from ..abc import Qualm
+
 from ._add_to_list import add_qualm
 from ._coordinates import ImageCoordinates
 from ._index import Index
-from .interface import QualmInterface
 
 from typing import TYPE_CHECKING
 
@@ -21,7 +22,7 @@ def _left_of(a: ImageCoordinates, b: ImageCoordinates):
     return a.x_prime < b.x
 
 
-class DrawingConfliction(QualmInterface):
+class DrawingConfliction(Qualm):
     __slots__ = ("image_a", "image_b", "index")
 
     code = "D101"
@@ -46,7 +47,7 @@ class DrawingConfliction(QualmInterface):
         return f"images with IDs \'{self.image_a.ID}\' and \'{self.image_b.ID}\' overlap with each other"
 
     @classmethod
-    def check(cls, qualms: List[QualmInterface], index: int, image_a: ImageReference, image_b: ImageReference):
+    def check(cls, qualms: List[Qualm], index: int, image_a: ImageReference, image_b: ImageReference):
         if not image_a.is_opened:
             image_a.open()
         if not image_b.is_opened:

@@ -11,13 +11,14 @@ from .._utils import TemporaryDirectory
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .._file_objects.adjustments import ImageReference, RootAdjustment
+    from ..abc import Adjustment
+    from .._file_objects.images import ImageReference
     from ..metadata import Metadata
 
     from collections.abc import Sequence
     from typing import Union
 
-    INSTRUCTIONS = Union[ImageReference, RootAdjustment]
+    INSTRUCTIONS = Union[ImageReference, Adjustment]
 
 
 def compile_video(instructions: Sequence[INSTRUCTIONS], metadata: Metadata):

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from . import errors
-from ._file_objects.adjustments import RootAdjustment
+from .abc import Adjustment
 from ._file_objects.images import ImageReference
 
 from typing import TYPE_CHECKING
@@ -12,14 +12,14 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Dict, Hashable, Union
 
-    INSTRUCTIONS = Union[ImageReference, RootAdjustment]
+    INSTRUCTIONS = Union[ImageReference, Adjustment]
     REFERENCES = ImageReference
 
 
 class SeparatedInstructions:
     __slots__ = ("adjustments", "references")
 
-    adjustments: Dict[Hashable, SortedList[RootAdjustment]]
+    adjustments: Dict[Hashable, SortedList[Adjustment]]
     references: Dict[Hashable, ImageReference]
 
     def __init__(self):
@@ -27,7 +27,7 @@ class SeparatedInstructions:
         self.references = {}
 
 
-def _handle_adjustment(separated_instructions: SeparatedInstructions, adjustment: RootAdjustment):
+def _handle_adjustment(separated_instructions: SeparatedInstructions, adjustment: Adjustment):
     if adjustment.ID not in separated_instructions.adjustments:
         separated_instructions.adjustments[adjustment.ID] = SortedList()
 
@@ -50,7 +50,7 @@ def separate_instructions(instructions: Sequence[INSTRUCTIONS]) -> SeparatedInst
     for instruction in instructions:
         if isinstance(instruction, ImageReference):
             _handle_reference(separated_instructions, instruction)
-        elif isinstance(instruction, RootAdjustment):
+        elif isinstance(instruction, Adjustment):
             _handle_adjustment(separated_instructions, instruction)
 
     return separated_instructions

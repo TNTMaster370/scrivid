@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from ..abc import Qualm
+
 from ._add_to_list import add_qualm
 from ._coordinates import ImageCoordinates
 from ._index import Index
-from .interface import QualmInterface
 
 from typing import TYPE_CHECKING
 
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
     from typing import List, Tuple
 
 
-class OutOfRange(QualmInterface):
+class OutOfRange(Qualm):
     __slots__ = ("image", "index")
 
     code = "D102"
@@ -36,7 +37,7 @@ class OutOfRange(QualmInterface):
         return f"image with ID \'{self.image.ID}\' may be printed outside of canvas boundaries"
 
     @classmethod
-    def check(cls, qualms: List[QualmInterface], index: int, image: ImageReference, window_size: Tuple[int, int]):
+    def check(cls, qualms: List[Qualm], index: int, image: ImageReference, window_size: Tuple[int, int]):
         if not image.is_opened:
             image.open()
 

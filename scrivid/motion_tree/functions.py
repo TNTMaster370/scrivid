@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from sortedcontainers import SortedList
 
 if TYPE_CHECKING:
-    from .._file_objects.adjustments import RootAdjustment
+    from ..abc import Adjustment
     from .._file_objects.images import ImageReference
 
     from collections.abc import Sequence
@@ -26,7 +26,7 @@ def dump(motion_tree: MotionTree, *, indent: int = 0) -> str:
         return repr(motion_tree)
 
 
-def _create_command_node(adjustment: RootAdjustment) -> Optional[Union[HideImage, MoveImage, ShowImage]]:
+def _create_command_node(adjustment: Adjustment) -> Optional[Union[HideImage, MoveImage, ShowImage]]:
     adjustment_type = type(adjustment)
     adjustment_time = adjustment.activation_time
     relevant_id = adjustment.ID
@@ -64,7 +64,7 @@ def _invoke_duration_value(duration_value: int, current_node: Union[HideImage, M
         return duration_value
 
 
-def _loop_over_adjustments(adjustments: Dict[RootAdjustment]) -> Iterator[MOTION_NODES]:
+def _loop_over_adjustments(adjustments: Dict[Adjustment]) -> Iterator[MOTION_NODES]:
     current_node = None
     duration_value = 0
     sorted_adjustments = SortedList(
