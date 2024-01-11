@@ -20,42 +20,38 @@ class Adjustment(ABC):
     activation_time: int
 
     def __eq__(self, other) -> bool:
-        return self._gatekeep_comparison(other, operator.eq)
+        return self._comparison(other, operator.eq)
 
     def __ge__(self, other) -> bool:
-        return self._gatekeep_comparison(other, operator.ge)
+        return self._comparison(other, operator.ge)
 
     def __gt__(self, other) -> bool:
-        return self._gatekeep_comparison(other, operator.gt)
+        return self._comparison(other, operator.gt)
 
     def __le__(self, other) -> bool:
-        return self._gatekeep_comparison(other, operator.le)
+        return self._comparison(other, operator.le)
 
     def __lt__(self, other) -> bool:
-        return self._gatekeep_comparison(other, operator.lt)
+        return self._comparison(other, operator.lt)
 
     def __ne__(self, other) -> bool:
-        return self._gatekeep_comparison(other, operator.ne)
+        return self._comparison(other, operator.ne)
 
-    def _gatekeep_comparison(self, other, operation):
+    def __init_subclass__(cls):
+        if not isinstance(getattr(cls, "activation_time", None), property):
+            raise errors.TypeError(
+                "abc.Adjustment subclass method `activation_time` must be implemented as a property."
+            )
+
+    def _comparison(self, other, operation):
         if not isinstance(other, Adjustment):
             raise errors.TypeError(f"Expected type Adjustment, got type \'{other.__class__.__name__}\'")
+        else:
+            return operation(self.activation_time, other.activation_time)
 
-        self_result = self._compare(other, operation)
-        if self_result is not NotImplemented:
-            return self_result
-
-        other_result = other._compare(self, operation)
-        if other_result is not NotImplemented:
-            return other_result
-
-        raise errors.TypeError(textwrap.dedent(f"""
-            Implementations of `._compare` {self.__class__.__name__} and {other.__class__.__name__} were deemed
-             incompatible. (Both results returned NotImplemented.)
-        """).replace("\n", ""))
-
+    @property
     @abstractmethod
-    def _compare(self, other, operation) -> bool:
+    def activation_time(self):
         raise NotImplementedError
 
     @abstractmethod

@@ -32,11 +32,11 @@ def _increment_value(
 
 
 class HideAdjustment(Adjustment):
-    __slots__ = ("_ID", "activation_time")
+    __slots__ = ("_activation_time", "_ID")
 
     def __init__(self, ID: Hashable, activation_time: int):
         self._ID = ID
-        self.activation_time = activation_time
+        self._activation_time = activation_time
 
     def __repr__(self) -> str:
         id = self._ID
@@ -48,6 +48,10 @@ class HideAdjustment(Adjustment):
         return hash((self._ID, self._activation_time))
 
     @property
+    def activation_time(self):
+        return self._activation_time
+
+    @property
     def id(self):
         return self._ID
 
@@ -55,18 +59,12 @@ class HideAdjustment(Adjustment):
     def ID(self):
         return self._ID
 
-    def _compare(self, other, operation) -> bool:
-        if not hasattr(other, "activation_time"):
-            return NotImplemented
-        else:
-            return operation(self.activation_time, other.activation_time)
-
     def _enact(self) -> Properties:
         return Properties(visibility=VisibilityStatus.HIDE)
 
 
 class MoveAdjustment(Adjustment):
-    __slots__ = ("_change", "_ID", "activation_time", "duration")
+    __slots__ = ("_activation_time", "_change", "_ID", "duration")
 
     def __init__(
             self,
@@ -78,7 +76,7 @@ class MoveAdjustment(Adjustment):
         self._change = change
         self.duration = duration
         self._ID = ID
-        self.activation_time = activation_time
+        self._activation_time = activation_time
 
     def __repr__(self):
         id = self._ID
@@ -87,6 +85,10 @@ class MoveAdjustment(Adjustment):
         duration = self.duration
 
         return f"{self.__class__.__name__}({id=!r}, {activation_time=!r}, {change=!r}, {duration=!r})"
+
+    @property
+    def activation_time(self):
+        return self._activation_time
 
     @property
     def change(self):
@@ -99,12 +101,6 @@ class MoveAdjustment(Adjustment):
     @property
     def ID(self):
         return self._ID
-
-    def _compare(self, other, operation) -> bool:
-        if not hasattr(other, "activation_time"):
-            return NotImplemented
-        else:
-            return operation(self.activation_time, other.activation_time)
 
     def _enact(self, length: int) -> Properties:
         if self.duration == 1 or self.duration == length:
@@ -126,11 +122,11 @@ class MoveAdjustment(Adjustment):
 
 
 class ShowAdjustment(Adjustment):
-    __slots__ = ("_ID", "activation_time")
+    __slots__ = ("_activation_time", "_ID")
 
     def __init__(self, ID: Hashable, activation_time: int):
         self._ID = ID
-        self.activation_time = activation_time
+        self._activation_time = activation_time
 
     def __repr__(self) -> str:
         id = self._ID
@@ -142,18 +138,16 @@ class ShowAdjustment(Adjustment):
         return hash((self._ID, self._activation_time))
 
     @property
+    def activation_time(self):
+        return self._activation_time
+
+    @property
     def id(self):
         return self._ID
 
     @property
     def ID(self):
         return self._ID
-
-    def _compare(self, other, operation) -> bool:
-        if not hasattr(other, "activation_time"):
-            return NotImplemented
-        else:
-            return operation(self.activation_time, other.activation_time)
 
     def _enact(self) -> Properties:
         return Properties(visibility=VisibilityStatus.SHOW)
