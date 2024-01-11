@@ -3,9 +3,10 @@ from __future__ import annotations
 from .. import motion_tree
 
 from .._file_objects import MoveAdjustment, Properties, VisibilityStatus
-from .._utils import TemporaryAttribute, ticking
+from .._utils import TemporaryAttribute
 
 from copy import deepcopy
+import itertools
 from typing import TYPE_CHECKING
 
 from PIL import Image
@@ -42,7 +43,7 @@ class _FrameCanvas:
         ref_x = reference.x
         ref_y = reference.y
 
-        for x, y in ticking(
+        for x, y in itertools.product(
                 range(ref_x, ref_x + reference.get_image_width()),
                 range(ref_y, ref_y + reference.get_image_height())
         ):
