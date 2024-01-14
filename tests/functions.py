@@ -1,5 +1,20 @@
 from pathlib import Path
 
+import pytest
+
+
+def categorize(*, category):
+    marks = [
+        getattr(pytest.mark, category)
+    ]
+
+    def decorator(function):
+        for mark in marks:
+            function = mark(function)
+        return function
+
+    return decorator
+
 
 def get_current_directory():
     return Path(__file__).absolute().parent

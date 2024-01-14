@@ -1,3 +1,4 @@
+from functions import categorize
 from samples import empty, figure_eight, image_drawing
 
 from scrivid import create_image_reference, errors, motion_tree
@@ -18,6 +19,7 @@ def has_method(cls, method):
         return False
 
 
+@categorize(category="motion_tree")
 @pytest_parametrize("indent", [0, 2, 4, 8])
 @pytest_parametrize("sample_module,expected_string_raw", [
     (empty, 
@@ -55,6 +57,7 @@ def test_dump(indent, sample_module, expected_string_raw):
     assert actual == expected
 
 
+@categorize(category="motion_tree")
 @pytest_parametrize("node_cls,attr", [
     (motion_tree.Continue, "length"),
     (motion_tree.HideImage, "id"),
@@ -71,6 +74,7 @@ def test_nodes_has_attributes(node_cls, attr):
     assert hasattr(node_cls, attr)
 
 
+@categorize(category="motion_tree")
 @pytest_parametrize("node_cls,method", [
     (motion_tree.HideImage, "__eq__"),
     (motion_tree.HideImage, "__ge__"),
@@ -99,6 +103,7 @@ def test_nodes_has_methods_additional(node_cls, method):
     assert has_method(node_cls, method)
 
 
+@categorize(category="motion_tree")
 @pytest_parametrize("node_cls", [
     motion_tree.Continue, motion_tree.End, motion_tree.HideImage, motion_tree.InvokePrevious, motion_tree.MotionTree,
     motion_tree.MoveImage, motion_tree.ShowImage, motion_tree.Start
@@ -111,6 +116,7 @@ def test_nodes_has_methods_required(node_cls, method):
     assert has_method(node_cls, method)
 
 
+@categorize(category="motion_tree")
 @pytest_parametrize("node_cls,args", [
     (motion_tree.Continue, (0,)),
     (motion_tree.End, ()),
@@ -126,6 +132,7 @@ def test_nodes_inheritance(node_cls, args):
     assert isinstance(node, motion_tree.RootMotionTree)
 
 
+@categorize(category="motion_tree")
 @pytest_parametrize("sample_module", [empty, figure_eight, image_drawing])
 def test_parse(sample_module):
     instructions, _ = sample_module.data()
@@ -141,6 +148,7 @@ def test_parse_duplicate_id():
         motion_tree.parse(references)
 
 
+@categorize(category="motion_tree")
 @pytest_parametrize("sample_module,expected_node_order", [
     (empty, 
      [motion_tree.MotionTree, motion_tree.Start, motion_tree.HideImage, motion_tree.Continue, motion_tree.MoveImage,

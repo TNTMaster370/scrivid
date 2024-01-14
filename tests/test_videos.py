@@ -1,4 +1,4 @@
-from functions import get_current_directory, TemporaryDirectory
+from functions import categorize, get_current_directory, TemporaryDirectory
 from samples import empty, figure_eight, image_drawing, overlap, slide
 
 import scrivid
@@ -65,8 +65,7 @@ class VideoFilePointer:
         self.vid.release()
 
 
-# @pytest.mark.xfail(reason="Unstable result in GitHub Actions.")
-@pytest.mark.flag_video
+@categorize(category="video")
 @parametrize("sample_function,sample_module_name", [
     (empty, "empty"),
     (figure_eight, "figure_eight"),

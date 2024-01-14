@@ -1,17 +1,28 @@
 import pytest
 
 
+def _evaluate_keyword(keyword, skip_categories):
+    if keyword in skip_categories:
+        return True
+    else:
+        return False
+
+
 def pytest_addoption(parser):
-    # The flag '--skip-video-tests' was added to facilitate the video tests, so
-    # I can only run those tests when I mean to, since running those tests is
-    # quite expensive.
-    parser.addoption("--skip-video-tests", action="store_true", help="Skips tests related to video-making.")
+    parser.addoption("--skip", action="store", default=[], nargs="+", help="Skips the specified categories.")
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--skip-video-tests"):
-        skip_flag = pytest.mark.skip(reason="Skip flag for video tests enabled.")
+    skip_categories = config.getoption("--skip")
+    if not skip_categories:
+        return
 
-        for item in items:
-            if "flag_video" in item.keywords:
-                item.add_marker(skip_flag)
+    for item in items:
+        keywords = item.keywords
+
+        for keyword in keywords:
+            if not _evaluate_keyword(keyword, skip_categories):
+                continue
+
+            item.add_marker(pytest.mark.skip())
+            break

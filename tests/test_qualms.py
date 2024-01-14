@@ -1,4 +1,4 @@
-from functions import get_current_directory
+from functions import categorize, get_current_directory
 
 from scrivid import create_image_reference, errors, qualms
 
@@ -144,6 +144,7 @@ SETUP_CLASSES = (Setup_DrawingConfliction, Setup_OutOfRange)
 MATCHING_CONDITIONS = assemble_qualm_args(*SETUP_CLASSES, matches=True)
 
 
+@categorize(category="qualms")
 @parametrize("cls,args", MATCHING_CONDITIONS)
 def test_check_match(cls, args):
     qualms = []
@@ -151,6 +152,7 @@ def test_check_match(cls, args):
     assert len(qualms) == 1 and isinstance(qualms[0], cls)
 
 
+@categorize(category="qualms")
 @parametrize("cls,args", MATCHING_CONDITIONS)
 def test_check_multiple_match_aligned(cls, args):
     qualms = []
@@ -166,6 +168,7 @@ def test_check_multiple_match_aligned(cls, args):
     )
 
 
+@categorize(category="qualms")
 @parametrize("cls,args_q,args_r", assemble_qualm_args(*SETUP_CLASSES, count=2, matches=True))
 def test_check_multiple_match_different_args(cls, args_q, args_r):
     qualms = []
@@ -185,6 +188,7 @@ def test_check_multiple_match_different_args(cls, args_q, args_r):
     )
 
 
+@categorize(category="qualms")
 @parametrize("cls,args", MATCHING_CONDITIONS)
 def test_check_multiple_match_unaligned(cls, args):
     qualms = []
@@ -199,6 +203,7 @@ def test_check_multiple_match_unaligned(cls, args):
     )
 
 
+@categorize(category="qualms")
 @parametrize("cls,args", assemble_qualm_args(*SETUP_CLASSES, matches=False))
 def test_check_no_match(cls, args):
     qualms = []
@@ -211,6 +216,7 @@ IMG_REF_B = initialize_image_reference(2)
 IMG_REF_C = initialize_image_reference(3)
 
 
+@categorize(category="qualms")
 @parametrize("qualm_a,args_a,qualm_b,args_b", [
     (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B), qualms.OutOfRange, (IMG_REF_A,)),
     (qualms.OutOfRange, (IMG_REF_A,), qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B))
@@ -222,6 +228,7 @@ def test_comparison_different_types(qualm_a, args_a, qualm_b, args_b):
     assert (qualm_object_a == qualm_object_b) is False
 
 
+@categorize(category="qualms")
 @parametrize("qualm,args_a,args_b", [
     (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B), (IMG_REF_A, IMG_REF_C)),
     (qualms.OutOfRange, (IMG_REF_A,), (IMG_REF_B,))
@@ -233,6 +240,7 @@ def test_comparison_false(qualm, args_a, args_b):
     assert (qualm_object_a == qualm_object_b) is False
 
 
+@categorize(category="qualms")
 @parametrize("qualm,args", [
     (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
     (qualms.OutOfRange, (IMG_REF_A,))
@@ -245,6 +253,7 @@ def test_comparison_invalid_type(qualm, args):
         qualm_object == wrong_type
 
 
+@categorize(category="qualms")
 @parametrize("qualm,args", [
     (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
     (qualms.OutOfRange, (IMG_REF_A,))
@@ -256,6 +265,7 @@ def test_comparison_true(qualm, args):
     assert (qualm_object_a == qualm_object_b) is True
 
 
+@categorize(category="qualms")
 @parametrize("qualm,expected", [
     (qualms.DrawingConfliction(
         0,
