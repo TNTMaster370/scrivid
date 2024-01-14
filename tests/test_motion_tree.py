@@ -53,7 +53,7 @@ def test_dump(indent, sample_module, expected_string_raw):
         .replace(r"{\b}", "\n" if indent else "")
     )
 
-    instructions, _ = sample_module.data()
+    instructions = sample_module.INSTRUCTIONS()
     parsed_motion_tree = motion_tree.parse(instructions)
 
     actual = motion_tree.dump(parsed_motion_tree, indent=indent)
@@ -138,7 +138,7 @@ def test_nodes_inheritance(node_cls, args):
 @categorize(category="motion_tree")
 @pytest_parametrize("sample_module", [empty, figure_eight, image_drawing])
 def test_parse(sample_module):
-    instructions, _ = sample_module.data()
+    instructions = sample_module.INSTRUCTIONS()
     motion_tree.parse(instructions)
 
 
@@ -172,7 +172,7 @@ def test_parse_duplicate_id():
       motion_tree.InvokePrevious, motion_tree.End])
 ])
 def test_walk(sample_module, expected_node_order):
-    instructions, _ = sample_module.data()
+    instructions = sample_module.INSTRUCTIONS()
     parsed_motion_tree = motion_tree.parse(instructions)
     for actual, expected_node in zip(motion_tree.walk(parsed_motion_tree), expected_node_order):
         actual_node = type(actual)

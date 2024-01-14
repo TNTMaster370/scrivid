@@ -7,15 +7,13 @@ def get_current_directory():
     return Path(__file__).absolute().parent
 
 
-def data():
-    metadata = scrivid.Metadata(
-        fps=12,
-        video_name="testSampleResult_\'overlap\'", 
-        window_size=(410, 410)
-    )
+def ALL():
+    return INSTRUCTIONS(), METADATA()
 
+
+def INSTRUCTIONS():
     directory = get_current_directory().parent / "images"
-    instructions = [
+    return (
         scrivid.create_image_reference(
             "LEFT",
             directory / "img2.png",
@@ -33,6 +31,12 @@ def data():
             y=100
         ),
         scrivid.MoveAdjustment("RIGHT", 12, scrivid.Properties(x=0), 1)
-    ]
+    )
 
-    return instructions, metadata
+
+def METADATA():
+    return scrivid.Metadata(
+        fps=12,
+        video_name="testSampleResult_\'overlap\'", 
+        window_size=(410, 410)
+    )

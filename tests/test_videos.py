@@ -74,7 +74,7 @@ class VideoFilePointer:
     (slide, "slide")
 ])
 def test_compile_video_output(temp_dir, sample_function, sample_module_name):
-    instructions, metadata = sample_function.data()
+    instructions, metadata = sample_function.ALL()
     metadata.save_location = temp_dir
     scrivid.compile_video(instructions, metadata)
 

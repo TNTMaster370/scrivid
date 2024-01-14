@@ -7,15 +7,13 @@ def get_current_directory():
     return Path(__file__).absolute().parent
 
 
-def data():
-    metadata = scrivid.Metadata(
-        fps=12,
-        video_name="testSampleResult_\'image_drawing\'", 
-        window_size=(660, 660)
-    )
+def ALL():
+    return INSTRUCTIONS(), METADATA()
 
+
+def INSTRUCTIONS():
     directory = get_current_directory().parent / "images"
-    instructions = [
+    return (
         scrivid.create_image_reference(
             "TL",
             directory / "img1.png",
@@ -63,6 +61,12 @@ def data():
         ),
         scrivid.HideAdjustment("HIDDEN", 0),
         scrivid.ShowAdjustment("HIDDEN", 20)
-    ]
+    )
 
-    return instructions, metadata
+
+def METADATA():
+    return scrivid.Metadata(
+        fps=12,
+        video_name="testSampleResult_\'image_drawing\'", 
+        window_size=(660, 660)
+    )
