@@ -1,10 +1,9 @@
-from functions import categorize, get_current_directory
+from functions import categorize, get_current_directory, unwrap_string
 
 from scrivid import create_image_reference, errors, qualms
 
 from abc import ABC, abstractmethod
 import itertools
-import textwrap
 
 import pytest
 
@@ -274,10 +273,10 @@ def test_comparison_true(qualm, args):
      ),
      ":D101:4: images with IDs \'1\' and \'2\' overlap with each other"),
     (qualms.OutOfRange(0, create_image_reference("1", "")),
-     textwrap.dedent("""
+     unwrap_string("""
         :D102:3: image with ID \'1\' may be printed outside of canvas 
         boundaries
-     """).replace("\n", "")),
+     """)),
 ])
 def test_message(qualm, expected):
     assert str(qualm) == expected

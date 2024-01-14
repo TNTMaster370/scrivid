@@ -1,4 +1,5 @@
 from pathlib import Path
+import textwrap
 
 import pytest
 
@@ -68,3 +69,7 @@ class TemporaryDirectory:
     def __exit__(self, *_):
         import shutil
         shutil.rmtree(self.dir)
+
+
+def unwrap_string(string):
+    return textwrap.dedent(string).replace("\n", "")

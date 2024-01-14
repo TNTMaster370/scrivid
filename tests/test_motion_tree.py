@@ -1,9 +1,7 @@
-from functions import categorize
+from functions import categorize, unwrap_string
 from samples import empty, figure_eight, image_drawing
 
 from scrivid import create_image_reference, errors, motion_tree
-
-import textwrap
 
 import pytest
 
@@ -22,26 +20,23 @@ def has_method(cls, method):
 @categorize(category="motion_tree")
 @pytest_parametrize("indent", [0, 2, 4, 8])
 @pytest_parametrize("sample_module,expected_string_raw", [
-    (empty, 
-     textwrap.dedent(r"""
+    (empty, unwrap_string(r"""
         MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Continue(
         length=1), {\b}{\i}{\i}MoveImage(id='HIDDEN', time=1, duration=11), {\b}{\i}{\i}InvokePrevious(length=11), {\b}
         {\i}{\i}End()])
-     """).replace("\n", "")),
-    (figure_eight, 
-     textwrap.dedent(r"""
+     """)),
+    (figure_eight, unwrap_string(r"""
         MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}Continue(length=6), {\b}{\i}{\i}MoveImage(id='BLOCK',
          time=6, duration=10), {\b}{\i}{\i}InvokePrevious(length=10), {\b}{\i}{\i}MoveImage(id='BLOCK', time=16, durati
         on=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}MoveImage(id='BLOCK', time=21, duration=5), {\b}{\i}{
         \i}InvokePrevious(length=10), {\b}{\i}{\i}MoveImage(id='BLOCK', time=26, duration=10), {\b}{\i}{\i}InvokePrevio
         us(length=5), {\b}{\i}{\i}MoveImage(id='BLOCK', time=36, duration=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b
         }{\i}{\i}MoveImage(id='BLOCK', time=41, duration=5), {\b}{\i}{\i}InvokePrevious(length=5), {\b}{\i}{\i}End()])
-     """).replace("\n", "")),
-    (image_drawing, 
-     textwrap.dedent(r"""
+     """)),
+    (image_drawing, unwrap_string(r"""
         MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Continue(
         length=20), {\b}{\i}{\i}ShowImage(id='HIDDEN', time=20), {\b}{\i}{\i}End()])
-     """).replace("\n", ""))
+     """))
 ])
 def test_dump(indent, sample_module, expected_string_raw):
     expected = (
