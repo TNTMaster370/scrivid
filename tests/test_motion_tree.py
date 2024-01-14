@@ -1,5 +1,5 @@
 from functions import categorize, unwrap_string
-from samples import empty, figure_eight, image_drawing
+from samples import empty, figure_eight, image_drawing, overlap, slide
 
 from scrivid import create_image_reference, errors, motion_tree
 
@@ -36,6 +36,14 @@ def has_method(cls, method):
     (image_drawing, unwrap_string(r"""
         MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Continue(
         length=20), {\b}{\i}{\i}ShowImage(id='HIDDEN', time=20), {\b}{\i}{\i}End()])
+     """)),
+    (overlap, unwrap_string(r"""
+        MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}Continue(length=12), {\b}{\i}{\i}MoveImage(id='RIGHT'
+        , time=12, duration=1), {\b}{\i}{\i}InvokePrevious(length=1), {\b}{\i}{\i}End()])
+     """)),
+    (slide, unwrap_string(r"""
+        MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}Continue(length=1), {\b}{\i}{\i}MoveImage(id='stone',
+         time=1, duration=36), {\b}{\i}{\i}InvokePrevious(length=36), {\b}{\i}{\i}End()])
      """))
 ])
 def test_dump(indent, sample_module, expected_string_raw):
@@ -155,7 +163,13 @@ def test_parse_duplicate_id():
       motion_tree.InvokePrevious, motion_tree.MoveImage, motion_tree.InvokePrevious, motion_tree.End]),
     (image_drawing, 
      [motion_tree.MotionTree, motion_tree.Start, motion_tree.HideImage, motion_tree.Continue, motion_tree.ShowImage,
-      motion_tree.End])
+      motion_tree.End]),
+    (overlap,
+     [motion_tree.MotionTree, motion_tree.Start, motion_tree.Continue, motion_tree.MoveImage,
+      motion_tree.InvokePrevious, motion_tree.End]),
+    (slide,
+     [motion_tree.MotionTree, motion_tree.Start, motion_tree.Continue, motion_tree.MoveImage,
+      motion_tree.InvokePrevious, motion_tree.End])
 ])
 def test_walk(sample_module, expected_node_order):
     instructions, _ = sample_module.data()
