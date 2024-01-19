@@ -11,17 +11,40 @@ it is, it will be included here.
 This version is in development.
 
 ### New Features
-- Added a `qualms` module, for flags as to possible incorrect behaviour.
-  - Added `QualmInterface`, which the base class that defines the interface for
-    qualm objects.
+- Added the `abc` module, for all abstract base classes that outline how
+  classes used by Scrivid should be structured, and the 'contract' for how it
+  will be used. This includes:
+  - `Adjustment`, replacing `_file_objects.RootAdjustment`; and
+  - `Qualm`, for objects from the `qualms` module (see below).
+- Added the `qualms` module, for flags as to possible incorrect behaviour. All
+  qualm objects are expected to inherit from `abc.Qualm`, and follow its
+  outline.
   - Added `DrawingConfliction`, for when two images on the same layer have an
     overlap between them.
   - Added `OutOfRange`, for when an image is partially or completely out of 
     range of the canvas.
+- Added the following exceptions to the `errors` module:
+  - `InternalErrorFromFFMPEG`, which is equivalent to `InternalError`, but is
+    specific to ffmpeg.
+- `Metadata` now has a `_validate` method, which is called internally when the
+  metadata needs to be used, to ensure that the data being passed in is
+  acceptable.
 
 ### Changes
-- `compile_video` now has a new implementation. Now, the function will only draw every unique frame during the drawing phase, and then will resave the in-between frames (in-betweens are identical to the most recent unique frame).
-  - This change was made to eventually facilitate a multi-processing option, if a user wants to dedicate more computer power on frame-drawing.
+- `errors.InternalError` now wraps the respective error that was raised 
+  internally.
+- All parts of the `_motion_tree` module, including parts that were unpacked 
+  into the general namespace, are now wrapped into a public-facing module
+  `motion_tree`. This includes:
+  - `scrivid.dump`, now `scrivid.motion_tree.dump`;
+  - `scrivid.parse`, now `scrivid.motion_tree.parse`;
+  - `scrivid.walk`, now `scrivid.motion_tree.walk`; and
+  - `scrivid.motion_nodes.<Nodes>`, unpacked into `scrivid.motion_tree.<Nodes>`.
+
+### Removed
+- `_file_objects.RootAdjustment` has been replaced by `abc.Adjustment`.
+- Removed the `fps` parameter from the constructor or `Metadata`. Use the
+  `frame_rate` parameter instead.
 
 
 ## 0.2.0
