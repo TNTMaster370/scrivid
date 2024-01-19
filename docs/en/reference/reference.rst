@@ -8,6 +8,6 @@ References
 scrivid.Metadata
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: scrivid.Metadata([*, fps=_NS, frame_rate=_NS, save_location=_NS, video_name=_NS, window_size=_NS])
+.. autoclass:: scrivid.Metadata([*, frame_rate=_NS, save_location=_NS, video_name=_NS, window_size=_NS])
     :members:
     :undoc-members:

@@ -65,7 +65,6 @@ class Metadata:
     The four required attributes are frame_rate, save_location, video_name,
     window_size.
 
-    :param fps: `(int)` Shorthand attribute for frame_rate.
     :param frame_rate: `(int)` The frame rate of the video.
     :param save_location: `(str | Path)` The path of the location where the
         file should be saved. Recommended to be a pathlib.Path object.
@@ -82,30 +81,17 @@ class Metadata:
     def __init__(
         self,
         *,
-        fps: Union[int, _NOT_SPECIFIED] = _NOT_SPECIFIED,
         frame_rate: Union[int, _NOT_SPECIFIED] = _NOT_SPECIFIED,
         save_location: Union[str, Path, _NOT_SPECIFIED] = _NOT_SPECIFIED,
         video_name: Union[str, _NOT_SPECIFIED] = _NOT_SPECIFIED,
         window_size: Union[Tuple[int, int], _NOT_SPECIFIED] = _NOT_SPECIFIED
     ):
-        if _NOT_SPECIFIED not in (fps, frame_rate) and fps != frame_rate:
-            from . import errors
-            raise errors.ConflictingAttributesError(
-                first_name="fps",
-                first_value=fps,
-                second_name="frame_rate",
-                second_value=frame_rate
-            )
-        elif _is_specified(fps):
-            self.frame_rate = fps
-        elif _is_specified(frame_rate):
-            self.frame_rate = frame_rate
-
         if isinstance(save_location, str):
             save_location = Path(save_location)
         self.save_location = save_location
 
         self._window_size = window_size
+        self.frame_rate = frame_rate
         self.video_name = video_name
 
     @property

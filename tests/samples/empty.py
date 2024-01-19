@@ -32,7 +32,7 @@ def INSTRUCTIONS():
 
 def METADATA():
     return scrivid.Metadata(
-        fps=12,
+        frame_rate=12,
         video_name="testSampleResult_\'empty\'", 
         window_size=(500, 500)
     )
