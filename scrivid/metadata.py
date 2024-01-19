@@ -56,6 +56,25 @@ class _TypeValidatingCallables:
 
 
 class Metadata:
+    """
+    Metadata stores all of the attributes for a Scrivid-generated video.
+    The attributes are not required to be specified on construction, but
+    four attributes must be specified before the Metadata is passed into
+    Scrivid to be compiled into a video.
+
+    The four required attributes are frame_rate, save_location, video_name,
+    window_size.
+
+    :param fps: `(int)` Shorthand attribute for frame_rate.
+    :param frame_rate: `(int)` The frame rate of the video.
+    :param save_location: `(str | Path)` The path of the location where the
+        file should be saved. Recommended to be a pathlib.Path object.
+    :param video_name: `(str)` The final name of the video file that's to be
+        generated.
+    :param window_size: `(tuple[int, int])` A tuple of (width, height) for the
+        dimensions of the video.
+    """
+
     __slots__ = ("_window_size", "frame_rate", "save_location", "video_name")
 
     _window_size: Tuple[int, int]
@@ -69,24 +88,6 @@ class Metadata:
         video_name: Union[str, _NOT_SPECIFIED] = _NOT_SPECIFIED,
         window_size: Union[Tuple[int, int], _NOT_SPECIFIED] = _NOT_SPECIFIED
     ):
-        """
-        Metadata stores all of the attributes for a Scrivid-generated video.
-        The attributes are not required to be specified on construction, but
-        four attributes must be specified before the Metadata is passed into
-        Scrivid to be compiled into a video.
-
-        The four required attributes are frame_rate, save_location, video_name,
-        window_size.
-
-        :param fps: Shorthand attribute for frame_rate.
-        :param frame_rate: The frame rate of the video.
-        :param save_location: The path of the location where the file should be
-            saved. Recommended to be a pathlib.Path object.
-        :param video_name: The final name of the video file that's to be
-            generated.
-        :param window_size: A tuple of (width, height) for the dimensions of
-            the video.
-        """
         if _NOT_SPECIFIED not in (fps, frame_rate) and fps != frame_rate:
             from . import errors
             raise errors.ConflictingAttributesError(
@@ -109,6 +110,7 @@ class Metadata:
 
     @property
     def window_height(self):
+        """ Equivalent to `window_size[1]` """
         if self._window_size is _NOT_SPECIFIED:
             return None
         else:
@@ -124,6 +126,7 @@ class Metadata:
 
     @property
     def window_width(self):
+        """ Equivalent to `window_size[0]` """
         if self._window_size is _NOT_SPECIFIED:
             return None
         else:
