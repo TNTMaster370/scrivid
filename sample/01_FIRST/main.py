@@ -2,40 +2,35 @@ from pathlib import Path
 import scrivid
 
 
-class VisibilityIndex:
-    _index_dict = {
-        0: (0, 75),
-        1: (75, 105),
-        2: (105, 225),
-        3: (225, 240),
-        4: (240, 330),
-        5: (330, 600)
-    }
-
-    @classmethod
-    def access(cls, index):
-        return cls._index_dict[index]
-
-
-def create_instructions(image_directory):
-    instructions = []
-
-    for index in range(6):
-        instructions.append(
-            scrivid.create_image_reference(
-                index,
-                image_directory / f"img{index+1}.png",
-                layer=index+1,
-                scale=1,
-                visibility=scrivid.VisibilityStatus.HIDE,
-                x=0,
-                y=0
-            )
+def create_instruction(index, show_time, hide_time, instructions, image_directory):
+    instructions.append(
+        scrivid.create_image_reference(
+            index,
+            image_directory / f"img{index+1}.png",
+            layer=index+1,
+            scale=1,
+            visibility=scrivid.VisibilityStatus.HIDE,
+            x=0,
+            y=0
         )
+    )
+    instructions.append(scrivid.ShowAdjustment(index, show_time))
+    instructions.append(scrivid.HideAdjustment(index, hide_time))
 
-        show_time, hide_time = VisibilityIndex.access(index)
-        instructions.append(scrivid.ShowAdjustment(index, show_time))
-        instructions.append(scrivid.HideAdjustment(index, hide_time))
+
+def create_all_instructions(image_directory):
+    instructions = []
+    visibility_times = [
+        (0, 75),
+        (75, 105),
+        (105, 225),
+        (225, 240),
+        (240, 330),
+        (330, 600)
+    ]
+
+    for index, visibility_time in enumerate(visibility_times):
+        create_instruction(index, *visibility_time, instructions, image_directory)
 
     instructions.append(scrivid.MoveAdjustment(2, 106, scrivid.Properties(x=60, y=30), 15))
     instructions.append(scrivid.MoveAdjustment(2, 122, scrivid.Properties(x=30, y=60), 15))
@@ -52,7 +47,7 @@ def generate(save_location, images_folder):
         window_size=(852, 480)
     )
 
-    instructions = create_instructions(images_folder)
+    instructions = create_all_instructions(images_folder)
     scrivid.compile_video(instructions, metadata)
 
 
