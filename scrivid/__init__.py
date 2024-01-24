@@ -10,6 +10,6 @@ from .metadata import Metadata
 
 __all__ = [
     "__version__", "__version_tuple__", "adjustments", "compile_video", "create_image_reference", "define_properties",
-    "errors", "FileReference", "HideAdjustment", "ImageFileReference", "ImageReference", "Metadata", "motion_tree",
-    "MoveAdjustment", "Properties", "qualms", "ShowAdjustment", "VisibilityStatus"
+    "errors", "FileReference", "ImageFileReference", "ImageReference", "Metadata", "motion_tree", "Properties",
+    "qualms", "VisibilityStatus"
 ]
