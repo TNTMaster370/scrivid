@@ -22,7 +22,7 @@ def INSTRUCTIONS():
             x=50,
             y=20
         ),
-        scrivid.MoveAdjustment("stone", 1, scrivid.Properties(x=500), 36)
+        scrivid.adjustments.move.create("stone", 1, scrivid.Properties(x=500), 36)
     )
 
 

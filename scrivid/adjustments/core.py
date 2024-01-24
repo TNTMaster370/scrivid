@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from ..abc import Adjustment
 
-from ._status import VisibilityStatus
-from .properties import EXCLUDED, Properties
+from .._file_objects._status import VisibilityStatus
+from .._file_objects.properties import EXCLUDED, Properties
 
 from typing import TYPE_CHECKING
 

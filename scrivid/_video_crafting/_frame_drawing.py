@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from .. import motion_tree
 
-from .._file_objects import MoveAdjustment, Properties, VisibilityStatus
+from .._file_objects import Properties, VisibilityStatus
+from .. import adjustments
 from .._utils import TemporaryAttribute
 
 from copy import deepcopy
@@ -113,7 +114,7 @@ def create_frame(frame: _FrameCanvas, split_instructions: SeparatedInstructions)
                 break
 
             args = ()
-            if type(adj) is MoveAdjustment:
+            if type(adj) is adjustments.core.MoveAdjustment:
                 args = (_invoke_adjustment_duration(index, adj),)
 
             reference._properties = reference._properties.merge(adj._enact(*args), **merge_settings)

@@ -30,7 +30,7 @@ def INSTRUCTIONS():
             x=205,
             y=100
         ),
-        scrivid.MoveAdjustment("RIGHT", 12, scrivid.Properties(x=0), 1)
+        scrivid.adjustments.move.create("RIGHT", 12, scrivid.Properties(x=0), 1)
     )
 
 

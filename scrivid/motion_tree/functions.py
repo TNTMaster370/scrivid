@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .nodes import Continue, End, HideImage, InvokePrevious, MotionTree, MoveImage, ShowImage, Start
-from .._file_objects.adjustments import HideAdjustment, MoveAdjustment, ShowAdjustment
+from .. import adjustments
 from .._separating_instructions import separate_instructions, SeparatedInstructions
 
 from typing import TYPE_CHECKING
@@ -31,11 +31,11 @@ def _create_command_node(adjustment: Adjustment) -> Optional[Union[HideImage, Mo
     adjustment_time = adjustment.activation_time
     relevant_id = adjustment.ID
 
-    if adjustment_type == HideAdjustment:
+    if adjustment_type == adjustments.core.HideAdjustment:
         return HideImage(relevant_id, adjustment_time)
-    elif adjustment_type == MoveAdjustment:
+    elif adjustment_type == adjustments.core.MoveAdjustment:
         return MoveImage(relevant_id, adjustment_time, adjustment.duration)
-    elif adjustment_type == ShowAdjustment:
+    elif adjustment_type == adjustments.core.ShowAdjustment:
         return ShowImage(relevant_id, adjustment_time)
     else:
         return None
