@@ -66,7 +66,8 @@ class VideoFilePointer:
 
 
 @categorize(category="video")
-@parametrize("sample_module,sample_module_name",
+@parametrize(
+    "sample_module,sample_module_name",
     assemble_args_with_leading_id(
         (empty, "empty"),
         (figure_eight, "figure_eight"),

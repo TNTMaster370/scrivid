@@ -262,7 +262,8 @@ IMG_REF_C = initialize_image_reference(3)
 #     (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B), qualms.OutOfRange, (IMG_REF_A,)),
 #     (qualms.OutOfRange, (IMG_REF_A,), qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B))
 # ])
-@parametrize("qualm_a,args_a,qualm_b,args_b", 
+@parametrize(
+    "qualm_a,args_a,qualm_b,args_b", 
     assemble_like_permutations(
         (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
         (qualms.OutOfRange, (IMG_REF_A,))
@@ -276,7 +277,8 @@ def test_comparison_different_types(qualm_a, args_a, qualm_b, args_b):
 
 
 @categorize(category="qualms")
-@parametrize("qualm,args_a,args_b",
+@parametrize(
+    "qualm,args_a,args_b",
     assemble_args_with_leading_id(
         (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B), (IMG_REF_A, IMG_REF_C)),
         (qualms.OutOfRange, (IMG_REF_A,), (IMG_REF_B,))
@@ -290,7 +292,8 @@ def test_comparison_false(qualm, args_a, args_b):
 
 
 @categorize(category="qualms")
-@parametrize("qualm,args", 
+@parametrize(
+    "qualm,args", 
     assemble_args_with_leading_id(
         (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
         (qualms.OutOfRange, (IMG_REF_A,))
@@ -305,7 +308,8 @@ def test_comparison_invalid_type(qualm, args):
 
 
 @categorize(category="qualms")
-@parametrize("qualm,args",
+@parametrize(
+    "qualm,args",
     assemble_args_with_leading_id(
         (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
         (qualms.OutOfRange, (IMG_REF_A,))
@@ -319,7 +323,8 @@ def test_comparison_true(qualm, args):
 
 
 @categorize(category="qualms")
-@parametrize("qualm_cls,args,expected",
+@parametrize(
+    "qualm_cls,args,expected",
     assemble_args_with_leading_id(
         (qualms.DrawingConfliction,
          (create_image_reference("1", ""), create_image_reference("2", "")),

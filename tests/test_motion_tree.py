@@ -26,7 +26,8 @@ def has_method(cls, method):
 
 @categorize(category="motion_tree")
 @pytest_parametrize("indent", [0, 2, 4, 8])
-@pytest_parametrize("sample_module,expected_string_raw", 
+@pytest_parametrize(
+    "sample_module,expected_string_raw", 
     assemble_args_with_leading_id(
         (empty, unwrap_string(r"""
             MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Conti
@@ -71,7 +72,8 @@ def test_dump(indent, sample_module, expected_string_raw):
 
 
 @categorize(category="motion_tree")
-@pytest_parametrize("node_cls,attr",
+@pytest_parametrize(
+    "node_cls,attr",
     assemble_nodes_args(
         (motion_tree.Continue, "length"),
         (motion_tree.HideImage, "id"),
@@ -132,7 +134,8 @@ def test_nodes_has_methods_required(node_cls, method):
 
 
 @categorize(category="motion_tree")
-@pytest_parametrize("node_cls,args",
+@pytest_parametrize(
+    "node_cls,args",
     assemble_args_with_leading_id(
         (motion_tree.Continue, (0,)),
         (motion_tree.End, ()),
@@ -150,7 +153,8 @@ def test_nodes_inheritance(node_cls, args):
 
 
 @categorize(category="motion_tree")
-@pytest_parametrize("sample_module",
+@pytest_parametrize(
+    "sample_module",
     assemble_args_with_leading_id(
         (empty,),
         (figure_eight,),
@@ -174,7 +178,8 @@ def test_parse_duplicate_id():
 
 
 @categorize(category="motion_tree")
-@pytest_parametrize("sample_module,expected_node_order",
+@pytest_parametrize(
+    "sample_module,expected_node_order",
     assemble_args_with_leading_id(
         (empty, 
          [motion_tree.MotionTree, motion_tree.Start, motion_tree.HideImage, motion_tree.Continue,
