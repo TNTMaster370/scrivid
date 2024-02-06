@@ -21,7 +21,8 @@ def loop_over_namespace(namespace):
         yield name
 
 
-@pytest_parametrize("exception,kwargs", 
+@pytest_parametrize(
+    "exception,kwargs", 
     assemble_args_with_leading_id(
         (errors.ConflictingAttributesError, 
          {"first_name": "first_name", "first_value": "first_value", "second_name": "second_name", 
