@@ -4,6 +4,13 @@ import textwrap
 import pytest
 
 
+def assemble_args_with_leading_id(*arguments, id_convention=lambda args: f"{args[0].__name__}"):
+    new_arguments = []
+    for args in arguments:
+        new_arguments.append(pytest.param(*args, id=id_convention(args)))
+    return new_arguments
+
+
 def categorize(*, category):
     marks = [
         getattr(pytest.mark, category)

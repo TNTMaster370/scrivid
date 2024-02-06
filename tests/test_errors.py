@@ -1,3 +1,4 @@
+from functions import assemble_args_with_leading_id
 from scrivid import errors
 
 import inspect
@@ -20,13 +21,15 @@ def loop_over_namespace(namespace):
         yield name
 
 
-@pytest_parametrize("exception,kwargs", [
-    (errors.ConflictingAttributesError, 
-     {"first_name": "first_name", "first_value": "first_value", "second_name": "second_name", 
-      "second_value": "second_value"}),
-    (errors.DuplicateIDError, {"duplicate_id": "duplicate_id"})
-])
-def test_exceptions_default_message(exception, kwargs):
+@pytest_parametrize("exception,kwargs", 
+    assemble_args_with_leading_id(
+        (errors.ConflictingAttributesError, 
+         {"first_name": "first_name", "first_value": "first_value", "second_name": "second_name", 
+          "second_value": "second_value"}),
+        (errors.DuplicateIDError, {"duplicate_id": "duplicate_id"})
+    )
+)
+def test_default_message(exception, kwargs):
     exc = exception(**kwargs)
     default_message = (
         exception
@@ -36,7 +39,7 @@ def test_exceptions_default_message(exception, kwargs):
     assert exc.message == default_message
 
 
-def test_exceptions_inheritance():
+def test_inheritance():
     for name in loop_over_namespace(errors.__name__):
         if name == errors.ScrividException.__name__:
             continue
