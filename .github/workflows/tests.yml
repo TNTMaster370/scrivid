@@ -57,7 +57,12 @@ jobs:
         run: sudo apt-get install ffmpeg
       - name: Install `scrivid`
         run: pip install .
+      - name: Install test dependencies
+        run: pip install -r requirements_dev.txt
       - name: Run tests
         run: pytest
         continue-on-error: true
         # Even if this step fails, the build shouldn't fail, since 3.13 is not yet guaranteed to be stable.
+      - name: Run flake8
+        run: flake8 scrivid tests
+        continue-on-error: true
