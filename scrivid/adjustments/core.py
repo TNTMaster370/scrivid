@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from ..abc import Adjustment
-
-from .._file_objects._status import VisibilityStatus
-from .._file_objects.properties import EXCLUDED, Properties
+from .. import abc, properties
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Hashable, Union
+
+    Properties = properties.Properties
+
+
+EXCLUDED = properties.EXCLUDED
 
 
 def _increment_value(
@@ -31,7 +33,7 @@ def _increment_value(
     return value + (remainder - (excess_precision * precision))
 
 
-class HideAdjustment(Adjustment):
+class HideAdjustment(abc.Adjustment):
     __slots__ = ("_activation_time", "_ID")
 
     def __init__(self, ID: Hashable, activation_time: int):
@@ -60,17 +62,17 @@ class HideAdjustment(Adjustment):
         return self._ID
 
     def _enact(self) -> Properties:
-        return Properties(visibility=VisibilityStatus.HIDE)
+        return properties.Properties(visibility=properties.VisibilityStatus.HIDE)
 
 
-class MoveAdjustment(Adjustment):
+class MoveAdjustment(abc.Adjustment):
     __slots__ = ("_activation_time", "_change", "_ID", "duration")
 
     def __init__(
             self,
             ID: Hashable,
             activation_time: int,
-            change: Properties,
+            change: properties.Properties,
             duration: int
     ):
         self._change = change
@@ -118,10 +120,10 @@ class MoveAdjustment(Adjustment):
         x = _increment_value(self._change.x, self.duration, length, 1)
         y = _increment_value(self._change.y, self.duration, length, 1)
 
-        return Properties(scale=scale, x=x, y=y)
+        return properties.Properties(scale=scale, x=x, y=y)
 
 
-class ShowAdjustment(Adjustment):
+class ShowAdjustment(abc.Adjustment):
     __slots__ = ("_activation_time", "_ID")
 
     def __init__(self, ID: Hashable, activation_time: int):
@@ -150,4 +152,4 @@ class ShowAdjustment(Adjustment):
         return self._ID
 
     def _enact(self) -> Properties:
-        return Properties(visibility=VisibilityStatus.SHOW)
+        return properties.Properties(visibility=properties.VisibilityStatus.SHOW)

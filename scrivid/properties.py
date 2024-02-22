@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from . import errors
-from ._file_objects._status import VisibilityStatus
 from ._utils import sentinel, SentinelBase
 
 import enum
@@ -45,6 +44,12 @@ _REPLACEMENT_MODES = (
 )
 _REVERSE_MODES = (MergeMode.REVERSE_APPEND, MergeMode.REVERSE_REPLACEMENT, MergeMode.REVERSE_STRICT_REPLACEMENT)
 _STRICT_MODES = (MergeMode.REVERSE_STRICT_REPLACEMENT, MergeMode.STRICT_REPLACEMENT)
+
+
+class VisibilityStatus(enum.Enum):
+    HIDE = enum.auto()
+    SHOW = enum.auto()
+    UNKNOWN = enum.auto()
 
 
 class Properties:

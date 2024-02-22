@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from .. import motion_tree
-
-from .._file_objects import Properties, VisibilityStatus
-from .. import adjustments
+from .. import adjustments, motion_tree, properties
 from .._utils import TemporaryAttribute
 
 from copy import deepcopy
@@ -99,7 +96,7 @@ def create_frame(frame: _FrameCanvas, split_instructions: SeparatedInstructions)
     index = frame.index
     instructions = deepcopy(split_instructions)  # Avoid modifying the
     # original objects.
-    merge_settings = {"mode": Properties.MERGE_MODE.REVERSE_APPEND}
+    merge_settings = {"mode": properties.MergeMode.REVERSE_APPEND}
 
     for ID, reference in instructions.references.items():
         try:
@@ -119,7 +116,7 @@ def create_frame(frame: _FrameCanvas, split_instructions: SeparatedInstructions)
 
             reference._properties = reference._properties.merge(adj._enact(*args), **merge_settings)
 
-        if reference.visibility is VisibilityStatus.HIDE:
+        if reference.visibility is properties.VisibilityStatus.HIDE:
             continue
 
         layer = reference.layer

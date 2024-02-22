@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from .. import errors
+from .. import errors, properties
 from .._utils.sentinel_objects import sentinel
 from .files import call_close, FileAccess
-from .properties import define_properties, EXCLUDED
 
 from copy import copy, deepcopy
 from pathlib import Path
@@ -13,14 +12,15 @@ import weakref
 from PIL import Image
 
 if TYPE_CHECKING:
-    from ._status import VisibilityStatus
-    from .properties import Properties
-
     from collections.abc import Hashable
     from typing import Optional, Tuple, Union
 
+    Properties = properties.Properties
+    VisibilityStatus = properties.VisibilityStatus
+
 
 _NS = sentinel("_NOT_SPECIFIED")
+EXCLUDED = properties.EXCLUDED
 
 
 class ImageFileReference:
@@ -182,7 +182,7 @@ class ImageReference:
 def create_image_reference(
         ID: Hashable,
         file: Union[str, Path, FileAccess],
-        properties: Union[Properties, _NS] = _NS,
+        properties_: Union[Properties, _NS] = _NS,
         /, *,
         layer: Union[int, EXCLUDED] = EXCLUDED,
         scale: Union[int, EXCLUDED] = EXCLUDED,
@@ -196,8 +196,8 @@ def create_image_reference(
     if isinstance(file, Path):
         file = ImageFileReference(file)
 
-    if properties is _NS:
-        properties = define_properties(
+    if properties_ is _NS:
+        properties_ = properties.create(
             layer=layer,
             scale=scale,
             visibility=visibility,
@@ -215,4 +215,4 @@ def create_image_reference(
             if attr is not EXCLUDED:
                 raise errors.AttributeError(f"Attribute \'{name}\' should not be specified if \'properties\' is.")
 
-    return ImageReference(ID, file, properties)
+    return ImageReference(ID, file, properties_)

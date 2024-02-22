@@ -1,4 +1,4 @@
-from scrivid import errors, ImageReference, properties, VisibilityStatus
+from scrivid import errors, ImageReference, properties
 
 import pytest
 
@@ -87,15 +87,15 @@ def test_merge_missing_attribute_ampersand_operator():
 
 
 def test_merge_mode_append():
-    a = properties.Properties(visibility=VisibilityStatus.HIDE, x=1)
-    b = properties.Properties(visibility=VisibilityStatus.SHOW, x=2)
+    a = properties.Properties(visibility=properties.VisibilityStatus.HIDE, x=1)
+    b = properties.Properties(visibility=properties.VisibilityStatus.SHOW, x=2)
 
     c = a.merge(b, mode=properties.MergeMode.APPEND)
     assert c.x == 3
-    assert c.visibility is VisibilityStatus.HIDE
+    assert c.visibility is properties.VisibilityStatus.HIDE
 
     d = b.merge(a, mode=properties.MergeMode.APPEND)
-    assert d.visibility is VisibilityStatus.SHOW
+    assert d.visibility is properties.VisibilityStatus.SHOW
     # 'visibility' is not invoked via appending the same way, since adding
     # two enum objects is not possible, so it invokes the replacement
     # behaviour instead. This is why there's a reverse-append option.
@@ -113,15 +113,15 @@ def test_merge_mode_replacement():
 
 
 def test_merge_mode_reverse_append():
-    a = properties.Properties(visibility=VisibilityStatus.HIDE, x=1)
-    b = properties.Properties(visibility=VisibilityStatus.SHOW, x=2)
+    a = properties.Properties(visibility=properties.VisibilityStatus.HIDE, x=1)
+    b = properties.Properties(visibility=properties.VisibilityStatus.SHOW, x=2)
 
     c = a.merge(b, mode=properties.MergeMode.REVERSE_APPEND)
     assert c.x == 3
-    assert c.visibility is VisibilityStatus.SHOW
+    assert c.visibility is properties.VisibilityStatus.SHOW
 
     d = b.merge(a, mode=properties.MergeMode.REVERSE_APPEND)
-    assert d.visibility is VisibilityStatus.HIDE
+    assert d.visibility is properties.VisibilityStatus.HIDE
 
 
 def test_merge_mode_reverse_replacement():
