@@ -55,7 +55,9 @@ jobs:
         run: sudo apt update
       - name: Install ffmpeg
         run: sudo apt-get install ffmpeg
-      - name: Test with tox
-        run: tox
-        continue-on-error: true  
+      - name: Install `scrivid`
+        run: pip install .
+      - name: Run tests
+        run: pytest
+        continue-on-error: true
         # Even if this step fails, the build shouldn't fail, since 3.13 is not yet guaranteed to be stable.
