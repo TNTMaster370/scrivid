@@ -37,6 +37,10 @@ def INSTRUCTIONS():
 def METADATA():
     return scrivid.Metadata(
         frame_rate=12,
-        video_name="testSampleResult_\'overlap\'", 
+        video_name=f"testSampleResult_\'{NAME()}\'", 
         window_size=(410, 410)
     )
+
+
+def NAME():
+    return "overlap"

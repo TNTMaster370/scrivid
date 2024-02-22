@@ -67,22 +67,23 @@ class VideoFilePointer:
 
 @categorize(category="video")
 @parametrize(
-    "sample_module,sample_module_name",
+    "sample_module",
     assemble_arguments(
-        (empty, "empty"),
-        (figure_eight, "figure_eight"),
-        (image_drawing, "image_drawing"),
-        (overlap, "overlap"),
-        (slide, "slide")
+        (empty,),
+        (figure_eight,),
+        (image_drawing,),
+        (overlap,),
+        (slide,),
+        id_convention=lambda args: f"{args[0].NAME()}"
     )
 )
-def test_compile_video_output(temp_dir, sample_module, sample_module_name):
+def test_compile_video_output(temp_dir, sample_module):
     instructions, metadata = sample_module.ALL()
     metadata.save_location = temp_dir
     scrivid.compile_video(instructions, metadata)
 
     actual = ComparisonBlock(str(temp_dir / f"{metadata.video_name}.mp4"))
-    expected = ComparisonBlock(str(get_current_directory() / f"videos/__scrivid_\'{sample_module_name}\'__.mp4"))
+    expected = ComparisonBlock(str(get_current_directory() / f"videos/__scrivid_\'{sample_module.NAME()}\'__.mp4"))
 
     with actual.container, expected.container:
         loop_over_video_objects(actual, expected)
