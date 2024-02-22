@@ -1,4 +1,4 @@
-class _SentinelBase(type):
+class SentinelBase(type):
     def __new__(mcs, *_, **__):
         raise TypeError(f"{mcs!r} is not callable")
 
@@ -7,6 +7,6 @@ class _SentinelBase(type):
 
 
 def sentinel(name):
-    cls = type.__new__(_SentinelBase, name, (_SentinelBase,), {})
+    cls = type.__new__(SentinelBase, name, (SentinelBase,), {})
     cls.__class__ = cls
     return cls

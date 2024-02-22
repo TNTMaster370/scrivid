@@ -26,7 +26,7 @@ def INSTRUCTIONS():
             y=-500
         ),
         scrivid.adjustments.hide.create("HIDDEN", 0),
-        scrivid.adjustments.move.create("HIDDEN", 1, scrivid.Properties(x=1), 11)
+        scrivid.adjustments.move.create("HIDDEN", 1, scrivid.properties.Properties(x=1), 11)
     )
 
 

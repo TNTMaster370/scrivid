@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from ._status import VisibilityStatus
-from .. import errors
-from .._utils.sentinel_objects import sentinel
+from . import errors
+from ._file_objects._status import VisibilityStatus
+from ._utils import sentinel, SentinelBase
 
 import enum
 from typing import TYPE_CHECKING
@@ -11,8 +11,11 @@ if TYPE_CHECKING:
     from typing import Union
 
 
-def _calculate_append(property: str, a: Properties, b: Properties):
-    a_attr, b_attr = getattr(a, property), getattr(b, property)
+EXCLUDED = sentinel("EXCLUDED")
+
+
+def _calculate_append(property_: str, a: Properties, b: Properties):
+    a_attr, b_attr = getattr(a, property_), getattr(b, property_)
     return (
         a_attr + b_attr if EXCLUDED not in (a_attr, b_attr)
         else a_attr if a_attr is not EXCLUDED
@@ -20,12 +23,12 @@ def _calculate_append(property: str, a: Properties, b: Properties):
     )
 
 
-def _calculate_replacement(property: str, a: Properties, b: Properties):
-    a_attr, b_attr = getattr(a, property), getattr(b, property)
+def _calculate_replacement(property_: str, a: Properties, b: Properties):
+    a_attr, b_attr = getattr(a, property_), getattr(b, property_)
     return a_attr if a_attr is not EXCLUDED else b_attr
 
 
-class _MergeMode(enum.Enum):
+class MergeMode(enum.Enum):
     APPEND = enum.auto()
     REPLACEMENT = enum.auto()
     REVERSE_APPEND = enum.auto()
@@ -34,30 +37,26 @@ class _MergeMode(enum.Enum):
     STRICT_REPLACEMENT = enum.auto()
 
 
-_APPENDING_MODES = (_MergeMode.APPEND, _MergeMode.REVERSE_APPEND)
-_FORWARD_MODES = (_MergeMode.APPEND, _MergeMode.REPLACEMENT, _MergeMode.STRICT_REPLACEMENT)
+_APPENDING_MODES = (MergeMode.APPEND, MergeMode.REVERSE_APPEND)
+_FORWARD_MODES = (MergeMode.APPEND, MergeMode.REPLACEMENT, MergeMode.STRICT_REPLACEMENT)
 _REPLACEMENT_MODES = (
-    _MergeMode.REPLACEMENT, _MergeMode.REVERSE_REPLACEMENT, _MergeMode.REVERSE_STRICT_REPLACEMENT,
-    _MergeMode.STRICT_REPLACEMENT
+    MergeMode.REPLACEMENT, MergeMode.REVERSE_REPLACEMENT, MergeMode.REVERSE_STRICT_REPLACEMENT,
+    MergeMode.STRICT_REPLACEMENT
 )
-_REVERSE_MODES = (_MergeMode.REVERSE_APPEND, _MergeMode.REVERSE_REPLACEMENT, _MergeMode.REVERSE_STRICT_REPLACEMENT)
-_STRICT_MODES = (_MergeMode.REVERSE_STRICT_REPLACEMENT, _MergeMode.STRICT_REPLACEMENT)
-
-EXCLUDED = sentinel("EXCLUDED")
+_REVERSE_MODES = (MergeMode.REVERSE_APPEND, MergeMode.REVERSE_REPLACEMENT, MergeMode.REVERSE_STRICT_REPLACEMENT)
+_STRICT_MODES = (MergeMode.REVERSE_STRICT_REPLACEMENT, MergeMode.STRICT_REPLACEMENT)
 
 
 class Properties:
     __slots__ = ("layer", "scale", "visibility", "x", "y")
 
-    MERGE_MODE = _MergeMode
-
     def __init__(
             self, *,
-            layer: Union[int, EXCLUDED] = EXCLUDED,
-            scale: Union[float, int, EXCLUDED] = EXCLUDED,
-            visibility: Union[VisibilityStatus, EXCLUDED] = EXCLUDED,
-            x: Union[int, EXCLUDED] = EXCLUDED,
-            y: Union[int, EXCLUDED] = EXCLUDED
+            layer: Union[int, SentinelBase] = EXCLUDED,
+            scale: Union[float, int, SentinelBase] = EXCLUDED,
+            visibility: Union[VisibilityStatus, SentinelBase] = EXCLUDED,
+            x: Union[int, SentinelBase] = EXCLUDED,
+            y: Union[int, SentinelBase] = EXCLUDED
     ):
         self.layer = layer
         self.scale = scale
@@ -103,7 +102,7 @@ class Properties:
                 second_value=b
             )
 
-    def merge(self, other: Properties, /, *, mode: _MergeMode = _MergeMode.STRICT_REPLACEMENT):
+    def merge(self, other: Properties, /, *, mode: MergeMode = MergeMode.STRICT_REPLACEMENT):
         if not isinstance(other, Properties):
             raise errors.TypeError(
                 f"Expected Properties object, got type {type(other)}."
@@ -132,13 +131,13 @@ class Properties:
         return self.__class__(layer=layer, scale=scale, visibility=visibility, x=x, y=y)
 
 
-def define_properties(
+def create(
         *,
-        layer: Union[int, EXCLUDED] = EXCLUDED,
-        scale: Union[float, int, EXCLUDED] = EXCLUDED,
-        visibility: Union[VisibilityStatus, EXCLUDED] = EXCLUDED,
-        x: Union[int, EXCLUDED] = EXCLUDED,
-        y: Union[int, EXCLUDED] = EXCLUDED
+        layer: Union[int, SentinelBase] = EXCLUDED,
+        scale: Union[float, int, SentinelBase] = EXCLUDED,
+        visibility: Union[VisibilityStatus, SentinelBase] = EXCLUDED,
+        x: Union[int, SentinelBase] = EXCLUDED,
+        y: Union[int, SentinelBase] = EXCLUDED
 ) -> Properties:
     # Define default values for non-required variables. If it's intended to be
     # used specifically for merging, you may wish to instantiate it directly,

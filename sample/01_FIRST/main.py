@@ -32,9 +32,9 @@ def create_all_instructions(image_directory):
     for index, visibility_time in enumerate(visibility_times):
         create_instruction(index, *visibility_time, instructions, image_directory)
 
-    instructions.append(scrivid.adjustments.move.create(2, 106, scrivid.Properties(x=60, y=30), 15))
-    instructions.append(scrivid.adjustments.move.create(2, 122, scrivid.Properties(x=30, y=60), 15))
-    instructions.append(scrivid.adjustments.move.create(4, 270, scrivid.Properties(x=100, y=100), 15))
+    instructions.append(scrivid.adjustments.move.create(2, 106, scrivid.properties.Properties(x=60, y=30), 15))
+    instructions.append(scrivid.adjustments.move.create(2, 122, scrivid.properties.Properties(x=30, y=60), 15))
+    instructions.append(scrivid.adjustments.move.create(4, 270, scrivid.properties.Properties(x=100, y=100), 15))
 
     return instructions
 

@@ -22,12 +22,12 @@ def INSTRUCTIONS():
             x=300, 
             y=50
         ),
-        scrivid.adjustments.move.create("BLOCK", 6, scrivid.Properties(x=500, y=500), 10),
-        scrivid.adjustments.move.create("BLOCK", 16, scrivid.Properties(x=250, y=-250), 5),
-        scrivid.adjustments.move.create("BLOCK", 21, scrivid.Properties(x=-250, y=-250), 5),
-        scrivid.adjustments.move.create("BLOCK", 26, scrivid.Properties(x=-500, y=500), 10),
-        scrivid.adjustments.move.create("BLOCK", 36, scrivid.Properties(x=-250, y=-250), 5),
-        scrivid.adjustments.move.create("BLOCK", 41, scrivid.Properties(x=250, y=-250), 5)
+        scrivid.adjustments.move.create("BLOCK", 6, scrivid.properties.Properties(x=500, y=500), 10),
+        scrivid.adjustments.move.create("BLOCK", 16, scrivid.properties.Properties(x=250, y=-250), 5),
+        scrivid.adjustments.move.create("BLOCK", 21, scrivid.properties.Properties(x=-250, y=-250), 5),
+        scrivid.adjustments.move.create("BLOCK", 26, scrivid.properties.Properties(x=-500, y=500), 10),
+        scrivid.adjustments.move.create("BLOCK", 36, scrivid.properties.Properties(x=-250, y=-250), 5),
+        scrivid.adjustments.move.create("BLOCK", 41, scrivid.properties.Properties(x=250, y=-250), 5)
     )
 
 
