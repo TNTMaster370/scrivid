@@ -1,4 +1,4 @@
-from functions import assemble_args_with_leading_id
+from functions import assemble_arguments
 from scrivid import errors
 
 import inspect
@@ -23,7 +23,7 @@ def loop_over_namespace(namespace):
 
 @pytest_parametrize(
     "exception,kwargs", 
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (errors.ConflictingAttributesError, 
          {"first_name": "first_name", "first_value": "first_value", "second_name": "second_name", 
           "second_value": "second_value"}),

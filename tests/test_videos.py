@@ -1,4 +1,4 @@
-from functions import assemble_args_with_leading_id, categorize, get_current_directory, TemporaryDirectory
+from functions import assemble_arguments, categorize, get_current_directory, TemporaryDirectory
 from samples import empty, figure_eight, image_drawing, overlap, slide
 
 import scrivid
@@ -68,7 +68,7 @@ class VideoFilePointer:
 @categorize(category="video")
 @parametrize(
     "sample_module,sample_module_name",
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (empty, "empty"),
         (figure_eight, "figure_eight"),
         (image_drawing, "image_drawing"),

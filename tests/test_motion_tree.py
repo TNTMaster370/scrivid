@@ -1,4 +1,4 @@
-from functions import assemble_args_with_leading_id, categorize, unwrap_string
+from functions import assemble_arguments, categorize, unwrap_string
 from samples import empty, figure_eight, image_drawing, overlap, slide
 
 from scrivid import create_image_reference, errors, motion_tree
@@ -8,13 +8,6 @@ import pytest
 
 # Alternative name for module to reduce typing
 pytest_parametrize = pytest.mark.parametrize
-
-
-def assemble_nodes_args(*arguments):
-    new_arguments = []
-    for args in arguments:
-        new_arguments.append(pytest.param(*args, id=f"{args[0].__name__}.{args[1]}"))
-    return new_arguments
 
 
 def has_method(cls, method):
@@ -28,7 +21,7 @@ def has_method(cls, method):
 @pytest_parametrize("indent", [0, 2, 4, 8])
 @pytest_parametrize(
     "sample_module,expected_string_raw", 
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (empty, unwrap_string(r"""
             MotionTree({\b}{\i}body=[{\b}{\i}{\i}Start(), {\b}{\i}{\i}HideImage(id='HIDDEN', time=0), {\b}{\i}{\i}Conti
             nue(length=1), {\b}{\i}{\i}MoveImage(id='HIDDEN', time=1, duration=11), {\b}{\i}{\i}InvokePrevious(length=1
@@ -74,7 +67,7 @@ def test_dump(indent, sample_module, expected_string_raw):
 @categorize(category="motion_tree")
 @pytest_parametrize(
     "node_cls,attr",
-    assemble_nodes_args(
+    assemble_arguments(
         (motion_tree.Continue, "length"),
         (motion_tree.HideImage, "id"),
         (motion_tree.HideImage, "time"),
@@ -84,7 +77,8 @@ def test_dump(indent, sample_module, expected_string_raw):
         (motion_tree.MoveImage, "id"),
         (motion_tree.MoveImage, "time"),
         (motion_tree.ShowImage, "id"),
-        (motion_tree.ShowImage, "time")
+        (motion_tree.ShowImage, "time"),
+        id_convention=lambda args: f"{args[0].__name__}.{args[1]}"
     )
 )
 def test_nodes_has_attributes(node_cls, attr):
@@ -136,7 +130,7 @@ def test_nodes_has_methods_required(node_cls, method):
 @categorize(category="motion_tree")
 @pytest_parametrize(
     "node_cls,args",
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (motion_tree.Continue, (0,)),
         (motion_tree.End, ()),
         (motion_tree.HideImage, (0, 0)),
@@ -155,7 +149,7 @@ def test_nodes_inheritance(node_cls, args):
 @categorize(category="motion_tree")
 @pytest_parametrize(
     "sample_module",
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (empty,),
         (figure_eight,),
         (image_drawing,),
@@ -180,7 +174,7 @@ def test_parse_duplicate_id():
 @categorize(category="motion_tree")
 @pytest_parametrize(
     "sample_module,expected_node_order",
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (empty, 
          [motion_tree.MotionTree, motion_tree.Start, motion_tree.HideImage, motion_tree.Continue,
           motion_tree.MoveImage, motion_tree.InvokePrevious, motion_tree.End]),

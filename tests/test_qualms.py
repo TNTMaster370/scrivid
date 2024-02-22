@@ -1,4 +1,4 @@
-from functions import assemble_args_with_leading_id, categorize, get_current_directory
+from functions import assemble_arguments, categorize, get_current_directory
 
 from scrivid import create_image_reference, errors, qualms
 
@@ -17,45 +17,41 @@ directory = get_current_directory() / "images"
 IMAGE_LIMIT = 3
 
 
-def assemble_like_permutations(*arguments, id_convention=lambda args: f"{args[0].__name__}", length=2):
-    new_arguments = []
+def _assemble_method_permutations(*, length=2, separator=" | "):
+    def function(arguments, id_convention):
+        for permutation in itertools.permutations(arguments, length):
+            args = []
+            complete_id = ""
 
-    for arg_series in itertools.permutations(arguments, length):
-        complete_args = []
-        complete_id = ""
+            for p in permutation:
+                for p_ in p:
+                    args.append(p_)
+                complete_id += f"{id_convention(p)}{separator}"
 
-        for arg in arg_series:
-            arg_ = arg
-            if not isinstance(arg, tuple):
-                arg_ = (arg,)
+            complete_id = complete_id[:(-1 * len(separator))]
 
-            complete_id += id_convention(arg_) + ", "
-            for a in arg_:
-                complete_args.append(a)
+            yield pytest.param(*args, id=complete_id)
 
-        complete_id = complete_id[:-2]
-        new_arguments.append(pytest.param(*complete_args, id=complete_id))
-
-    return new_arguments
+    return function
 
 
-def assemble_qualm_args(*setup_classes, matches, count=1):
-    args = []
+def _assemble_method_qualm_setup(*, matches=True, count=1):
     ids_name = f"{'non_' if not matches else ''}matching_ids"
 
-    for setup_class in setup_classes:
-        current_args = []
-        current_ids = getattr(setup_class, ids_name)
+    def function(arguments, _):
+        for setup_class in arguments:
+            args = []
+            ids = getattr(setup_class, ids_name)
 
-        for count_index in range(count):
-            current_args.append(setup_class.fully_unpack_coordinates(count_index, matches))
+            for count_index in range(count):
+                args.append(setup_class.fully_unpack_coordinates(count_index, matches))
 
-        current_args = transpose(*current_args)
-        relevant_class = setup_class.relevant_class
-        for arg, ids_string in zip(current_args, current_ids):
-            args.append(pytest.param(relevant_class, *arg, id=f"{relevant_class.__name__}, \'{ids_string}\'"))
+            args = transpose(*args)
+            relevant_class = setup_class.relevant_class
+            for arg, ids_string in zip(args, ids):
+                yield pytest.param(relevant_class, *arg, id=f"{relevant_class.__name__}, \'{ids_string}\'")
 
-    return args
+    return function
 
 
 class Coordinates:
@@ -182,7 +178,7 @@ SETUP_CLASSES = (Setup_DrawingConfliction, Setup_OutOfRange)
 # =============================================================================
 
 
-MATCHING_CONDITIONS = assemble_qualm_args(*SETUP_CLASSES, matches=True)
+MATCHING_CONDITIONS = assemble_arguments(*SETUP_CLASSES, id_convention=None, method=_assemble_method_qualm_setup())
 
 
 @categorize(category="qualms")
@@ -210,7 +206,10 @@ def test_check_multiple_match_aligned(cls, args):
 
 
 @categorize(category="qualms")
-@parametrize("cls,args_q,args_r", assemble_qualm_args(*SETUP_CLASSES, count=2, matches=True))
+@parametrize(
+    "cls,args_q,args_r",
+    assemble_arguments(*SETUP_CLASSES, id_convention=None, method=_assemble_method_qualm_setup(count=2))
+)
 def test_check_multiple_match_different_args(cls, args_q, args_r):
     qualms = []
     combination = "qrq"  # The `combination` variable refers to the order of
@@ -245,7 +244,10 @@ def test_check_multiple_match_unaligned(cls, args):
 
 
 @categorize(category="qualms")
-@parametrize("cls,args", assemble_qualm_args(*SETUP_CLASSES, matches=False))
+@parametrize(
+    "cls,args",
+    assemble_arguments(*SETUP_CLASSES, id_convention=None, method=_assemble_method_qualm_setup(matches=False))
+)
 def test_check_no_match(cls, args):
     qualms = []
     cls.check(qualms, 0, *args)
@@ -258,15 +260,12 @@ IMG_REF_C = initialize_image_reference(3)
 
 
 @categorize(category="qualms")
-# @parametrize("qualm_a,args_a,qualm_b,args_b", [
-#     (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B), qualms.OutOfRange, (IMG_REF_A,)),
-#     (qualms.OutOfRange, (IMG_REF_A,), qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B))
-# ])
 @parametrize(
-    "qualm_a,args_a,qualm_b,args_b", 
-    assemble_like_permutations(
+    "qualm_a,args_a,qualm_b,args_b",
+    assemble_arguments(
         (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
-        (qualms.OutOfRange, (IMG_REF_A,))
+        (qualms.OutOfRange, (IMG_REF_A,)),
+        method=_assemble_method_permutations()
     )
 )
 def test_comparison_different_types(qualm_a, args_a, qualm_b, args_b):
@@ -279,7 +278,7 @@ def test_comparison_different_types(qualm_a, args_a, qualm_b, args_b):
 @categorize(category="qualms")
 @parametrize(
     "qualm,args_a,args_b",
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B), (IMG_REF_A, IMG_REF_C)),
         (qualms.OutOfRange, (IMG_REF_A,), (IMG_REF_B,))
     )
@@ -294,7 +293,7 @@ def test_comparison_false(qualm, args_a, args_b):
 @categorize(category="qualms")
 @parametrize(
     "qualm,args", 
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
         (qualms.OutOfRange, (IMG_REF_A,))
     )
@@ -310,7 +309,7 @@ def test_comparison_invalid_type(qualm, args):
 @categorize(category="qualms")
 @parametrize(
     "qualm,args",
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (qualms.DrawingConfliction, (IMG_REF_A, IMG_REF_B)),
         (qualms.OutOfRange, (IMG_REF_A,))
     )
@@ -325,7 +324,7 @@ def test_comparison_true(qualm, args):
 @categorize(category="qualms")
 @parametrize(
     "qualm_cls,args,expected",
-    assemble_args_with_leading_id(
+    assemble_arguments(
         (qualms.DrawingConfliction,
          (create_image_reference("1", ""), create_image_reference("2", "")),
          ":D101:4: images with IDs \'1\' and \'2\' overlap with each other"),

@@ -4,11 +4,13 @@ import textwrap
 import pytest
 
 
-def assemble_args_with_leading_id(*arguments, id_convention=lambda args: f"{args[0].__name__}"):
-    new_arguments = []
+def _assemble_method_simple(arguments, id_convention):
     for args in arguments:
-        new_arguments.append(pytest.param(*args, id=id_convention(args)))
-    return new_arguments
+        yield pytest.param(*args, id=id_convention(args))
+
+
+def assemble_arguments(*arguments, id_convention=lambda args: f"{args[0].__name__}", method=_assemble_method_simple):
+    return tuple(param for param in method(arguments, id_convention))
 
 
 def categorize(*, category):

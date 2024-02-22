@@ -1,3 +1,4 @@
+from functions import assemble_arguments
 from scrivid import errors, Metadata
 
 import pytest
@@ -5,6 +6,8 @@ import pytest
 
 # ALIAS
 parametrize = pytest.mark.parametrize
+
+FILL_VALUE = object()
 
 METADATA_DEFAULTS = {
     "frame_rate": 0,
@@ -14,38 +17,37 @@ METADATA_DEFAULTS = {
 }
 
 
-def assemble_metadata_args(default_values, *, delete=False, fill_value=None):
-    arguments = []
-
-    for key in default_values:
-        current_values = default_values.copy()
-        if delete:
-            del current_values[key]
-        else:
-            current_values[key] = fill_value
-
+def _assemble_method_delete(arguments, _):
+    argument = arguments[0]
+    for key in argument:
+        current_values = argument.copy()
+        del current_values[key]
         metadata = Metadata(**current_values)
-        arguments.append(pytest.param(metadata, id=key))
-
-    return arguments
+        yield pytest.param(metadata, id=key)
 
 
-@parametrize("metadata", assemble_metadata_args(METADATA_DEFAULTS, delete=True))
+def _assemble_method_fillvalue(arguments, _):
+    argument = arguments[0]
+    for key in argument:
+        current_values = argument.copy()
+        current_values[key] = FILL_VALUE
+        metadata = Metadata(**current_values)
+        yield pytest.param(metadata, id=key)
+
+
+@parametrize("metadata", assemble_arguments(METADATA_DEFAULTS, method=_assemble_method_delete))
 def test_validation_presense(metadata):
     with pytest.raises(errors.AttributeError):
         metadata._validate()
 
 
-@parametrize("metadata", assemble_metadata_args(METADATA_DEFAULTS, fill_value=False))
+@parametrize("metadata", assemble_arguments(METADATA_DEFAULTS, method=_assemble_method_fillvalue))
 def test_validation_type(metadata):
     with pytest.raises(errors.AttributeError):
         metadata._validate()
 
 
-@parametrize("updated_window_size", [
-    pytest.param((5, 0), id="width"),
-    pytest.param((0, 5), id="height")
-])
+@parametrize("updated_window_size", [(5, 0), (0, 5)], ids=["width", "height"])
 def test_validation_window_size_odd_numbers(updated_window_size):
     metadata = Metadata(frame_rate=0, save_location="", video_name="")
     metadata.window_size = updated_window_size
