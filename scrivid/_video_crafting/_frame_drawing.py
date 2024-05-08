@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ._frame_info import FrameInfo
+
 from .. import adjustments, motion_tree, properties
 from .._utils import TemporaryAttribute
 
@@ -23,38 +25,7 @@ def _call_close(value):
     value.close()
 
 
-class _FrameCanvas:
-    __slots__ = ("_canvas", "_pixel_canvas", "index", "references", "temporary_directory", "window_size")
-
-    def __init__(self, index: int, temporary_directory: Path, window_size: Tuple[int, int]):
-        self._canvas = Image.new("RGB", window_size, (255, 255, 255))
-        self._pixel_canvas = self._canvas.load()
-        self.index = index
-        self.references = {}
-        self.temporary_directory = temporary_directory
-        self.window_size = window_size
-
-    def save(self):
-        self._canvas.save(self.temporary_directory / f"{self.index:06d}.png", "PNG")
-        self._canvas.close()
-        self._canvas = None
-        self._pixel_canvas = None
-
-    def update_pixel(
-            self,
-            coordinates: Tuple[int, int],
-            new_pixel_value: Tuple[int, int, int]
-    ):
-        # if coordinates[0] < 0 or coordinates[1] < 0:
-        #     return
-
-        try:
-            self._pixel_canvas.__setitem__(coordinates, new_pixel_value)
-        except IndexError:
-            pass
-
-
-def _draw_on_frame(frame: _FrameCanvas, references_dict):
+def _draw_on_frame(frame: FrameInfo, references_dict):
     try:
         highest_layer = max(references_dict) + 1
     except ValueError:
@@ -76,7 +47,7 @@ def _draw_on_frame(frame: _FrameCanvas, references_dict):
                     range(ref_x, ref_x + reference.get_image_width()),
                     range(ref_y, ref_y + reference.get_image_height())
             ):
-                frame.update_pixel((x, y), reference.get_pixel_value((x - ref_x, y - ref_y)))
+                frame.canvas.set_pixel((x, y), reference.get_pixel_value((x - ref_x, y - ref_y)))
 
 
 def _invoke_adjustment_duration(index: int, adj: Adjustment):
@@ -88,7 +59,7 @@ def _invoke_adjustment_duration(index: int, adj: Adjustment):
         return duration
 
 
-def create_frame(frame: _FrameCanvas, split_instructions: SeparatedInstructions):
+def create_frame(frame: FrameInfo, split_instructions: SeparatedInstructions):
     index = frame.index
     instructions = deepcopy(split_instructions)  # Avoid modifying the
     # original objects.
@@ -123,7 +94,7 @@ def create_frame(frame: _FrameCanvas, split_instructions: SeparatedInstructions)
         layer_reference[layer].add(reference)
 
     _draw_on_frame(frame, layer_reference)
-    frame.save()
+    frame.canvas.save(frame.save_file)
 
 
 def fill_undrawn_frames(temporary_directory: Path, video_length: int):
@@ -143,7 +114,7 @@ def generate_frames(
         parsed_motion_tree: MotionTree,
         temporary_directory: Path,
         window_size: Tuple[int, int]
-) -> Tuple[List[_FrameCanvas], int]:
+) -> Tuple[List[FrameInfo], int]:
     # ...
     frames = []
     index = 0
@@ -151,18 +122,18 @@ def generate_frames(
     for node in parsed_motion_tree.body:
         type_ = type(node)
         if type_ is motion_tree.Start:
-            frames.append(_FrameCanvas(0, temporary_directory, window_size))
+            frames.append(FrameInfo(0, temporary_directory, window_size))
         elif type_ in (motion_tree.HideImage, motion_tree.MoveImage, motion_tree.ShowImage):
             if index == frames[-1].index:
                 continue
-            frames.append(_FrameCanvas(index, temporary_directory, window_size))
+            frames.append(FrameInfo(index, temporary_directory, window_size))
         elif type_ is motion_tree.InvokePrevious:
             start = 0
             if index == frames[-1].index:
                 start = 1
                 index += 1
             for _ in range(start, node.length):
-                frames.append(_FrameCanvas(index, temporary_directory, window_size))
+                frames.append(FrameInfo(index, temporary_directory, window_size))
                 index += 1
             del start
         elif type_ is motion_tree.Continue:
