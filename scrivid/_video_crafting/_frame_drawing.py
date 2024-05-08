@@ -34,35 +34,6 @@ class _FrameCanvas:
         self.temporary_directory = temporary_directory
         self.window_size = window_size
 
-    def _manage_reference(self, reference):
-        if not reference.is_opened:
-            reference.open()
-
-        ref_x = reference.x
-        ref_y = reference.y
-
-        for x, y in itertools.product(
-                range(ref_x, ref_x + reference.get_image_width()),
-                range(ref_y, ref_y + reference.get_image_height())
-        ):
-            self.update_pixel((x, y), reference.get_pixel_value((x - ref_x, y - ref_y)))
-
-    def draw(self):
-        try:
-            highest_layer = max(self.references)
-        except ValueError:
-            return self.save()
-
-        for layer_index in range(highest_layer + 1):
-            if layer_index not in self.references:
-                continue
-
-            references = self.references[layer_index]
-            for reference in references:
-                self._manage_reference(reference)
-
-        self.save()
-
     def save(self):
         self._canvas.save(self.temporary_directory / f"{self.index:06d}.png", "PNG")
         self._canvas.close()
@@ -83,6 +54,31 @@ class _FrameCanvas:
             pass
 
 
+def _draw_on_frame(frame: _FrameCanvas, references_dict):
+    try:
+        highest_layer = max(references_dict) + 1
+    except ValueError:
+        return
+
+    for index in range(highest_layer):
+        if index not in references_dict:
+            continue
+
+        references = references_dict[index]
+        for reference in references:
+            if not reference.is_opened:
+                reference.open()
+
+            ref_x = reference.x
+            ref_y = reference.y
+
+            for x, y in itertools.product(
+                    range(ref_x, ref_x + reference.get_image_width()),
+                    range(ref_y, ref_y + reference.get_image_height())
+            ):
+                frame.update_pixel((x, y), reference.get_pixel_value((x - ref_x, y - ref_y)))
+
+
 def _invoke_adjustment_duration(index: int, adj: Adjustment):
     # Assume that the `adj` has a 'duration' attribute.
     duration = index - adj.activation_time
@@ -96,6 +92,7 @@ def create_frame(frame: _FrameCanvas, split_instructions: SeparatedInstructions)
     index = frame.index
     instructions = deepcopy(split_instructions)  # Avoid modifying the
     # original objects.
+    layer_reference = {}
     merge_settings = {"mode": properties.MergeMode.REVERSE_APPEND}
 
     for ID, reference in instructions.references.items():
@@ -120,12 +117,13 @@ def create_frame(frame: _FrameCanvas, split_instructions: SeparatedInstructions)
             continue
 
         layer = reference.layer
-        if layer not in frame.references:
-            frame.references[layer] = set()
+        if layer not in layer_reference:
+            layer_reference[layer] = set()
 
-        frame.references[layer].add(reference)
+        layer_reference[layer].add(reference)
 
-    frame.draw()
+    _draw_on_frame(frame, layer_reference)
+    frame.save()
 
 
 def fill_undrawn_frames(temporary_directory: Path, video_length: int):
