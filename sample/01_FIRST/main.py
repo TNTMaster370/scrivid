@@ -9,7 +9,7 @@ def create_instruction(index, show_time, hide_time, instructions, image_director
             image_directory / f"img{index+1}.png",
             layer=index+1,
             scale=1,
-            visibility=scrivid.VisibilityStatus.HIDE,
+            visibility=scrivid.properties.VisibilityStatus.HIDE,
             x=0,
             y=0
         )
